@@ -5,14 +5,15 @@ QR Code CLI - Command line interface for QR code generation and management.
 This CLI provides commands to interact with the QR code service.
 """
 
-import typer
-import requests
 import os
 from pathlib import Path
 from typing import Optional
+
+import requests
+import typer
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -50,14 +51,13 @@ def get_headers() -> dict:
 def login(username: str, password: str):
     """
     Authenticate with the API and store the token.
-    
+
     Example:
         qrcode login myuser mypassword
     """
     try:
         response = requests.post(
-            f"{API_BASE_URL}/api/token/",
-            json={"username": username, "password": password}
+            f"{API_BASE_URL}/api/token/", json={"username": username, "password": password}
         )
         response.raise_for_status()
         token = response.json()["access"]
@@ -74,7 +74,9 @@ def create(
     data: Optional[str] = typer.Option(None, "--data", "-d", help="Data to encode"),
     format: str = typer.Option("png", "--format", "-f", help="Output format (png, svg, jpeg)"),
     size: int = typer.Option(10, "--size", "-s", help="QR code size scale"),
-    error_correction: str = typer.Option("M", "--error", "-e", help="Error correction level (L, M, Q, H)"),
+    error_correction: str = typer.Option(
+        "M", "--error", "-e", help="Error correction level (L, M, Q, H)"
+    ),
     border: int = typer.Option(4, "--border", "-b", help="Border size"),
     bg_color: str = typer.Option("white", "--bg-color", help="Background color"),
     fg_color: str = typer.Option("black", "--fg-color", help="Foreground color"),
@@ -82,7 +84,7 @@ def create(
 ):
     """
     Create a new QR code.
-    
+
     Example:
         qrcode create --url https://example.com --shorten
         qrcode create --data "Hello World" --format svg
@@ -90,7 +92,7 @@ def create(
     if not url and not data:
         console.print("[red]Error: Either --url or --data must be provided[/red]")
         raise typer.Exit(1)
-    
+
     payload = {
         "qr_format": format,
         "size": size,
@@ -100,26 +102,24 @@ def create(
         "foreground_color": fg_color,
         "use_url_shortening": shorten,
     }
-    
+
     if url:
         payload["url"] = url
     else:
         payload["data"] = data
-    
+
     try:
         response = requests.post(
-            f"{API_BASE_URL}/api/qrcodes/",
-            json=payload,
-            headers=get_headers()
+            f"{API_BASE_URL}/api/qrcodes/", json=payload, headers=get_headers()
         )
         response.raise_for_status()
         result = response.json()
-        
+
         console.print("[green]QR Code created successfully![/green]")
         console.print(f"ID: {result['id']}")
         if result.get('short_code'):
             console.print(f"Short URL: {API_BASE_URL}/go/{result['short_code']}/")
-        
+
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Failed to create QR code: {e}[/red]")
         if hasattr(e.response, 'text'):
@@ -131,29 +131,26 @@ def create(
 def list():
     """
     List all QR codes for the authenticated user.
-    
+
     Example:
         qrcode list
     """
     try:
-        response = requests.get(
-            f"{API_BASE_URL}/api/qrcodes/",
-            headers=get_headers()
-        )
+        response = requests.get(f"{API_BASE_URL}/api/qrcodes/", headers=get_headers())
         response.raise_for_status()
         qrcodes = response.json()
-        
+
         if not qrcodes:
             console.print("[yellow]No QR codes found[/yellow]")
             return
-        
+
         table = Table(title="Your QR Codes")
         table.add_column("ID", style="cyan")
         table.add_column("Content", style="white")
         table.add_column("Format", style="green")
         table.add_column("Scans", style="magenta")
         table.add_column("Created", style="blue")
-        
+
         for qr in qrcodes:
             content = qr['content'][:50] + "..." if len(qr['content']) > 50 else qr['content']
             table.add_row(
@@ -161,11 +158,11 @@ def list():
                 content,
                 qr['qr_format'],
                 str(qr['scan_count']),
-                qr['created_at'][:10]
+                qr['created_at'][:10],
             )
-        
+
         console.print(table)
-        
+
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Failed to list QR codes: {e}[/red]")
         raise typer.Exit(1)
@@ -175,18 +172,15 @@ def list():
 def get(qr_id: str):
     """
     Get details of a specific QR code.
-    
+
     Example:
         qrcode get abc123...
     """
     try:
-        response = requests.get(
-            f"{API_BASE_URL}/api/qrcodes/{qr_id}/",
-            headers=get_headers()
-        )
+        response = requests.get(f"{API_BASE_URL}/api/qrcodes/{qr_id}/", headers=get_headers())
         response.raise_for_status()
         qr = response.json()
-        
+
         console.print(f"[cyan]ID:[/cyan] {qr['id']}")
         console.print(f"[cyan]Content:[/cyan] {qr['content']}")
         console.print(f"[cyan]Format:[/cyan] {qr['qr_format']}")
@@ -196,7 +190,7 @@ def get(qr_id: str):
         if qr.get('redirect_url'):
             console.print(f"[cyan]Redirect URL:[/cyan] {qr['redirect_url']}")
         console.print(f"[cyan]Created:[/cyan] {qr['created_at']}")
-        
+
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Failed to get QR code: {e}[/red]")
         raise typer.Exit(1)
@@ -206,18 +200,15 @@ def get(qr_id: str):
 def delete(qr_id: str):
     """
     Delete a QR code.
-    
+
     Example:
         qrcode delete abc123...
     """
     try:
-        response = requests.delete(
-            f"{API_BASE_URL}/api/qrcodes/{qr_id}/",
-            headers=get_headers()
-        )
+        response = requests.delete(f"{API_BASE_URL}/api/qrcodes/{qr_id}/", headers=get_headers())
         response.raise_for_status()
         console.print(f"[green]QR code {qr_id} deleted successfully[/green]")
-        
+
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Failed to delete QR code: {e}[/red]")
         raise typer.Exit(1)

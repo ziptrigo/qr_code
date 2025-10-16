@@ -5,6 +5,7 @@ Pytest configuration and fixtures for the QR code project.
 import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+
 from src.models import QRCode
 
 
@@ -18,9 +19,7 @@ def api_client():
 def user(db):
     """Create a test user."""
     return User.objects.create_user(
-        username='testuser',
-        email='test@example.com',
-        password='testpass123'
+        username='testuser', email='test@example.com', password='testpass123'
     )
 
 
@@ -43,7 +42,7 @@ def qr_code(user):
         border=4,
         background_color='white',
         foreground_color='black',
-        image_file='test.png'
+        image_file='test.png',
     )
 
 
@@ -56,5 +55,5 @@ def qr_code_with_shortening(user):
         use_url_shortening=True,
         created_by=user,
         qr_format='png',
-        image_file='test_short.png'
+        image_file='test_short.png',
     )
