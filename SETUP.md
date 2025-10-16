@@ -47,6 +47,18 @@ python manage.py createsuperuser
 New-Item -ItemType Directory -Force -Path media\qrcodes
 ```
 
+## Code Style
+
+This project uses Black and isort (configured in pyproject.toml).
+
+```powershell
+# Sort imports
+isort .
+
+# Format code
+black .
+```
+
 ## Running the Server
 
 ```powershell

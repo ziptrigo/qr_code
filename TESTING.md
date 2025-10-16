@@ -254,6 +254,15 @@ Tests use pytest-django's database fixtures:
 - `--reuse-db` flag to reuse test database between runs (faster)
 - `--no-migrations` flag to use existing migrations (faster)
 
+## Code Style
+
+Run formatters before committing:
+
+```powershell
+isort .
+black .
+```
+
 ## Best Practices
 
 ### 1. Test Isolation

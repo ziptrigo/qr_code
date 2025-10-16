@@ -43,6 +43,11 @@ See [SETUP.md](SETUP.md) for complete installation, configuration, and usage ins
 - `DELETE /api/qrcodes/{id}/` - Delete QR code
 - `GET /go/{short_code}/` - Redirect and track (public)
 
+## Development
+
+- Sort imports: `isort .`
+- Format code: `black .`
+
 ## CLI Usage
 
 ```powershell
@@ -63,6 +68,7 @@ python cli.py list
 - **QR Generation**: segno
 - **CLI**: typer
 - **Database**: SQLite (PostgreSQL-ready)
+- **Tooling**: pytest, pytest-cov, black, isort
 
 ## License
 

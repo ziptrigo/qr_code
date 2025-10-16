@@ -192,6 +192,16 @@ API_BASE_URL=http://localhost:8000
 DEBUG=True
 ```
 
+## Formatting & Imports
+
+```powershell
+# Sort imports per pyproject.toml
+isort .
+
+# Format code per pyproject.toml
+black .
+```
+
 ## Testing
 
 ```powershell

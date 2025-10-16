@@ -1,3 +1,19 @@
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+skip-string-normalization = true
+extend-exclude='''
+(
+  \.venv.*
+  | \venv.*
+)
+'''
+
+[tool.isort]
+profile = 'black'
+sections = 'FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER'
+skip_glob = ['**/.venv*', '**/venv*', '/build']
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
