@@ -25,17 +25,17 @@ pytest -v
 
 ### Run Specific Test File
 ```powershell
-pytest qrcodes/tests/test_models.py
+pytest tests/test_models.py
 ```
 
 ### Run Specific Test Class
 ```powershell
-pytest qrcodes/tests/test_models.py::TestQRCodeModel
+pytest tests/test_models.py::TestQRCodeModel
 ```
 
 ### Run Specific Test
 ```powershell
-pytest qrcodes/tests/test_models.py::TestQRCodeModel::test_create_qrcode
+pytest tests/test_models.py::TestQRCodeModel::test_create_qrcode
 ```
 
 ### Run Tests by Marker
@@ -63,7 +63,7 @@ pytest --cov=qrcodes --cov-report=html
 ## Test Organization
 
 ```
-qrcodes/tests/
+tests/
 ├── __init__.py
 ├── test_models.py              # Unit tests for QRCode model
 ├── test_services.py            # Unit tests for QR code generation
@@ -304,7 +304,7 @@ For CI/CD pipelines:
 
 ### 1. Create Test File
 ```python
-# qrcodes/tests/test_new_feature.py
+# tests/test_new_feature.py
 import pytest
 from qrcodes.models import QRCode
 

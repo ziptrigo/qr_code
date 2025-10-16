@@ -4,8 +4,8 @@ Integration tests to verify setup and end-to-end functionality.
 
 import pytest
 from django.contrib.auth.models import User
-from qrcodes.models import QRCode
-from qrcodes.services import QRCodeGenerator
+from src.models import QRCode
+from src.services import QRCodeGenerator
 
 
 @pytest.mark.django_db

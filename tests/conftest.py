@@ -5,7 +5,7 @@ Pytest configuration and fixtures for the QR code project.
 import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
-from qrcodes.models import QRCode
+from src.models import QRCode
 
 
 @pytest.fixture

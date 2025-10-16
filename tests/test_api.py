@@ -5,7 +5,7 @@ Integration tests for QR code API endpoints.
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from qrcodes.models import QRCode
+from src.models import QRCode
 
 
 @pytest.mark.django_db

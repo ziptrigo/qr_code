@@ -79,10 +79,10 @@ POST /api/token/refresh/
 
 ### QR Codes (Authenticated)
 ```
-POST   /api/qrcodes/        Create QR code
-GET    /api/qrcodes/        List QR codes
-GET    /api/qrcodes/{id}/   Get QR code
-DELETE /api/qrcodes/{id}/   Delete QR code
+POST   /api/src/        Create QR code
+GET    /api/src/        List QR codes
+GET    /api/src/{id}/   Get QR code
+DELETE /api/src/{id}/   Delete QR code
 ```
 
 ### Redirect (Public)
@@ -103,7 +103,7 @@ $token = $response.access
 
 ### Create QR Code
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
+Invoke-RestMethod -Uri "http://localhost:8000/api/src/" `
   -Method Post `
   -Headers @{Authorization="Bearer $token"} `
   -Body (@{
@@ -117,7 +117,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
 
 ### List QR Codes
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
+Invoke-RestMethod -Uri "http://localhost:8000/api/src/" `
   -Method Get `
   -Headers @{Authorization="Bearer $token"}
 ```
@@ -139,7 +139,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
 ## File Locations
 
 ```
-media/qrcodes/           Generated QR code images
+media/src/           Generated QR code images
 db.sqlite3               Database file
 ~/.qrcode_token          CLI authentication token
 .env                     Environment configuration
@@ -149,9 +149,9 @@ db.sqlite3               Database file
 
 ```
 http://localhost:8000/admin/           Django admin interface
-http://localhost:8000/api/qrcodes/     API endpoint
+http://localhost:8000/api/src/     API endpoint
 http://localhost:8000/go/{code}/       Short URL redirect
-http://localhost:8000/media/qrcodes/   QR code images
+http://localhost:8000/media/src/   QR code images
 ```
 
 ## Troubleshooting
@@ -177,10 +177,10 @@ Remove-Item ~\.qrcode_token
 ### QR code not generating
 ```powershell
 # Verify media directory exists
-New-Item -ItemType Directory -Force -Path media\qrcodes
+New-Item -ItemType Directory -Force -Path media\src
 
 # Check permissions
-Get-Acl media\qrcodes
+Get-Acl media\src
 ```
 
 ## Configuration

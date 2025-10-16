@@ -5,8 +5,8 @@ Unit tests for QR code generation services.
 import pytest
 from pathlib import Path
 from django.conf import settings
-from qrcodes.models import QRCode
-from qrcodes.services import QRCodeGenerator
+from src.models import QRCode
+from src.services import QRCodeGenerator
 
 
 @pytest.mark.django_db

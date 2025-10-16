@@ -24,7 +24,7 @@ python manage.py migrate
 python manage.py createsuperuser
 
 # Create media directory
-New-Item -ItemType Directory -Force -Path media\qrcodes
+New-Item -ItemType Directory -Force -Path media\src
 
 # Run server
 python manage.py runserver
@@ -37,10 +37,10 @@ See [SETUP.md](SETUP.md) for complete installation, configuration, and usage ins
 ## API Endpoints
 
 - `POST /api/token/` - Authenticate and get JWT token
-- `POST /api/qrcodes/` - Create QR code
-- `GET /api/qrcodes/` - List QR codes
-- `GET /api/qrcodes/{id}/` - Get QR code details
-- `DELETE /api/qrcodes/{id}/` - Delete QR code
+- `POST /api/src/` - Create QR code
+- `GET /api/src/` - List QR codes
+- `GET /api/src/{id}/` - Get QR code details
+- `DELETE /api/src/{id}/` - Delete QR code
 - `GET /go/{short_code}/` - Redirect and track (public)
 
 ## CLI Usage

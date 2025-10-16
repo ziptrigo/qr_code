@@ -8,7 +8,7 @@ All functionality specified in `warp.md` has been successfully implemented and t
 
 ### 1. Django Backend Service
 
-#### Models (`qrcodes/models.py`)
+#### Models (`src/models.py`)
 - **QRCode Model** with fields:
   - UUID primary key
   - Content encoding (URL or custom data)
@@ -18,20 +18,20 @@ All functionality specified in `warp.md` has been successfully implemented and t
   - Analytics (scan count, timestamps)
   - User relationship (created_by)
 
-#### Services (`qrcodes/services.py`)
+#### Services (`src/services.py`)
 - **QRCodeGenerator** class using segno library:
   - Generates QR codes in PNG, SVG, and JPEG formats
   - Supports transparent backgrounds for PNG
   - Custom colors (named, hex, or transparent)
   - Configurable size, border, and error correction
-  - Files saved to `media/qrcodes/` with UUID-based names
+  - Files saved to `media/src/` with UUID-based names
 
-#### API (`qrcodes/serializers.py`, `qrcodes/views.py`)
+#### API (`src/serializers.py`, `src/views.py`)
 - **QRCodeViewSet** - Full CRUD operations:
-  - `POST /api/qrcodes/` - Create QR code
-  - `GET /api/qrcodes/` - List user's QR codes
-  - `GET /api/qrcodes/{id}/` - Get specific QR code
-  - `DELETE /api/qrcodes/{id}/` - Delete QR code
+  - `POST /api/src/` - Create QR code
+  - `GET /api/src/` - List user's QR codes
+  - `GET /api/src/{id}/` - Get specific QR code
+  - `DELETE /api/src/{id}/` - Delete QR code
   
 - **Redirect View** - Public endpoint:
   - `GET /go/{short_code}/` - Redirect to original URL and increment scan count
@@ -95,7 +95,7 @@ Testing model creation...
 
 Testing QR code generation...
 ✓ Created QRCode instance: 712f4ca7-2578-43f5-85fd-8c8b2bcb5beb
-✓ Generated QR code image: qrcodes/712f4ca7-2578-43f5-85fd-8c8b2bcb5beb.png
+✓ Generated QR code image: src/712f4ca7-2578-43f5-85fd-8c8b2bcb5beb.png
 
 Testing URL shortening...
 ✓ Generated short code: qsYjAU0p
@@ -118,7 +118,7 @@ qr_code/
 │   ├── asgi.py
 │   └── wsgi.py
 │
-├── qrcodes/                     # Main application
+├── src/                     # Main application
 │   ├── migrations/             # Database migrations
 │   │   └── 0001_initial.py
 │   ├── models.py               # QRCode model with URL shortening
@@ -131,7 +131,7 @@ qr_code/
 │   └── tests.py
 │
 ├── media/                       # Generated QR code storage
-│   └── qrcodes/
+│   └── src/
 │       ├── *.png
 │       ├── *.svg
 │       └── *.jpeg
@@ -163,7 +163,7 @@ $token = $response.access
 
 ### 2. Create QR Code with URL Shortening
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
+Invoke-RestMethod -Uri "http://localhost:8000/api/src/" `
   -Method Post `
   -Headers @{Authorization="Bearer $token"} `
   -Body (@{
@@ -177,7 +177,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
 
 ### 3. Create QR Code with Custom Data
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
+Invoke-RestMethod -Uri "http://localhost:8000/api/src/" `
   -Method Post `
   -Headers @{Authorization="Bearer $token"} `
   -Body (@{
