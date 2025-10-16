@@ -10,7 +10,8 @@ A Python project for generating and manipulating QR codes.
 
 ## Tech Stack
 - Python 3.13
-- Django 5.2
+- Django 5.2 for API interface
+- typer for CLI interface
 - segno package for QR code generation
 - RDBMS for data storage
 
@@ -49,3 +50,7 @@ The backend service is implemented in Django. The APIs are:
    2.2. Retrieve QR code: An endpoint that will save in the DB the number
         of times the QR code was read (ie, the endpoint was called) and
         forward the user to the original url.
+
+3. CLI interface
+The CLI interface will be implemented using the typer library and have a
+similar interface to the API.
