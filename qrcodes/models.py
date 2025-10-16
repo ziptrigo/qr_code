@@ -17,7 +17,7 @@ class QRCode(models.Model):
     FORMAT_CHOICES = [
         ('png', 'PNG'),
         ('svg', 'SVG'),
-        ('jpeg', 'JPEG'),
+        ('pdf', 'PDF'),
     ]
     
     ERROR_CORRECTION_CHOICES = [

@@ -53,7 +53,7 @@ class QRCodeGenerator:
                 dark=fg_color,
                 light=bg_color
             )
-        elif qr_code_instance.qr_format in ['png', 'jpeg']:
+        else:  # png, pdf, or other formats
             qr.save(
                 str(file_path),
                 kind=qr_code_instance.qr_format,

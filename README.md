@@ -4,7 +4,7 @@ A complete QR code generation and management service with Django REST API, JWT a
 
 ## Features
 
-- 🎨 **Full Customization**: Colors, size, error correction, border, and multiple formats (PNG, SVG, JPEG)
+- 🎨 **Full Customization**: Colors, size, error correction, border, and multiple formats (PNG, SVG, PDF)
 - 🔗 **URL Shortening**: Built-in URL shortener with redirect tracking
 - 📊 **Analytics**: Track scan counts and timestamps
 - 🔐 **JWT Authentication**: Secure API access
