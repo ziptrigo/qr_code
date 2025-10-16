@@ -84,9 +84,18 @@ dmypy.json
 # Sqlite files
 *.sqlite3
 *.sqlite3-journal
+db.sqlite3
+
+# Django
+media/
+staticfiles/
+static_root/
 
 # Pytest results
 *results.xml
+
+# CLI token file
+.qrcode_token
 
 # Misc
 .DS_Store
