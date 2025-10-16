@@ -52,11 +52,11 @@ pytest -m "not slow"
 
 ### Generate Coverage Report
 ```powershell
-# Terminal report
-pytest --cov=qrcodes --cov-report=term-missing
+# Terminal report (uses coverage config from pyproject.toml)
+pytest --cov=src --cov-report=term-missing
 
 # HTML report
-pytest --cov=qrcodes --cov-report=html
+pytest --cov=src --cov-report=html
 # Then open htmlcov/index.html
 ```
 
@@ -80,6 +80,7 @@ Current coverage: **98%**
 | models.py | 98% | 1 line missed (edge case in save) |
 | serializers.py | 98% | 1 line missed (serializer method) |
 | services.py | 100% | Full coverage |
+| urls.py | 100% | Full coverage |
 | views.py | 97% | 1 line missed (error response) |
 | admin.py | 91% | Admin display method |
 | urls.py | 100% | Full coverage |
@@ -223,21 +224,26 @@ Custom pytest markers for organizing tests:
 
 ## Configuration
 
-### pytest.ini
+### pyproject.toml
 
-```ini
-[pytest]
-DJANGO_SETTINGS_MODULE = config.settings
-python_files = tests.py test_*.py *_tests.py
-addopts = 
-    --strict-markers
-    --reuse-db
-    --no-migrations
-    -v
-markers =
-    unit: Unit tests
-    integration: Integration tests
-    slow: Slow running tests
+```toml
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+testpaths = ["tests"]
+addopts = [
+  "--strict-markers",
+  "--reuse-db",
+  "--no-migrations",
+  "-v",
+]
+markers = [
+  "unit: Unit tests",
+  "integration: Integration tests",
+  "slow: Slow running tests",
+]
 ```
 
 ### Database
@@ -294,7 +300,7 @@ For CI/CD pipelines:
 # Example GitHub Actions
 - name: Run tests
   run: |
-    pytest --cov=qrcodes --cov-report=xml
+pytest --cov=src --cov-report=xml
     
 - name: Upload coverage
   uses: codecov/codecov-action@v3

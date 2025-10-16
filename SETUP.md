@@ -78,7 +78,7 @@ The API will be available at `http://localhost:8000`
 ### QR Codes
 All QR code endpoints require authentication (Bearer token in Authorization header).
 
-- **POST** `/api/src/` - Create a new QR code
+- **POST** `/api/qrcodes/` - Create a new QR code
   ```json
   {
     "url": "https://example.com",
@@ -101,9 +101,9 @@ All QR code endpoints require authentication (Bearer token in Authorization head
   }
   ```
 
-- **GET** `/api/src/` - List all your QR codes
-- **GET** `/api/src/{id}/` - Get specific QR code details
-- **DELETE** `/api/src/{id}/` - Delete a QR code
+- **GET** `/api/qrcodes/` - List all your QR codes
+- **GET** `/api/qrcodes/{id}/` - Get specific QR code details
+- **DELETE** `/api/qrcodes/{id}/` - Delete a QR code
 
 ### Redirect Endpoint (Public)
 - **GET** `/go/{short_code}/` - Redirect to original URL and track scan
@@ -212,7 +212,7 @@ qr_code/
 │   ├── settings.py      # Main configuration
 │   ├── urls.py          # Root URL configuration
 │   └── wsgi.py          # WSGI configuration
-├── src/             # Main app
+├── src/                 # Main app
 │   ├── models.py        # QRCode model
 │   ├── serializers.py   # DRF serializers
 │   ├── views.py         # API views
@@ -220,7 +220,7 @@ qr_code/
 │   ├── urls.py          # App URL configuration
 │   └── admin.py         # Admin configuration
 ├── media/               # Generated QR code images
-│   └── src/
+│   └── qrcodes/
 ├── cli.py               # CLI interface
 ├── manage.py            # Django management script
 ├── requirements.txt     # Python dependencies
@@ -270,5 +270,5 @@ $response = Invoke-RestMethod -Uri "http://localhost:8000/api/token/" -Method Po
 $token = $response.access
 
 # Create QR code
-Invoke-RestMethod -Uri "http://localhost:8000/api/src/" -Method Post -Headers @{Authorization="Bearer $token"} -Body (@{url="https://example.com"; use_url_shortening=$true} | ConvertTo-Json) -ContentType "application/json"
+Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" -Method Post -Headers @{Authorization="Bearer $token"} -Body (@{url="https://example.com"; use_url_shortening=$true} | ConvertTo-Json) -ContentType "application/json"
 ```
