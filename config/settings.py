@@ -153,6 +153,11 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+# Migrations: store app migrations at project root under migrations/
+MIGRATION_MODULES = {
+    'src': 'migrations',
+}
+
 # QR Code settings
 QR_CODE_BASE_URL = os.getenv('QR_CODE_BASE_URL', 'http://localhost:8000')
 QR_CODE_REDIRECT_PATH = '/go/'
