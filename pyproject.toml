@@ -49,11 +49,15 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 check_untyped_defs = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 exclude = [
     "migrations",
     ".venv.*",
     "venv.*",
 ]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
 
 [[tool.mypy.overrides]]
 module = [
@@ -61,6 +65,10 @@ module = [
     "segno.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "src.serializers"
+disable_error_code = ["assignment"]
 
 [tool.flake8]
 max-line-length = 100

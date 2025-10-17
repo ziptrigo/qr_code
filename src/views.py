@@ -24,7 +24,10 @@ class QRCodeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filter QR codes by the authenticated user."""
-        return QRCode.objects.filter(created_by=self.request.user)
+        user = self.request.user
+        if user.is_authenticated:
+            return QRCode.objects.filter(created_by=user)
+        return QRCode.objects.none()
 
     def get_serializer_class(self):
         """Use different serializers for create vs retrieve."""

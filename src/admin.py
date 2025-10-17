@@ -10,7 +10,6 @@ class QRCodeAdmin(admin.ModelAdmin):
     search_fields = ['content', 'original_url', 'short_code']
     readonly_fields = ['id', 'created_at', 'updated_at', 'scan_count', 'last_scanned_at']
 
-    def content_preview(self, obj):
+    @admin.display(description='Content')
+    def content_preview(self, obj: QRCode) -> str:
         return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
-
-    content_preview.short_description = 'Content'
