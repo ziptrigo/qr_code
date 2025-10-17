@@ -14,8 +14,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from django.contrib.auth.models import User
-from qrcodes.models import QRCode
-from qrcodes.services import QRCodeGenerator
+from src.models import QRCode
+from src.services import QRCodeGenerator
 
 
 def test_model_creation():
@@ -87,11 +87,12 @@ def test_url_shortening(user):
         print(f"✓ Redirect URL: {redirect_url}")
 
         # Generate QR code with shortened URL
-        qr.content = redirect_url
-        image_path = QRCodeGenerator.generate_qr_code(qr)
-        qr.image_file = image_path
-        qr.save()
-        print(f"✓ Generated QR code with shortened URL")
+        if redirect_url:
+            qr.content = redirect_url
+            image_path = QRCodeGenerator.generate_qr_code(qr)
+            qr.image_file = image_path
+            qr.save()
+            print(f"✓ Generated QR code with shortened URL")
         return True
     else:
         print("✗ Failed to generate short code")

@@ -122,7 +122,7 @@ def create(
 
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Failed to create QR code: {e}[/red]")
-        if hasattr(e.response, 'text'):
+        if e.response is not None and hasattr(e.response, 'text'):
             console.print(f"[red]{e.response.text}[/red]")
         raise typer.Exit(1)
 
