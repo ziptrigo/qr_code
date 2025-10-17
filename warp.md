@@ -24,6 +24,21 @@ Initial version done. Testing functionality and fixing bugs.
 3. Update or add functionality as needed.
 
 ## Notes
+### Coding guidelines
+- Use PEP8
+- Use docstrings
+- Use type hints
+- Use type annotations
+- Use type checking
+- Use static type checking
+- Use black
+- Use isort
+- Use flake8
+- Use mypy
+- Use single quotes
+- Use 4 spaces for indentation
+- Use 100 characters per line
+
 ### Documentation
 Create documentation in MD format under the `docs` directory, all lowercased files.
 Only README.md remains in the root directory, uppercased.

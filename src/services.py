@@ -60,7 +60,7 @@ class QRCodeGenerator:
             )
 
         # Return relative path for storage
-        return f"qrcodes/{file_name}"
+        return f'qrcodes/{file_name}'
 
     @staticmethod
     def _parse_color(color_value):
@@ -88,4 +88,4 @@ class QRCodeGenerator:
         Returns:
             str: Full URL to access the file
         """
-        return f"{settings.MEDIA_URL}{image_file}"
+        return f'{settings.MEDIA_URL}{image_file}'
