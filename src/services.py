@@ -9,7 +9,7 @@ class QRCodeGenerator:
     """Service class for generating QR codes using segno."""
 
     @staticmethod
-    def generate_qr_code(qr_code_instance):
+    def generate_qr_code(qr_code_instance: 'QRCode') -> str:  # type: ignore[name-defined]
         """
         Generate a QR code image file based on the QRCode model instance.
 
@@ -63,7 +63,7 @@ class QRCodeGenerator:
         return f'qrcodes/{file_name}'
 
     @staticmethod
-    def _parse_color(color_value):
+    def _parse_color(color_value: str) -> str | None:
         """
         Parse color value to format accepted by segno.
 
@@ -78,7 +78,7 @@ class QRCodeGenerator:
         return color_value
 
     @staticmethod
-    def get_file_url(image_file):
+    def get_file_url(image_file: str) -> str:
         """
         Get the full URL for accessing the QR code image.
 

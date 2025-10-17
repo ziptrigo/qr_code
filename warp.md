@@ -27,9 +27,9 @@ Initial version done. Testing functionality and fixing bugs.
 ### Coding guidelines
 - Use PEP8
 - Use docstrings
-- Use type hints
-- Use type annotations
-- Use type checking
+- Use type hints. Type hints to use python 3.13 standards, ex. `str | None` instead of
+  `Optional[str]` and `list[str]` instead of `List[str]`. Functions that don't return anything
+  (or return `None`) should not have a return type hint.
 - Use static type checking
 - Use black
 - Use isort
