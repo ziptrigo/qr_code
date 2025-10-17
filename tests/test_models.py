@@ -3,7 +3,6 @@ Unit tests for QRCode model.
 """
 
 import pytest
-from django.contrib.auth.models import User
 
 from src.models import QRCode, generate_short_code
 

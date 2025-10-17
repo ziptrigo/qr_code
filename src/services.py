@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import segno
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from src.models import QRCode
 
 
 class QRCodeGenerator:
     """Service class for generating QR codes using segno."""
 
     @staticmethod
-    def generate_qr_code(qr_code_instance: 'QRCode') -> str:  # type: ignore[name-defined]
+    def generate_qr_code(qr_code_instance: QRCode) -> str:
         """
         Generate a QR code image file based on the QRCode model instance.
 

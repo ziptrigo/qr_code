@@ -13,9 +13,10 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from django.contrib.auth.models import User
-from src.models import QRCode
-from src.services import QRCodeGenerator
+# E402: module level import not at top of file
+from django.contrib.auth.models import User  # noqa: E402
+from src.models import QRCode  # noqa: E402
+from src.services import QRCodeGenerator  # noqa: E402
 
 
 def test_model_creation():
@@ -92,7 +93,7 @@ def test_url_shortening(user):
             image_path = QRCodeGenerator.generate_qr_code(qr)
             qr.image_file = image_path
             qr.save()
-            print(f"✓ Generated QR code with shortened URL")
+            print("✓ Generated QR code with shortened URL")
         return True
     else:
         print("✗ Failed to generate short code")
@@ -116,7 +117,7 @@ def test_scan_tracking():
         print(f"✓ Scan count incremented: {initial_count} → {qr.scan_count}")
         return True
     else:
-        print(f"✗ Scan count not incremented properly")
+        print("✗ Scan count not incremented properly")
         return False
 
 
@@ -139,7 +140,7 @@ def run_tests():
                 print("✓ All tests passed!")
                 print("=" * 60)
                 print("\nYour QR code service is ready to use!")
-                print(f"\nGenerated QR codes can be found in: media/qrcodes/")
+                print("\nGenerated QR codes can be found in: media/qrcodes/")
                 print("\nNext steps:")
                 print("1. Run: python manage.py createsuperuser")
                 print("2. Start server: python manage.py runserver")
