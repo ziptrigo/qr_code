@@ -5,7 +5,7 @@ from .models import QRCode
 from .services import QRCodeGenerator
 
 
-class QRCodeCreateSerializer(serializers.ModelSerializer):
+class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
     """Serializer for creating QR codes."""
 
     url = serializers.URLField(
@@ -65,8 +65,10 @@ class QRCodeCreateSerializer(serializers.ModelSerializer):
 
         # If using URL shortening, update content to shortened URL
         if instance.use_url_shortening and instance.short_code:
-            instance.content = instance.get_redirect_url()
-            instance.save(update_fields=['content'])
+            redirect_url = instance.get_redirect_url()
+            if redirect_url:
+                instance.content = redirect_url
+                instance.save(update_fields=['content'])
 
         # Generate QR code image
         image_path = QRCodeGenerator.generate_qr_code(instance)

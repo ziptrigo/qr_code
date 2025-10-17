@@ -16,16 +16,33 @@ A Python project for generating and manipulating QR codes.
 - RDBMS for data storage
 
 ## Current Status
-Project setup phase - defining requirements and architecture.
+Initial version done. Testing functionality and fixing bugs.
 
 ## Next Steps
-1. Research QR code libraries (qrcode, segno, etc.)
-2. Define project structure
-3. Implement basic QR code generation functionality
-4. Create API interface
-5. Create CLI interface
+1. Test existing functionality.
+2. Fix issues.
+3. Update or add functionality as needed.
 
 ## Notes
+### Coding guidelines
+- Use PEP8
+- Use docstrings
+- Use type hints. Type hints to use python 3.13 standards, ex. `str | None` instead of
+  `Optional[str]` and `list[str]` instead of `List[str]`. Functions that don't return anything
+  (or return `None`) should not have a return type hint.
+- Use static type checking
+- Use black
+- Use isort
+- Use flake8
+- Use mypy
+- Use single quotes
+- Use 4 spaces for indentation
+- Use 100 characters per line
+
+### Documentation
+Create documentation in MD format under the `docs` directory, all lowercased files.
+Only README.md remains in the root directory, uppercased.
+
 ### Functionality
 1. Create QR code
 When creating a QR code, the user should be able to specify the following:

@@ -3,7 +3,6 @@ Unit tests for QRCode model.
 """
 
 import pytest
-from django.contrib.auth.models import User
 
 from src.models import QRCode, generate_short_code
 
@@ -91,7 +90,7 @@ class TestQRCodeModel:
 
         assert redirect_url is not None
         assert '/go/' in redirect_url
-        assert qr.short_code in redirect_url
+        assert qr.short_code is not None and qr.short_code in redirect_url
 
     def test_get_redirect_url_without_shortening(self, user):
         """Test getting redirect URL when shortening is disabled."""

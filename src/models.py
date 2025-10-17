@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-def generate_short_code(length=8):
+def generate_short_code(length: int = 8) -> str:
     """Generate a random short code for URL shortening."""
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
@@ -77,7 +77,7 @@ class QRCode(models.Model):
             models.Index(fields=['created_by', '-created_at']),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"QRCode {self.id} - {self.content[:50]}"
 
     def save(self, *args, **kwargs):
@@ -90,7 +90,7 @@ class QRCode(models.Model):
 
         super().save(*args, **kwargs)
 
-    def get_redirect_url(self):
+    def get_redirect_url(self) -> str | None:
         """Get the full redirect URL for this QR code."""
         from django.conf import settings
 

@@ -1,15 +1,20 @@
-import os
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import segno
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from src.models import QRCode
 
 
 class QRCodeGenerator:
     """Service class for generating QR codes using segno."""
 
     @staticmethod
-    def generate_qr_code(qr_code_instance):
+    def generate_qr_code(qr_code_instance: QRCode) -> str:
         """
         Generate a QR code image file based on the QRCode model instance.
 
@@ -60,10 +65,10 @@ class QRCodeGenerator:
             )
 
         # Return relative path for storage
-        return f"qrcodes/{file_name}"
+        return f'qrcodes/{file_name}'
 
     @staticmethod
-    def _parse_color(color_value):
+    def _parse_color(color_value: str) -> str | None:
         """
         Parse color value to format accepted by segno.
 
@@ -78,7 +83,7 @@ class QRCodeGenerator:
         return color_value
 
     @staticmethod
-    def get_file_url(image_file):
+    def get_file_url(image_file: str) -> str:
         """
         Get the full URL for accessing the QR code image.
 
@@ -88,4 +93,4 @@ class QRCodeGenerator:
         Returns:
             str: Full URL to access the file
         """
-        return f"{settings.MEDIA_URL}{image_file}"
+        return f'{settings.MEDIA_URL}{image_file}'

@@ -1,7 +1,7 @@
 from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -24,7 +24,10 @@ class QRCodeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filter QR codes by the authenticated user."""
-        return QRCode.objects.filter(created_by=self.request.user)
+        user = self.request.user
+        if user.is_authenticated:
+            return QRCode.objects.filter(created_by=user)
+        return QRCode.objects.none()
 
     def get_serializer_class(self):
         """Use different serializers for create vs retrieve."""
