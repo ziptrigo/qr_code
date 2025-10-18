@@ -50,7 +50,8 @@ REQUIREMENTS_TASK_HELP = {
 RequirementsAnnotation: TypeAlias = Annotated[
     list[str] | None,
     typer.Argument(
-        help='Requirement file(s) to compile. If not set, all files are compiled.',
+        help='Requirement file(s) to compile. If not set, all files are compiled.\nValues can be '
+        + ', '.join([f'`{x.name.lower()}`' for x in Requirements]),
         show_default=False,
     ),
 ]
@@ -65,7 +66,7 @@ DryAnnotation: TypeAlias = Annotated[
 
 
 def _run(dry: bool, *args) -> subprocess.CompletedProcess | None:
-    logger.info({' '.join(args)})
+    logger.info(' '.join(map(str, args)))
 
     if dry:
         return None
@@ -83,7 +84,7 @@ def _get_requirements_file(
     """Return the full requirements file path."""
     if isinstance(requirements, str):
         try:
-            reqs = Requirements[requirements.upper()]
+            reqs = Requirements[requirements.upper()]  # noqa
         except ValueError:
             try:
                 reqs = Requirements(requirements.lower())
@@ -100,7 +101,7 @@ def _get_requirements_file(
 
     base_path = PROJECT_ROOT
     if reqs_type == RequirementsType.IN:
-        base_path /= 'requirements'
+        base_path /= 'admin'
     return base_path / f'{reqs}.{reqs_type}'
 
 
