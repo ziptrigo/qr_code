@@ -82,7 +82,9 @@ def _get_requirements_file(
     requirements: str | Requirements, requirements_type: str | RequirementsType
 ) -> Path:
     """Return the full requirements file path."""
-    if isinstance(requirements, str):
+    if isinstance(requirements, Requirements):
+        reqs = requirements
+    else:
         try:
             reqs = Requirements[requirements.upper()]  # noqa
         except ValueError:
@@ -91,8 +93,6 @@ def _get_requirements_file(
             except ValueError:
                 logger.error(f'`{requirements}` is an unknown requirements file.')
                 raise typer.Exit(1)
-    else:
-        reqs = requirements
 
     if isinstance(requirements_type, str):
         reqs_type = RequirementsType(requirements_type.lstrip('.').lower())
