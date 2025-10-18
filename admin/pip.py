@@ -48,6 +48,19 @@ REQUIREMENTS_TASK_HELP = {
 }
 
 
+def _run(dry: bool, *args) -> subprocess.CompletedProcess | None:
+    logger.info({' '.join(args)})
+
+    if dry:
+        return None
+
+    try:
+        return subprocess.run(args, check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(e)
+        raise typer.Exit(1)
+
+
 def _get_requirements_file(
     requirements: str | Requirements, requirements_type: str | RequirementsType
 ) -> Path:
@@ -97,7 +110,7 @@ def pip_compile(
     Compile requirements file(s).
     """
     for filename in _get_requirements_files(requirements, 'in'):
-        subprocess.run(['pip-compile', filename], check=True)
+        _run(['pip-compile', filename])
 
 
 @app.command(name='sync')
@@ -113,7 +126,7 @@ def pip_sync(
     """
     Synchronize environment with requirements file.
     """
-    subprocess.run('pip-sync', *' '.join(map(str, _get_requirements_files(requirements, 'txt'))))
+    _run('pip-sync', *' '.join(map(str, _get_requirements_files(requirements, 'txt'))))
 
 
 @app.command(name='package')
@@ -126,7 +139,7 @@ def pip_package(
     """
     packages = [p.strip() for p in package.split(',')]
     for filename in _get_requirements_files(requirements, 'in'):
-        subprocess.run(
+        _run(
             ['pip-compile', '--upgrade-package', *' --upgrade-package '.join(packages), filename]
         )
 
@@ -139,7 +152,7 @@ def pip_upgrade(requirements):
     Ex `pip-compile requirements-def.in --upgrade-package safety`
     """
     for filename in _get_requirements_files(requirements, 'in'):
-        subprocess.run(['pip-compile', '--upgrade', filename])
+        _run(['pip-compile', '--upgrade', filename])
 
 
 if __name__ == '__main__':
