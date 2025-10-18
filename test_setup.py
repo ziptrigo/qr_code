@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!python
 """
 Quick test script to verify the QR code service is working correctly.
 Run this after setting up the project to ensure everything is configured properly.
