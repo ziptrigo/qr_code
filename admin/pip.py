@@ -6,7 +6,7 @@ import logging
 import subprocess
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, TypeAlias
 
 import typer
 
@@ -46,6 +46,24 @@ REQUIREMENTS_TASK_HELP = {
     f'(ex. "{Requirements.DEV.name}"). For main file use "{Requirements.MAIN.name}". '
     f'Available requirements: {", ".join(Requirements)}.'
 }
+
+RequirementsAnnotation: TypeAlias = Annotated[
+    list[str] | None,
+    typer.Argument(
+        None,
+        help='Requirement file(s) to compile. If not set, all files are compiled.',
+        show_default=False,
+    ),
+]
+
+DryAnnotation: TypeAlias = Annotated[
+    bool,
+    typer.Option(
+        False,
+        help='Show the command that would be run without running it.',
+        show_default=False,
+    ),
+]
 
 
 def _run(dry: bool, *args) -> subprocess.CompletedProcess | None:
@@ -97,42 +115,27 @@ def _get_requirements_files(
 
 
 @app.command(name='compile')
-def pip_compile(
-    requirements: Annotated[
-        list[str] | None,
-        typer.Argument(
-            'Requirement file(s) to compile. If not set, all files are compiled.',
-            show_default=False,
-        ),
-    ] = None
-):
+def pip_compile(requirements: RequirementsAnnotation, dry: DryAnnotation):
     """
     Compile requirements file(s).
     """
     for filename in _get_requirements_files(requirements, 'in'):
-        _run(['pip-compile', filename])
+        _run(dry, 'pip-compile', filename)
 
 
 @app.command(name='sync')
-def pip_sync(
-    requirements: Annotated[
-        list[str] | None,
-        typer.Argument(
-            'Requirement file(s) to compile. If not set, all files are compiled.',
-            show_default=False,
-        ),
-    ] = None
-):
+def pip_sync(requirements: RequirementsAnnotation, dry: DryAnnotation):
     """
     Synchronize environment with requirements file.
     """
-    _run('pip-sync', *' '.join(map(str, _get_requirements_files(requirements, 'txt'))))
+    _run(dry, 'pip-sync', *' '.join(map(str, _get_requirements_files(requirements, 'txt'))))
 
 
 @app.command(name='package')
 def pip_package(
-    requirements: Annotated[str],
+    requirements: Annotated[Requirements, typer.Argument(help='')],
     package: Annotated[list[str], typer.Argument(help='One or more packages to upgrade.')],
+    dry: DryAnnotation,
 ):
     """
     Upgrade package.
@@ -140,7 +143,7 @@ def pip_package(
     packages = [p.strip() for p in package.split(',')]
     for filename in _get_requirements_files(requirements, 'in'):
         _run(
-            ['pip-compile', '--upgrade-package', *' --upgrade-package '.join(packages), filename]
+            dry, 'pip-compile', '--upgrade-package', *' --upgrade-package '.join(packages), filename
         )
 
 
