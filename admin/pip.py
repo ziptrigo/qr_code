@@ -50,7 +50,6 @@ REQUIREMENTS_TASK_HELP = {
 RequirementsAnnotation: TypeAlias = Annotated[
     list[str] | None,
     typer.Argument(
-        None,
         help='Requirement file(s) to compile. If not set, all files are compiled.',
         show_default=False,
     ),
@@ -59,7 +58,6 @@ RequirementsAnnotation: TypeAlias = Annotated[
 DryAnnotation: TypeAlias = Annotated[
     bool,
     typer.Option(
-        False,
         help='Show the command that would be run without running it.',
         show_default=False,
     ),
@@ -115,7 +113,7 @@ def _get_requirements_files(
 
 
 @app.command(name='compile')
-def pip_compile(requirements: RequirementsAnnotation, dry: DryAnnotation):
+def pip_compile(requirements: RequirementsAnnotation = None, dry: DryAnnotation = False):
     """
     Compile requirements file(s).
     """
@@ -124,7 +122,7 @@ def pip_compile(requirements: RequirementsAnnotation, dry: DryAnnotation):
 
 
 @app.command(name='sync')
-def pip_sync(requirements: RequirementsAnnotation, dry: DryAnnotation):
+def pip_sync(requirements: RequirementsAnnotation = None, dry: DryAnnotation = False):
     """
     Synchronize environment with requirements file.
     """
@@ -135,7 +133,7 @@ def pip_sync(requirements: RequirementsAnnotation, dry: DryAnnotation):
 def pip_package(
     requirements: Annotated[Requirements, typer.Argument(help='')],
     package: Annotated[list[str], typer.Argument(help='One or more packages to upgrade.')],
-    dry: DryAnnotation,
+    dry: DryAnnotation = False,
 ):
     """
     Upgrade package.
