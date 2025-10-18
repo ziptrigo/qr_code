@@ -1,0 +1,12 @@
+black
+django-stubs
+djangorestframework-stubs
+factory-boy
+flake8-pyproject
+flake8
+isort
+mypy
+pytest-cov
+pytest-django
+pytest
+python-dotenv
