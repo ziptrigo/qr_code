@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+#!python
 """
 Python packages related tasks.
 """
 import logging
 import subprocess
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -17,61 +18,81 @@ app = typer.Typer(
     add_completion=False,
     rich_markup_mode='markdown',
 )
-PROJECT_ROOT = Path()
-REQUIREMENTS_MAIN = 'main'
-REQUIREMENTS_FILES = {
-    REQUIREMENTS_MAIN: 'requirements',
-    'dev': 'requirements-dev',
-}
-"""
-Requirements files.
-Order matters as most operations with multiple files need ``requirements.txt`` to be processed
-first.
-Add new requirements files here.
-"""
+
+
+class Requirements(StrEnum):
+    """
+    Requirements files.
+
+    Order matters as most operations with multiple files need ``requirements.txt`` to be processed
+    first.
+    Add new requirements files here.
+    """
+
+    MAIN = 'requirements'
+    DEV = 'requirements-dev'
+
+
+class RequirementsType(StrEnum):
+
+    IN = 'in'
+    OUT = 'txt'
+
+
+PROJECT_ROOT = Path(__file__).parents[1]
 
 REQUIREMENTS_TASK_HELP = {
     'requirements': '`.in` file. Full name not required, just the initial name after the dash '
-    f'(ex. "dev"). For main file use "{REQUIREMENTS_MAIN}". Available requirements: '
-    f'{", ".join(REQUIREMENTS_FILES)}.'
+    f'(ex. "{Requirements.DEV.name}"). For main file use "{Requirements.MAIN.name}". '
+    f'Available requirements: {", ".join(Requirements)}.'
 }
 
 
-def _get_requirements_file(requirements: str, extension: str) -> str:
-    """
-    Return the full requirements file name (with extension).
-
-    :param requirements: The requirements file to retrieve. Can be the whole filename
-        (no extension), ex `'requirements-dev'` or just the initial portion, ex `'dev'`.
-        Use `'main'` for the `requirements` file.
-    :param extension: Requirements file extension. Can be either `'in'` or `'txt'`.
-    """
-    filename = REQUIREMENTS_FILES.get(requirements, requirements)
-    if filename not in REQUIREMENTS_FILES.values():
-        logger.error(f'`{requirements}` is an unknown requirements file.')
-        raise typer.Exit(1)
-
-    ext = extension.lstrip('.').lower()
-
-    return f'{filename}.{extension.lstrip(".")}'
-
-
-def _get_requirements_files(requirements: str | None, extension: str) -> list[str]:
-    extension = extension.lstrip('.')
-    if requirements is None:
-        requirements_files = list(REQUIREMENTS_FILES)
+def _get_requirements_file(
+    requirements: str | Requirements, requirements_type: str | RequirementsType
+) -> Path:
+    """Return the full requirements file path."""
+    if isinstance(requirements, str):
+        try:
+            reqs = Requirements[requirements.upper()]
+        except ValueError:
+            try:
+                reqs = Requirements(requirements.lower())
+            except ValueError:
+                logger.error(f'`{requirements}` is an unknown requirements file.')
+                raise typer.Exit(1)
     else:
-        requirements_files = _csstr_to_list(requirements)
+        reqs = requirements
 
-    # Get full filename+extension and sort by the order defined in `REQUIREMENTS_FILES`
-    filenames = [
-        _get_requirements_file(r, extension) for r in REQUIREMENTS_FILES if r in requirements_files
-    ]
+    if isinstance(requirements_type, str):
+        reqs_type = RequirementsType(requirements_type.lstrip('.').lower())
+    else:
+        reqs_type = requirements_type
 
-    return filenames
+    base_path = PROJECT_ROOT
+    if reqs_type == RequirementsType.IN:
+        base_path /= 'requirements'
+    return base_path / f'{reqs}.{reqs_type}'
 
 
-def pip_compile(requirements=None):
+def _get_requirements_files(
+    requirements: list[str] | None, requirements_type: str | RequirementsType
+) -> list[Path]:
+    """Get full filename+extension and sort by the order defined in ``Requirements``"""
+    requirements_files = list(Requirements) if requirements is None else requirements
+    return [_get_requirements_file(r, requirements_type) for r in requirements_files]
+
+
+@app.command(name='compile')
+def pip_compile(
+    requirements: Annotated[
+        list[str] | None,
+        typer.Argument(
+            'Requirement file(s) to compile. If not set, all files are compiled.',
+            show_default=False,
+        ),
+    ] = None
+):
     """
     Compile requirements file(s).
     """
@@ -79,17 +100,27 @@ def pip_compile(requirements=None):
         subprocess.run(['pip-compile', filename], check=True)
 
 
-def pip_sync(requirements=None):
+@app.command(name='sync')
+def pip_sync(
+    requirements: Annotated[
+        list[str] | None,
+        typer.Argument(
+            'Requirement file(s) to compile. If not set, all files are compiled.',
+            show_default=False,
+        ),
+    ] = None
+):
     """
     Synchronize environment with requirements file.
     """
-    subprocess.run('pip-sync', *' '.join(_get_requirements_files(requirements, 'txt')))
+    subprocess.run('pip-sync', *' '.join(map(str, _get_requirements_files(requirements, 'txt'))))
 
 
-@task(
-    help=REQUIREMENTS_TASK_HELP | {'package': 'Package to upgrade. Can be a comma separated list.'}
-)
-def pip_package(requirements, package):
+@app.command(name='package')
+def pip_package(
+    requirements: Annotated[str],
+    package: Annotated[list[str], typer.Argument(help='One or more packages to upgrade.')],
+):
     """
     Upgrade package.
     """
