@@ -10,6 +10,7 @@ from typing import Annotated, TypeAlias
 
 import typer
 
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
 app = typer.Typer(
@@ -140,7 +141,7 @@ def pip_sync(requirements: RequirementsAnnotation = None, dry: DryAnnotation = F
     """
     Synchronize environment with requirements file.
     """
-    _run(dry, 'pip-sync', *' '.join(map(str, _get_requirements_files(requirements, 'txt'))))
+    _run(dry, 'pip-sync', *_get_requirements_files(requirements, RequirementsType.OUT))
 
 
 @app.command(name='package')
