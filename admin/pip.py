@@ -94,19 +94,17 @@ def _get_requirements_file(
                 logger.error(f'`{requirements}` is an unknown requirements file.')
                 raise typer.Exit(1)
 
-    if isinstance(requirements_type, str):
-        reqs_type = RequirementsType(requirements_type.lstrip('.').lower())
-    else:
+    if isinstance(requirements_type, RequirementsType):
         reqs_type = requirements_type
+    else:
+        reqs_type = RequirementsType(requirements_type.lstrip('.').lower())
 
-    base_path = PROJECT_ROOT
-    if reqs_type == RequirementsType.IN:
-        base_path /= 'admin'
+    base_path = PROJECT_ROOT / 'admin'
     return base_path / f'{reqs}.{reqs_type}'
 
 
 def _get_requirements_files(
-    requirements: list[str] | None, requirements_type: str | RequirementsType
+    requirements: list[str | Requirements] | None, requirements_type: str | RequirementsType
 ) -> list[Path]:
     """Get full filename+extension and sort by the order defined in ``Requirements``"""
     requirements_files = list(Requirements) if requirements is None else requirements
@@ -114,12 +112,27 @@ def _get_requirements_files(
 
 
 @app.command(name='compile')
-def pip_compile(requirements: RequirementsAnnotation = None, dry: DryAnnotation = False):
+def pip_compile(
+    requirements: RequirementsAnnotation = None,
+    clean: Annotated[
+        bool,
+        typer.Option(
+            help=f'Delete the existing requirements `{RequirementsType.OUT.value}` files, forcing '
+            f'a clean compilation.'
+        ),
+    ] = False,
+    dry: DryAnnotation = False,
+):
     """
     Compile requirements file(s).
     """
-    for filename in _get_requirements_files(requirements, 'in'):
-        _run(dry, 'pip-compile', filename)
+    if clean and not dry:
+        for filename in _get_requirements_files(requirements, RequirementsType.OUT):
+            filename.unlink(missing_ok=True)
+
+    dry_option = ['--dry-run'] if dry else []
+    for filename in _get_requirements_files(requirements, RequirementsType.IN):
+        _run(False, 'pip-compile', *dry_option, str(filename))
 
 
 @app.command(name='sync')
@@ -132,29 +145,33 @@ def pip_sync(requirements: RequirementsAnnotation = None, dry: DryAnnotation = F
 
 @app.command(name='package')
 def pip_package(
-    requirements: Annotated[Requirements, typer.Argument(help='')],
-    package: Annotated[list[str], typer.Argument(help='One or more packages to upgrade.')],
+    requirements: RequirementsAnnotation,
+    packages: Annotated[
+        list[str], typer.Option('--packages', '-p', help='One or more packages to upgrade.')
+    ],
     dry: DryAnnotation = False,
 ):
     """
-    Upgrade package.
+    Upgrade one or more packages.
     """
-    packages = [p.strip() for p in package.split(',')]
-    for filename in _get_requirements_files(requirements, 'in'):
+    for filename in _get_requirements_files(requirements, RequirementsType.IN):
         _run(
             dry, 'pip-compile', '--upgrade-package', *' --upgrade-package '.join(packages), filename
         )
 
 
-def pip_upgrade(requirements):
+@app.command(name='upgrade')
+def pip_upgrade(requirements, dry: DryAnnotation = False):
     """
     Try to upgrade all dependencies to their latest versions.
 
-    Use `pip-compile <filename> --upgrade-package <package>` to only upgrade one package.
-    Ex `pip-compile requirements-def.in --upgrade-package safety`
+    Equivalent to ``compile`` with ``--clean`` option.
+
+    Use ``package`` to only upgrade individual packages,
+    Ex ``pip package dev mypy flake8``.
     """
-    for filename in _get_requirements_files(requirements, 'in'):
-        _run(['pip-compile', '--upgrade', filename])
+    for filename in _get_requirements_files(requirements, RequirementsType.IN):
+        _run(dry, ['pip-compile', '--upgrade', filename])
 
 
 if __name__ == '__main__':
