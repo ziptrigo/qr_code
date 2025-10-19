@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!python
 """
 QR Code CLI - Command line interface for QR code generation and management.
 

@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 100
-target-version = ["py313"]
+target-version = ['py313']
 skip-string-normalization = true
 extend-exclude='''
 (
@@ -15,60 +15,60 @@ sections = 'FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER'
 skip_glob = ['**/.venv*', '**/venv*', '/build']
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings"
-python_files = ["tests.py", "test_*.py", "*_tests.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-testpaths = ["tests"]
+DJANGO_SETTINGS_MODULE = 'config.settings'
+python_files = ['tests.py', 'test_*.py', '*_tests.py']
+python_classes = ['Test*']
+python_functions = ['test_*']
+testpaths = ['tests']
 addopts = [
-  "--strict-markers",
-  "--reuse-db",
-  "--no-migrations",
-  "-v",
+  '--strict-markers',
+  '--reuse-db',
+  '--no-migrations',
+  '-v',
 ]
 markers = [
-  "unit: Unit tests",
-  "integration: Integration tests",
-  "slow: Slow running tests",
+  'unit: Unit tests',
+  'integration: Integration tests',
+  'slow: Slow running tests',
 ]
 
 [tool.coverage.run]
 branch = true
-source = ["src"]
+source = ['src']
 
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
 
 [tool.coverage.html]
-directory = "htmlcov"
+directory = 'htmlcov'
 
 [tool.mypy]
-python_version = "3.13"
+python_version = '3.13'
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 check_untyped_defs = true
-plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+plugins = ['mypy_django_plugin.main', 'mypy_drf_plugin.main']
 exclude = [
-    "migrations",
-    ".venv.*",
-    "venv.*",
+    'migrations',
+    '.venv.*',
+    'venv.*',
 ]
 
 [tool.django-stubs]
-django_settings_module = "config.settings"
+django_settings_module = 'config.settings'
 
 [[tool.mypy.overrides]]
 module = [
-    "segno",
-    "segno.*",
+    'segno',
+    'segno.*',
 ]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "src.serializers"
-disable_error_code = ["assignment"]
+module = 'src.serializers'
+disable_error_code = ['assignment']
 
 [tool.flake8]
 max-line-length = 100
@@ -79,15 +79,7 @@ max-line-length = 100
 #   one line in `black`, ex `class FileUpdateError(Exception): ...`
 # W503 line break before binary operator clashes with black
 # F811 redefinition of unused import happens when importing pytest fixtures in test modules
-extend-ignore = ["E203", "E266", "E501", "W503", "F811"]
+extend-ignore = ['E203', 'E266', 'E501', 'W503', 'F811']
 exclude = [
-    ".git",
-    ".github",
-    "__pycache__",
-    ".venv*",
-    "venv*",
-    "migrations",
-    "build",
-    "dist",
-    "docs",
+    '.git', '.github', '__pycache__', '.venv*', 'venv*', 'migrations', 'build', 'dist', 'docs'
 ]

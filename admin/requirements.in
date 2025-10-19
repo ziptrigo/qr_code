@@ -1,0 +1,7 @@
+django
+pillow
+djangorestframework-simplejwt
+djangorestframework
+requests
+segno
+typer
