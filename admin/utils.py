@@ -1,3 +1,4 @@
+import logging
 import subprocess
 import sys
 from enum import Enum
@@ -5,7 +6,8 @@ from typing import Annotated, TypeAlias
 
 import typer
 
-from admin.pip import logger
+logger = logging.getLogger(__name__)
+
 
 DryAnnotation: TypeAlias = Annotated[
     bool,

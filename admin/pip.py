@@ -13,7 +13,6 @@ from admin.utils import DryAnnotation, run
 
 from . import PROJECT_ROOT
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
 app = typer.Typer(
@@ -156,4 +155,5 @@ def pip_upgrade(requirements, dry: DryAnnotation = False):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
     app()
