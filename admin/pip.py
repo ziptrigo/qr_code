@@ -9,7 +9,7 @@ from typing import Annotated, TypeAlias
 
 import typer
 
-from admin.utils import DryAnnotation, _run
+from admin.utils import DryAnnotation, run
 
 from . import PROJECT_ROOT
 
@@ -113,7 +113,7 @@ def pip_compile(
 
     dry_option = ['--dry-run'] if dry else []
     for filename in _get_requirements_files(requirements, RequirementsType.IN):
-        _run(False, 'pip-compile', *dry_option, str(filename))
+        run(False, 'pip-compile', *dry_option, str(filename))
 
 
 @app.command(name='sync')
@@ -121,7 +121,7 @@ def pip_sync(requirements: RequirementsAnnotation = None, dry: DryAnnotation = F
     """
     Synchronize environment with requirements file.
     """
-    _run(dry, 'pip-sync', *_get_requirements_files(requirements, RequirementsType.OUT))
+    run(dry, 'pip-sync', *_get_requirements_files(requirements, RequirementsType.OUT))
 
 
 @app.command(name='package')
@@ -136,7 +136,7 @@ def pip_package(
     Upgrade one or more packages.
     """
     for filename in _get_requirements_files(requirements, RequirementsType.IN):
-        _run(
+        run(
             dry, 'pip-compile', '--upgrade-package', *' --upgrade-package '.join(packages), filename
         )
 
@@ -152,7 +152,7 @@ def pip_upgrade(requirements, dry: DryAnnotation = False):
     Ex ``pip package dev mypy flake8``.
     """
     for filename in _get_requirements_files(requirements, RequirementsType.IN):
-        _run(dry, ['pip-compile', '--upgrade', filename])
+        run(dry, ['pip-compile', '--upgrade', filename])
 
 
 if __name__ == '__main__':

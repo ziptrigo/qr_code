@@ -38,7 +38,7 @@ def get_os() -> OS:
     return OS.Linux
 
 
-def _run(dry: bool, *args) -> subprocess.CompletedProcess | None:
+def run(dry: bool, *args) -> subprocess.CompletedProcess | None:
     logger.info(' '.join(map(str, args)))
 
     if dry:
