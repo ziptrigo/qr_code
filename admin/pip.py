@@ -3,12 +3,15 @@
 Python packages related tasks.
 """
 import logging
-import subprocess
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, TypeAlias
 
 import typer
+
+from admin.utils import DryAnnotation, _run
+
+from . import PROJECT_ROOT
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -40,8 +43,6 @@ class RequirementsType(StrEnum):
     OUT = 'txt'
 
 
-PROJECT_ROOT = Path(__file__).parents[1]
-
 REQUIREMENTS_TASK_HELP = {
     'requirements': '`.in` file. Full name not required, just the initial name after the dash '
     f'(ex. "{Requirements.DEV.name}"). For main file use "{Requirements.MAIN.name}". '
@@ -56,27 +57,6 @@ RequirementsAnnotation: TypeAlias = Annotated[
         show_default=False,
     ),
 ]
-
-DryAnnotation: TypeAlias = Annotated[
-    bool,
-    typer.Option(
-        help='Show the command that would be run without running it.',
-        show_default=False,
-    ),
-]
-
-
-def _run(dry: bool, *args) -> subprocess.CompletedProcess | None:
-    logger.info(' '.join(map(str, args)))
-
-    if dry:
-        return None
-
-    try:
-        return subprocess.run(args, check=True)
-    except subprocess.CalledProcessError as e:
-        logger.error(e)
-        raise typer.Exit(1)
 
 
 def _get_requirements_file(
