@@ -83,3 +83,8 @@ extend-ignore = ['E203', 'E266', 'E501', 'W503', 'F811']
 exclude = [
     '.git', '.github', '__pycache__', '.venv*', 'venv*', 'migrations', 'build', 'dist', 'docs'
 ]
+
+[tool.typer-invoke]
+modules = [
+    'admin.pip',
+]
