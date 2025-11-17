@@ -2,16 +2,16 @@
 """
 Python packages related tasks.
 """
-import logging
-import subprocess
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, TypeAlias
+from typing import Annotated
 
 import typer
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-logger = logging.getLogger(__name__)
+from admin import PROJECT_ROOT
+from admin.utils import DryAnnotation, install_package, logger, multiple_parameters, run
+
+REQUIREMENTS_DIR = PROJECT_ROOT / 'admin' / 'requirements'
 
 app = typer.Typer(
     help=__doc__,
@@ -40,15 +40,13 @@ class RequirementsType(StrEnum):
     OUT = 'txt'
 
 
-PROJECT_ROOT = Path(__file__).parents[1]
-
 REQUIREMENTS_TASK_HELP = {
     'requirements': '`.in` file. Full name not required, just the initial name after the dash '
     f'(ex. "{Requirements.DEV.name}"). For main file use "{Requirements.MAIN.name}". '
     f'Available requirements: {", ".join(Requirements)}.'
 }
 
-RequirementsAnnotation: TypeAlias = Annotated[
+RequirementsAnnotation = Annotated[
     list[str] | None,
     typer.Argument(
         help='Requirement file(s) to compile. If not set, all files are compiled.\nValues can be '
@@ -56,27 +54,6 @@ RequirementsAnnotation: TypeAlias = Annotated[
         show_default=False,
     ),
 ]
-
-DryAnnotation: TypeAlias = Annotated[
-    bool,
-    typer.Option(
-        help='Show the command that would be run without running it.',
-        show_default=False,
-    ),
-]
-
-
-def _run(dry: bool, *args) -> subprocess.CompletedProcess | None:
-    logger.info(' '.join(map(str, args)))
-
-    if dry:
-        return None
-
-    try:
-        return subprocess.run(args, check=True)
-    except subprocess.CalledProcessError as e:
-        logger.error(e)
-        raise typer.Exit(1)
 
 
 def _get_requirements_file(
@@ -100,8 +77,7 @@ def _get_requirements_file(
     else:
         reqs_type = RequirementsType(requirements_type.lstrip('.').lower())
 
-    base_path = PROJECT_ROOT / 'admin'
-    return base_path / f'{reqs}.{reqs_type}'
+    return REQUIREMENTS_DIR / f'{reqs}.{reqs_type}'
 
 
 def _get_requirements_files(
@@ -127,13 +103,15 @@ def pip_compile(
     """
     Compile requirements file(s).
     """
+    install_package('piptools', 'pip-tools', dry=dry)
+
     if clean and not dry:
         for filename in _get_requirements_files(requirements, RequirementsType.OUT):
             filename.unlink(missing_ok=True)
 
     dry_option = ['--dry-run'] if dry else []
     for filename in _get_requirements_files(requirements, RequirementsType.IN):
-        _run(False, 'pip-compile', *dry_option, str(filename))
+        run('pip-compile', *dry_option, str(filename), dry=False)
 
 
 @app.command(name='sync')
@@ -141,23 +119,29 @@ def pip_sync(requirements: RequirementsAnnotation = None, dry: DryAnnotation = F
     """
     Synchronize environment with requirements file.
     """
-    _run(dry, 'pip-sync', *_get_requirements_files(requirements, RequirementsType.OUT))
+    install_package('piptools', 'pip-tools', dry=dry)
+    run('pip-sync', *_get_requirements_files(requirements, RequirementsType.OUT), dry=dry)
 
 
 @app.command(name='package')
 def pip_package(
     requirements: RequirementsAnnotation,
-    packages: Annotated[
-        list[str], typer.Option('--packages', '-p', help='One or more packages to upgrade.')
+    package: Annotated[
+        list[str], typer.Option('--package', '-p', help='One or more packages to upgrade.')
     ],
     dry: DryAnnotation = False,
 ):
     """
     Upgrade one or more packages.
     """
+    install_package('piptools', 'pip-tools', dry=dry)
+
     for filename in _get_requirements_files(requirements, RequirementsType.IN):
-        _run(
-            dry, 'pip-compile', '--upgrade-package', *' --upgrade-package '.join(packages), filename
+        run(
+            'pip-compile',
+            *multiple_parameters('--upgrade-package', *package),
+            filename,
+            dry=dry,
         )
 
 
@@ -171,8 +155,21 @@ def pip_upgrade(requirements, dry: DryAnnotation = False):
     Use ``package`` to only upgrade individual packages,
     Ex ``pip package dev mypy flake8``.
     """
+    install_package('piptools', 'pip-tools', dry=dry)
+
     for filename in _get_requirements_files(requirements, RequirementsType.IN):
-        _run(dry, ['pip-compile', '--upgrade', filename])
+        run(['pip-compile', '--upgrade', filename], dry=dry)
+
+
+@app.command(name='install')
+def pip_install(requirements: RequirementsAnnotation, dry: DryAnnotation = False):
+    """
+    Equivalent to ``pip install -r <requirements*.txt>``.
+
+    Does not require ``pip-tools``.
+    """
+    requirements_files = _get_requirements_files(requirements, RequirementsType.OUT)  # type: ignore
+    run('pip', 'install', *multiple_parameters('-r', *requirements_files), dry=dry)
 
 
 if __name__ == '__main__':

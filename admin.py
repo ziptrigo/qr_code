@@ -5,8 +5,8 @@ Project administration operations.
 from pathlib import Path
 
 try:
-    import typer
     import piptools
+    import typer
 except ImportError:
     print(f'Required packages not installed.\nrun `{Path(__file__).name} install`.')
     raise SystemExit(1)
