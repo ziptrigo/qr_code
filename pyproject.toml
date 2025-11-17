@@ -86,5 +86,8 @@ exclude = [
 
 [tool.typer-invoke]
 modules = [
+    'admin.build',
+    'admin.lint',
     'admin.pip',
+    'admin.test',
 ]
