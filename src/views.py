@@ -1,5 +1,5 @@
-from django.http import Http404
-from django.shortcuts import redirect
+from django.http import Http404, JsonResponse
+from django.shortcuts import redirect, render
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -69,3 +69,24 @@ def redirect_view(request, short_code):
             {"error": "No redirect URL available for this QR code"},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def hello_api(request):
+    """
+    Simple hello API endpoint.
+    Returns a JSON response with a hello message.
+    
+    Path: /api/hello
+    """
+    return JsonResponse({'message': 'Hello, world!'})
+
+
+def hello_page(request):
+    """
+    Render the hello page.
+    
+    Path: /hello/
+    """
+    return render(request, 'hello.html')
