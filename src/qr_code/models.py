@@ -2,8 +2,22 @@ import random
 import string
 import uuid
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+
+class CustomUser(AbstractUser):
+    """Custom user model with additional fields."""
+
+    name = models.CharField(max_length=255, help_text='User full name')
+    email = models.EmailField(unique=True, help_text='User email address')
+
+    class Meta:
+        verbose_name = 'Custom User'
+        verbose_name_plural = 'Custom Users'
+
+    def __str__(self) -> str:
+        return f'{self.email} - {self.name}'
 
 
 def generate_short_code(length: int = 8) -> str:
@@ -32,7 +46,9 @@ class QRCode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='qrcodes')
+    created_by = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='qrcodes'
+    )
 
     # QR Code content and settings
     content = models.TextField(help_text="The actual content encoded in the QR code")

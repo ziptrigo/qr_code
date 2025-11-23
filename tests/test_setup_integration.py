@@ -3,10 +3,12 @@ Integration tests to verify setup and end-to-end functionality.
 """
 
 import pytest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
-from src.models import QRCode
-from src.services import QRCodeGenerator
+from src.qr_code.models import QRCode
+from src.qr_code.services import QRCodeGenerator
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -18,7 +20,10 @@ class TestSetupIntegration:
         """Test the complete workflow of QR code generation."""
         # Create user
         user = User.objects.create_user(
-            username='setuptest', email='setup@example.com', password='testpass123'
+            username='setuptest@example.com',
+            email='setup@example.com',
+            password='testpass123',
+            name='Setup Test',
         )
 
         # Create QR code
@@ -49,7 +54,10 @@ class TestSetupIntegration:
         """Test URL shortening end-to-end."""
         # Create user
         user = User.objects.create_user(
-            username='shorttest', email='short@example.com', password='testpass123'
+            username='shorttest@example.com',
+            email='short@example.com',
+            password='testpass123',
+            name='Short Test',
         )
 
         # Create QR code with URL shortening
@@ -80,7 +88,12 @@ class TestSetupIntegration:
 
     def test_scan_tracking_workflow(self):
         """Test scan tracking functionality."""
-        user = User.objects.create_user(username='scantest', password='testpass123')
+        user = User.objects.create_user(
+            username='scantest@example.com',
+            email='scantest@example.com',
+            password='testpass123',
+            name='Scan Test',
+        )
 
         qr = QRCode.objects.create(
             content='https://example.com',

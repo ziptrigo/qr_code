@@ -1,13 +1,13 @@
 # QR Code Generator Service
 
-A complete QR code generation and management service with Django REST API, JWT authentication, URL shortening, and CLI interface.
+A complete QR code generation and management service with Django REST API, session-based authentication, URL shortening, and CLI interface.
 
 ## Features
 
 - 🎨 **Full Customization**: Colors, size, error correction, border, and multiple formats (PNG, SVG, PDF)
 - 🔗 **URL Shortening**: Built-in URL shortener with redirect tracking
 - 📊 **Analytics**: Track scan counts and timestamps
-- 🔐 **JWT Authentication**: Secure API access
+- 🔐 **Session Authentication**: Secure API access with session-based auth
 - 💻 **CLI Interface**: Command-line tool for all operations
 - 🗄️ **Database Flexible**: SQLite for development, PostgreSQL-ready for production
 - 🖼️ **Transparency Support**: PNG with transparent backgrounds
@@ -36,7 +36,8 @@ See [SETUP.md](SETUP.md) for complete installation, configuration, and usage ins
 
 ## API Endpoints
 
-- `POST /api/token/` - Authenticate and get JWT token
+- `POST /api/signup` - Create user account (email, name, password)
+- `POST /api/login` - Authenticate with email and password
 - `POST /api/qrcodes/` - Create QR code
 - `GET /api/qrcodes/` - List QR codes
 - `GET /api/qrcodes/{id}/` - Get QR code details
@@ -64,7 +65,7 @@ python cli.py list
 ## Tech Stack
 
 - **Backend**: Django 5.2 + Django REST Framework
-- **Authentication**: JWT (Simple JWT)
+- **Authentication**: Session-based authentication
 - **QR Generation**: segno
 - **CLI**: typer
 - **Database**: SQLite (PostgreSQL-ready)

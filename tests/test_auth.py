@@ -1,0 +1,456 @@
+"""
+Unit and integration tests for authentication endpoints.
+"""
+
+import pytest
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from rest_framework import status
+
+User = get_user_model()
+
+
+@pytest.mark.django_db
+class TestSignupEndpoint:
+    """Test cases for the signup endpoint."""
+
+    def test_signup_success(self, api_client):
+        """Test successful user signup."""
+        url = reverse('signup')
+        data = {
+            'name': 'John Doe',
+            'email': 'john@example.com',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert 'user' in response.data
+        assert 'sessionid' in response.data
+        assert response.data['user']['email'] == 'john@example.com'
+        assert response.data['user']['name'] == 'John Doe'
+        assert User.objects.filter(email='john@example.com').exists()
+
+    def test_signup_creates_session(self, api_client):
+        """Test that signup creates a session."""
+        url = reverse('signup')
+        data = {
+            'name': 'Jane Doe',
+            'email': 'jane@example.com',
+            'password': 'secure123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['sessionid'] is not None
+        assert len(response.data['sessionid']) > 0
+
+    def test_signup_password_too_short(self, api_client):
+        """Test that signup rejects passwords shorter than 6 characters."""
+        url = reverse('signup')
+        data = {
+            'name': 'Bob Smith',
+            'email': 'bob@example.com',
+            'password': 'pass1',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'password' in response.data
+
+    def test_signup_password_no_digit(self, api_client):
+        """Test that signup rejects passwords without a digit."""
+        url = reverse('signup')
+        data = {
+            'name': 'Alice Wonder',
+            'email': 'alice@example.com',
+            'password': 'password',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'password' in response.data
+
+    def test_signup_duplicate_email(self, api_client, user):
+        """Test that signup rejects duplicate email addresses."""
+        url = reverse('signup')
+        data = {
+            'name': 'Another User',
+            'email': user.email,
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data['message'] == 'User with that email already exists.'
+
+    def test_signup_missing_name(self, api_client):
+        """Test that signup requires name field."""
+        url = reverse('signup')
+        data = {
+            'email': 'test@example.com',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'name' in response.data
+
+    def test_signup_missing_email(self, api_client):
+        """Test that signup requires email field."""
+        url = reverse('signup')
+        data = {
+            'name': 'Test User',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'email' in response.data
+
+    def test_signup_missing_password(self, api_client):
+        """Test that signup requires password field."""
+        url = reverse('signup')
+        data = {
+            'name': 'Test User',
+            'email': 'test@example.com',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'password' in response.data
+
+    def test_signup_invalid_email(self, api_client):
+        """Test that signup rejects invalid email format."""
+        url = reverse('signup')
+        data = {
+            'name': 'Test User',
+            'email': 'not-an-email',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'email' in response.data
+
+    def test_signup_user_logged_in(self, api_client):
+        """Test that user is automatically logged in after signup."""
+        url = reverse('signup')
+        data = {
+            'name': 'Logged In User',
+            'email': 'loggedin@example.com',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        # Verify user can access authenticated endpoints
+        # (Check by using the client after signup)
+        qrcode_list_url = reverse('qrcode-list')
+        auth_response = api_client.get(qrcode_list_url)
+        assert auth_response.status_code == status.HTTP_200_OK
+
+    def test_signup_password_with_special_chars(self, api_client):
+        """Test that signup accepts passwords with special characters."""
+        url = reverse('signup')
+        data = {
+            'name': 'Special User',
+            'email': 'special@example.com',
+            'password': 'p@ssw0rd!',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['user']['email'] == 'special@example.com'
+
+    def test_signup_user_can_login_after(self, api_client):
+        """Test that newly created user can log in."""
+        signup_url = reverse('signup')
+        signup_data = {
+            'name': 'New User',
+            'email': 'newuser@example.com',
+            'password': 'password123',
+        }
+
+        # Signup
+        signup_response = api_client.post(signup_url, signup_data, format='json')
+        assert signup_response.status_code == status.HTTP_201_CREATED
+
+        # Logout by creating a new client
+        new_client = api_client.__class__()
+
+        # Login with same credentials
+        login_url = reverse('login')
+        login_data = {
+            'email': 'newuser@example.com',
+            'password': 'password123',
+        }
+        login_response = new_client.post(login_url, login_data, format='json')
+
+        assert login_response.status_code == status.HTTP_200_OK
+        assert login_response.data['user']['email'] == 'newuser@example.com'
+
+
+@pytest.mark.django_db
+class TestLoginEndpoint:
+    """Test cases for the login endpoint."""
+
+    def test_login_success(self, api_client, user):
+        """Test successful user login."""
+        url = reverse('login')
+        data = {
+            'email': user.email,
+            'password': 'testpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 'user' in response.data
+        assert 'sessionid' in response.data
+        assert response.data['user']['email'] == user.email
+        assert response.data['user']['name'] == user.name
+
+    def test_login_creates_session(self, api_client, user):
+        """Test that login creates a session."""
+        url = reverse('login')
+        data = {
+            'email': user.email,
+            'password': 'testpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['sessionid'] is not None
+        assert len(response.data['sessionid']) > 0
+
+    def test_login_wrong_password(self, api_client, user):
+        """Test login with wrong password fails."""
+        url = reverse('login')
+        data = {
+            'email': user.email,
+            'password': 'wrongpassword',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'detail' in response.data
+
+    def test_login_nonexistent_email(self, api_client):
+        """Test login with non-existent email fails."""
+        url = reverse('login')
+        data = {
+            'email': 'nonexistent@example.com',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'detail' in response.data
+
+    def test_login_missing_email(self, api_client):
+        """Test that login requires email field."""
+        url = reverse('login')
+        data = {
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'email' in response.data
+
+    def test_login_missing_password(self, api_client):
+        """Test that login requires password field."""
+        url = reverse('login')
+        data = {
+            'email': 'test@example.com',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'password' in response.data
+
+    def test_login_invalid_email(self, api_client):
+        """Test that login rejects invalid email format."""
+        url = reverse('login')
+        data = {
+            'email': 'not-an-email',
+            'password': 'password123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'email' in response.data
+
+    def test_login_user_authenticated(self, api_client, user):
+        """Test that user is authenticated after login."""
+        url = reverse('login')
+        data = {
+            'email': user.email,
+            'password': 'testpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        # Verify user can access authenticated endpoints
+        qrcode_list_url = reverse('qrcode-list')
+        auth_response = api_client.get(qrcode_list_url)
+        assert auth_response.status_code == status.HTTP_200_OK
+
+    def test_login_case_sensitive_email(self, api_client, user):
+        """Test that login is case-sensitive for email."""
+        url = reverse('login')
+        # Use uppercase email
+        data = {
+            'email': user.email.upper(),
+            'password': 'testpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        # This should fail since email lookup is case-sensitive in Django
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_login_returns_user_id(self, api_client, user):
+        """Test that login returns user ID."""
+        url = reverse('login')
+        data = {
+            'email': user.email,
+            'password': 'testpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['user']['id'] == user.id
+
+
+@pytest.mark.django_db
+class TestAuthenticationFlow:
+    """Test cases for complete authentication flows."""
+
+    def test_full_signup_and_qrcode_creation_flow(self, api_client):
+        """Test complete flow: signup -> create QR code."""
+        # Signup
+        signup_url = reverse('signup')
+        signup_data = {
+            'name': 'QR Creator',
+            'email': 'qrcreator@example.com',
+            'password': 'password123',
+        }
+        signup_response = api_client.post(signup_url, signup_data, format='json')
+        assert signup_response.status_code == status.HTTP_201_CREATED
+
+        # Create QR code (should be authenticated from signup)
+        qrcode_url = reverse('qrcode-list')
+        qrcode_data = {
+            'url': 'https://example.com',
+            'qr_format': 'png',
+        }
+        qrcode_response = api_client.post(qrcode_url, qrcode_data, format='json')
+
+        assert qrcode_response.status_code == status.HTTP_201_CREATED
+        assert 'id' in qrcode_response.data
+
+    def test_full_login_and_qrcode_creation_flow(self, api_client, user):
+        """Test complete flow: login -> create QR code."""
+        # Login
+        login_url = reverse('login')
+        login_data = {
+            'email': user.email,
+            'password': 'testpass123',
+        }
+        login_response = api_client.post(login_url, login_data, format='json')
+        assert login_response.status_code == status.HTTP_200_OK
+
+        # Create QR code (should be authenticated from login)
+        qrcode_url = reverse('qrcode-list')
+        qrcode_data = {
+            'url': 'https://example.com',
+            'qr_format': 'png',
+        }
+        qrcode_response = api_client.post(qrcode_url, qrcode_data, format='json')
+
+        assert qrcode_response.status_code == status.HTTP_201_CREATED
+
+    def test_unauthenticated_cannot_create_qrcode(self, api_client):
+        """Test that unauthenticated users cannot create QR codes."""
+        qrcode_url = reverse('qrcode-list')
+        qrcode_data = {
+            'url': 'https://example.com',
+            'qr_format': 'png',
+        }
+
+        response = api_client.post(qrcode_url, qrcode_data, format='json')
+
+        # Session auth may return 403 (CSRF) or 401 (no session)
+        assert response.status_code in (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
+
+    def test_multiple_users_separate_qrcodes(self, api_client):
+        """Test that different users have separate QR codes."""
+        # Create first user and QR code
+        signup_url = reverse('signup')
+        user1_data = {
+            'name': 'User One',
+            'email': 'user1@example.com',
+            'password': 'password123',
+        }
+        signup_response1 = api_client.post(signup_url, user1_data, format='json')
+        assert signup_response1.status_code == status.HTTP_201_CREATED
+
+        qrcode_url = reverse('qrcode-list')
+        qrcode1_data = {
+            'url': 'https://user1.com',
+            'qr_format': 'png',
+        }
+        qrcode_response1 = api_client.post(qrcode_url, qrcode1_data, format='json')
+        assert qrcode_response1.status_code == status.HTTP_201_CREATED
+        qrcode1_id = qrcode_response1.data['id']
+
+        # Create new client for second user
+        client2 = api_client.__class__()
+        user2_data = {
+            'name': 'User Two',
+            'email': 'user2@example.com',
+            'password': 'password123',
+        }
+        signup_response2 = client2.post(signup_url, user2_data, format='json')
+        assert signup_response2.status_code == status.HTTP_201_CREATED
+
+        qrcode2_data = {
+            'url': 'https://user2.com',
+            'qr_format': 'png',
+        }
+        qrcode_response2 = client2.post(qrcode_url, qrcode2_data, format='json')
+        assert qrcode_response2.status_code == status.HTTP_201_CREATED
+        qrcode2_id = qrcode_response2.data['id']
+
+        # Verify users only see their own QR codes
+        list_response1 = api_client.get(qrcode_url)
+        list_response2 = client2.get(qrcode_url)
+
+        qrcode1_ids = [qr['id'] for qr in list_response1.data]
+        qrcode2_ids = [qr['id'] for qr in list_response2.data]
+
+        assert qrcode1_id in qrcode1_ids
+        assert qrcode1_id not in qrcode2_ids
+        assert qrcode2_id in qrcode2_ids
+        assert qrcode2_id not in qrcode1_ids

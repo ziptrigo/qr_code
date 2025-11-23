@@ -3,10 +3,13 @@ Integration tests for QR code API endpoints.
 """
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
-from src.models import QRCode
+from src.qr_code.models import QRCode
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -65,7 +68,8 @@ class TestQRCodeAPI:
 
         response = api_client.post(url, data, format='json')
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        # Session auth may return 403 (CSRF) or 401 (no session)
+        assert response.status_code in (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
 
     def test_create_qrcode_missing_data(self, authenticated_client):
         """Test creating QR code without url or data fails."""
@@ -100,9 +104,12 @@ class TestQRCodeAPI:
         QRCode.objects.create(content='https://user1.com', created_by=user, image_file='user1.png')
 
         # Create another user and their QR code
-        from django.contrib.auth.models import User
-
-        other_user = User.objects.create_user(username='otheruser', password='otherpass')
+        other_user = User.objects.create_user(
+            username='otheruser@example.com',
+            email='otheruser@example.com',
+            password='otherpass',
+            name='Other User',
+        )
         QRCode.objects.create(
             content='https://user2.com', created_by=other_user, image_file='user2.png'
         )
@@ -209,46 +216,3 @@ class TestRedirectEndpoint:
         response = api_client.get(url, follow=False)
 
         assert response.status_code == status.HTTP_302_FOUND
-
-
-@pytest.mark.django_db
-@pytest.mark.integration
-class TestJWTAuthentication:
-    """Test cases for JWT authentication."""
-
-    def test_obtain_token_with_valid_credentials(self, api_client, user):
-        """Test obtaining JWT token with valid credentials."""
-        url = reverse('token_obtain_pair')
-        data = {'username': 'testuser', 'password': 'testpass123'}
-
-        response = api_client.post(url, data, format='json')
-
-        assert response.status_code == status.HTTP_200_OK
-        assert 'access' in response.data
-        assert 'refresh' in response.data
-
-    def test_obtain_token_with_invalid_credentials(self, api_client):
-        """Test obtaining JWT token with invalid credentials."""
-        url = reverse('token_obtain_pair')
-        data = {'username': 'wronguser', 'password': 'wrongpass'}
-
-        response = api_client.post(url, data, format='json')
-
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_refresh_token(self, api_client, user):
-        """Test refreshing JWT token."""
-        # First obtain token
-        obtain_url = reverse('token_obtain_pair')
-        obtain_data = {'username': 'testuser', 'password': 'testpass123'}
-        obtain_response = api_client.post(obtain_url, obtain_data, format='json')
-        refresh_token = obtain_response.data['refresh']
-
-        # Now refresh it
-        refresh_url = reverse('token_refresh')
-        refresh_data = {'refresh': refresh_token}
-
-        response = api_client.post(refresh_url, refresh_data, format='json')
-
-        assert response.status_code == status.HTTP_200_OK
-        assert 'access' in response.data

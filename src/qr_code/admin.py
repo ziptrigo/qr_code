@@ -1,6 +1,16 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
-from .models import QRCode
+from .models import CustomUser, QRCode
+
+
+@admin.register(CustomUser)
+class CustomUserAdmin(UserAdmin):
+    """Admin interface for CustomUser."""
+
+    fieldsets = UserAdmin.fieldsets + (
+        ('Custom Fields', {'fields': ('name',)}),
+    )
 
 
 @admin.register(QRCode)
