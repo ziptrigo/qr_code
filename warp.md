@@ -35,7 +35,8 @@ Initial version done. Testing functionality and fixing bugs.
 - Use isort
 - Use flake8
 - Use mypy
-- Use single quotes
+- Use single quotes for strings, except when triple quotes are necessary (ex: docstrings), in which
+  case use double quotes
 - Use 4 spaces for indentation
 - Use 100 characters per line
 
