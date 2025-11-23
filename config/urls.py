@@ -22,7 +22,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('src.urls')),
+    path('', include('src.qr_code.urls')),
 ]
 
 # Serve media files in development

@@ -7,7 +7,7 @@ import segno
 from django.conf import settings
 
 if TYPE_CHECKING:
-    from src.models import QRCode
+    from src.qr_code.models import QRCode
 
 
 class QRCodeGenerator:

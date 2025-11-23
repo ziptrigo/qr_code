@@ -43,8 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework_simplejwt',
-    'src',
+    'src.qr_code',
 ]
 
 MIDDLEWARE = [
@@ -62,7 +61,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'src' / 'templates'],
+        'DIRS': [BASE_DIR / 'src' / 'qr_code' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,7 +124,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'src' / 'static',
+    BASE_DIR / 'src' / 'qr_code' / 'static',
 ]
 
 # Media files
@@ -138,7 +137,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
-AUTH_USER_MODEL = 'src.CustomUser'
+AUTH_USER_MODEL = 'qr_code.CustomUser'
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -150,7 +149,7 @@ REST_FRAMEWORK = {
 
 # Migrations: store app migrations at project root under migrations/
 MIGRATION_MODULES = {
-    'src': 'migrations',
+    'qr_code': 'migrations',
 }
 
 # QR Code settings

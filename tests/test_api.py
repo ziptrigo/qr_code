@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
-from src.models import QRCode
+from src.qr_code.models import QRCode
 
 User = get_user_model()
 

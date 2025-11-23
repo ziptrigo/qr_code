@@ -4,7 +4,7 @@ Unit tests for QRCode model.
 
 import pytest
 
-from src.models import QRCode, generate_short_code
+from src.qr_code.models import QRCode, generate_short_code
 
 
 @pytest.mark.django_db

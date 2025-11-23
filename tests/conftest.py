@@ -6,7 +6,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from src.models import QRCode
+from src.qr_code.models import QRCode
 
 User = get_user_model()
 

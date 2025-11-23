@@ -5,8 +5,8 @@ Integration tests to verify setup and end-to-end functionality.
 import pytest
 from django.contrib.auth import get_user_model
 
-from src.models import QRCode
-from src.services import QRCodeGenerator
+from src.qr_code.models import QRCode
+from src.qr_code.services import QRCodeGenerator
 
 User = get_user_model()
 
