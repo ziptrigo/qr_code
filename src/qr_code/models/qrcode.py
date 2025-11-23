@@ -33,9 +33,7 @@ class QRCode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='qrcodes'
-    )
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='qrcodes')
 
     # QR Code content and settings
     content = models.TextField(help_text="The actual content encoded in the QR code")

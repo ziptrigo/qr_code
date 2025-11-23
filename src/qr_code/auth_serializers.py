@@ -20,21 +20,15 @@ class SignupSerializer(serializers.Serializer):
     def validate_password(self, value: str) -> str:
         """Validate password strength: minimum 6 chars and at least one digit."""
         if len(value) < 6:
-            raise serializers.ValidationError(
-                'Password must be at least 6 characters long.'
-            )
+            raise serializers.ValidationError('Password must be at least 6 characters long.')
         if not re.search(r'\d', value):
-            raise serializers.ValidationError(
-                'Password must contain at least one digit.'
-            )
+            raise serializers.ValidationError('Password must contain at least one digit.')
         return value
 
     def validate_email(self, value: str) -> str:
         """Check if email already exists."""
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                'User with that email already exists.'
-            )
+            raise serializers.ValidationError('User with that email already exists.')
         return value
 
     def create(self, validated_data: dict) -> User:

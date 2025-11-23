@@ -16,8 +16,8 @@ django.setup()
 # E402: module level import not at top of file
 from django.contrib.auth.models import User  # noqa: E402
 
-from src.models import QRCode  # noqa: E402
-from src.services import QRCodeGenerator  # noqa: E402
+from src.qr_code.models import QRCode  # noqa: E402
+from src.qr_code.services import QRCodeGenerator  # noqa: E402
 
 
 def test_model_creation():
