@@ -8,9 +8,7 @@ from .models import CustomUser, QRCode
 class CustomUserAdmin(UserAdmin):
     """Admin interface for CustomUser."""
 
-    fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': ('name',)}),
-    )
+    fieldsets = UserAdmin.fieldsets + (('Custom Fields', {'fields': ('name',)}),)
 
 
 @admin.register(QRCode)

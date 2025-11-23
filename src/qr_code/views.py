@@ -81,7 +81,7 @@ def hello_api(request):
     """
     Simple hello API endpoint.
     Returns a JSON response with a hello message.
-    
+
     Path: /api/hello
     """
     return JsonResponse({'message': 'Hello, world!'})
@@ -90,7 +90,7 @@ def hello_api(request):
 def hello_page(request):
     """
     Render the hello page.
-    
+
     Path: /hello/
     """
     return render(request, 'hello.html')
@@ -107,7 +107,10 @@ def signup(request):
         if 'email' in errors:
             for err in errors['email']:
                 if 'User with that email already exists.' in str(err):
-                    return Response({'message': 'User with that email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'message': 'User with that email already exists.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     user = serializer.save()

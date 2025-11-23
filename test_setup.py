@@ -8,18 +8,34 @@ import os
 import sys
 
 import django
+import pytest
 
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 # E402: module level import not at top of file
-from django.contrib.auth.models import User  # noqa: E402
+from django.contrib.auth import get_user_model  # noqa: E402
 
-from src.models import QRCode  # noqa: E402
-from src.services import QRCodeGenerator  # noqa: E402
+from src.qr_code.models import QRCode  # noqa: E402
+from src.qr_code.services import QRCodeGenerator  # noqa: E402
+
+User = get_user_model()
 
 
+@pytest.fixture
+def user(db):
+    """Create a test user fixture."""
+    user, created = User.objects.get_or_create(
+        username='testuser', defaults={'email': 'test@example.com'}
+    )
+    if created:
+        user.set_password('testpass123')
+        user.save()
+    return user
+
+
+@pytest.mark.django_db
 def test_model_creation():
     """Test that we can create a QRCode model instance."""
     print('Testing model creation...')
@@ -38,6 +54,7 @@ def test_model_creation():
     return user
 
 
+@pytest.mark.django_db
 def test_qr_generation(user):
     """Test QR code generation."""
     print('\nTesting QR code generation...')

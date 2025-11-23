@@ -15,6 +15,13 @@ A Python project for generating and manipulating QR codes.
 - segno package for QR code generation
 - RDBMS for data storage
 
+## App name and project structure
+The app name is `qr_code`.
+The app code should be located under `src/qr_code`.
+All references should reflect this structure.
+Database tables related to the app should have the prefix `qr_code`.
+Models are stored under `src/qr_code/models`, each model in its own file.
+
 ## Current Status
 Initial version done. Testing functionality and fixing bugs.
 
