@@ -3,10 +3,12 @@ Pytest configuration and fixtures for the QR code project.
 """
 
 import pytest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from src.models import QRCode
+
+User = get_user_model()
 
 
 @pytest.fixture
@@ -19,7 +21,10 @@ def api_client():
 def user(db):
     """Create a test user."""
     return User.objects.create_user(
-        username='testuser', email='test@example.com', password='testpass123'
+        username='testuser@example.com',
+        email='testuser@example.com',
+        password='testpass123',
+        name='Test User',
     )
 
 
