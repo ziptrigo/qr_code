@@ -4,20 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}QR Code App{% endblock %}</title>
-    
+
+    <!-- Tailwind (Play CDN) with brand config -->
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: ['class', 'media'],
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                primary: '#92a497', /* green–gray from logo */
+                dark: '#2f3334'     /* charcoal from logo */
+              }
+            }
+          }
+        }
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- htmx -->
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
-    
+
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Custom CSS -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
+
+    <!-- CSRF helper for htmx requests -->
+    <script>
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      }
+      document.addEventListener('htmx:configRequest', (e) => {
+        const token = getCookie('csrftoken');
+        if (token) {
+          e.detail.headers['X-CSRFToken'] = token;
+        }
+      });
+    </script>
+
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
     {% block content %}{% endblock %}
 </body>
 </html>

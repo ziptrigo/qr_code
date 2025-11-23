@@ -47,6 +47,13 @@ Initial version done. Testing functionality and fixing bugs.
 - Use 4 spaces for indentation
 - Use 100 characters per line
 
+### Frontend design and behavior preferences
+Frontend design language is minimal with a green-gray color palette from `src/qr_code/static/images/logo_full.png`.
+All pages support light/dark mode including login and register.
+Form validation includes existence checks and email format validation before backend calls.
+On valid login, redirect to 'hello' page. Include a 'remember me' checkbox with corresponding behavior.
+User-facing error messages are simple; developer-facing errors are verbose and technical. CSS stack uses Tailwind.
+
 ### Documentation
 Create documentation in MD format under the `docs` directory, all lowercased files.
 Only README.md remains in the root directory, uppercased.

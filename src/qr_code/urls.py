@@ -5,8 +5,10 @@ from .views import (
     QRCodeViewSet,
     hello_api,
     hello_page,
+    login_page,
     login_view,
     redirect_view,
+    register_page,
     signup,
 )
 
@@ -18,6 +20,8 @@ urlpatterns = [
     path('api/hello', hello_api, name='hello-api'),
     path('api/signup', signup, name='signup'),
     path('api/login', login_view, name='login'),
+    path('login/', login_page, name='login-page'),
+    path('register/', register_page, name='register-page'),
     path('hello/', hello_page, name='hello-page'),
     path('go/<str:short_code>/', redirect_view, name='qrcode-redirect'),
 ]
