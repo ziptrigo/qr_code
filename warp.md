@@ -19,9 +19,9 @@ A Python project for generating and manipulating QR codes.
 Initial version done. Testing functionality and fixing bugs.
 
 ## Next Steps
-1. Test existing functionality.
-2. Fix issues.
-3. Update or add functionality as needed.
+1. Test authentication endpoints.
+2. Test QRCode endpoints with session auth.
+3. Fix issues as needed.
 
 ## Notes
 ### Coding guidelines
@@ -72,3 +72,9 @@ The backend service is implemented in Django. The APIs are:
 3. CLI interface
 The CLI interface will be implemented using the typer library and have a
 similar interface to the API.
+
+### Authentication
+Session-based authentication using Django sessions.
+- POST /api/signup (name, email, password) creates user and logs in.
+- POST /api/login (email, password) logs in and returns session id in JSON.
+- API calls require SessionAuthentication; ensure CSRF tokens are provided where applicable.
