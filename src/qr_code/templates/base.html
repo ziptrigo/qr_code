@@ -54,7 +54,29 @@
 
     {% block extra_css %}{% endblock %}
 </head>
-<body class="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-    {% block content %}{% endblock %}
+<body class="min-h-screen flex flex-col bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <header class="bg-gray-100 dark:bg-gray-800 shadow">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex space-x-6">
+<a href="{% url 'home' %}" class="text-lg font-semibold hover:text-brand-primary">Home</a>
+                <a href="#" class="text-lg hover:text-brand-primary">About</a>
+                <a href="#" class="text-lg hover:text-brand-primary">Contact</a>
+            </div>
+            <div>
+                <a href="{% url 'login-page' %}" class="text-lg hover:text-brand-primary">Login/Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-100 dark:bg-gray-800 mt-auto py-6">
+        <div class="container mx-auto px-4 flex justify-center space-x-8">
+            <a href="#" class="hover:text-brand-primary">FAQ</a>
+            <a href="#" class="hover:text-brand-primary">Feedback</a>
+        </div>
+    </footer>
 </body>
 </html>
