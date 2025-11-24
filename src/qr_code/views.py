@@ -96,6 +96,16 @@ def hello_page(request):
     return render(request, 'hello.html')
 
 
+def login_page(request):
+    """Render the login page (GET /login/)."""
+    return render(request, 'login.html')
+
+
+def register_page(request):
+    """Render the register page (GET /register/)."""
+    return render(request, 'register.html')
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
@@ -130,7 +140,12 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    """Login endpoint: authenticate by email/password, start session, return session id and user info."""
+    """
+    Login endpoint: authenticate by email/password, start session, return session id and user info.
+
+    Supports optional "remember" parameter (truthy values: 1, true, on, yes) to persist
+    the session for 14 days. If not provided or falsy, the session expires on browser close.
+    """
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
@@ -141,6 +156,13 @@ def login_view(request):
         return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_400_BAD_REQUEST)
 
     login(request, user)
+
+    # Remember Me behavior
+    remember_raw = str(request.data.get('remember', '')).lower()
+    remember = remember_raw in {'1', 'true', 'on', 'yes'}
+    # 14 days if remember, else session-only (expires on browser close)
+    request.session.set_expiry(1209600 if remember else 0)
+
     if not request.session.session_key:
         request.session.save()
 
