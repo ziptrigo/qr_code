@@ -96,6 +96,11 @@ def hello_page(request):
     return render(request, 'hello.html')
 
 
+def home_page(request):
+    """Render the homepage (GET /)."""
+    return render(request, 'home.html')
+
+
 def login_page(request):
     """Render the login page (GET /login/)."""
     return render(request, 'login.html')
