@@ -4,7 +4,7 @@ import uuid
 
 from django.db import models
 
-from .user import CustomUser
+from .user import User
 
 
 def generate_short_code(length: int = 8) -> str:
@@ -33,42 +33,45 @@ class QRCode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='qrcodes')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='qrcodes')
 
     # QR Code content and settings
-    content = models.TextField(help_text="The actual content encoded in the QR code")
+    name = models.CharField(
+        max_length=255, default='Untitled QR Code', help_text='Name of the QR code'
+    )
+    content = models.TextField(help_text='The actual content encoded in the QR code')
     original_url = models.URLField(
         max_length=2000,
         null=True,
         blank=True,
-        help_text="Original URL if content is a shortened URL",
+        help_text='Original URL if content is a shortened URL',
     )
     use_url_shortening = models.BooleanField(
-        default=False, help_text="Whether to use URL shortening"
+        default=False, help_text='Whether to use URL shortening'
     )
     short_code = models.CharField(
-        max_length=16, unique=True, null=True, blank=True, help_text="Short code for URL shortening"
+        max_length=16, unique=True, null=True, blank=True, help_text='Short code for URL shortening'
     )
 
     # QR Code customization
     qr_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, default='png')
-    size = models.IntegerField(default=10, help_text="Scale factor for QR code size")
+    size = models.IntegerField(default=10, help_text='Scale factor for QR code size')
     error_correction = models.CharField(max_length=1, choices=ERROR_CORRECTION_CHOICES, default='M')
-    border = models.IntegerField(default=4, help_text="Border size (quiet zone)")
+    border = models.IntegerField(default=4, help_text='Border size (quiet zone)')
 
     # Colors
     background_color = models.CharField(
-        max_length=20, default='white', help_text="Background color (hex, name, or 'transparent')"
+        max_length=20, default='white', help_text='Background color (hex, name, or "transparent")'
     )
     foreground_color = models.CharField(
-        max_length=20, default='black', help_text="Foreground (data) color"
+        max_length=20, default='black', help_text='Foreground (data) color'
     )
 
     # File storage
-    image_file = models.CharField(max_length=255, help_text="Path to generated image file")
+    image_file = models.CharField(max_length=255, help_text='Path to generated image file')
 
     # Analytics
-    scan_count = models.IntegerField(default=0, help_text="Number of times QR code was scanned")
+    scan_count = models.IntegerField(default=0, help_text='Number of times QR code was scanned')
     last_scanned_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -79,7 +82,7 @@ class QRCode(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"QRCode {self.id} - {self.content[:50]}"
+        return f'QRCode {self.id} - {self.content[:50]}'
 
     def save(self, *args, **kwargs):
         # Generate short code if URL shortening is enabled and code doesn't exist

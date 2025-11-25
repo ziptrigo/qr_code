@@ -63,7 +63,14 @@
                 <a href="#" class="text-lg hover:text-brand-primary">Contact</a>
             </div>
             <div>
-                <a href="{% url 'login-page' %}" class="text-lg hover:text-brand-primary">Login/Register</a>
+                {% if request.user.is_authenticated %}
+                    <form method="post" action="{% url 'logout-page' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-lg hover:text-brand-primary">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login-page' %}" class="text-lg hover:text-brand-primary">Login/Register</a>
+                {% endif %}
             </div>
         </nav>
     </header>

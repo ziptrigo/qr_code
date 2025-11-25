@@ -1,6 +1,8 @@
 django
-pillow
 djangorestframework
+# mysqlclient           # MySQL client, currently not used
+pillow
+# psycopg               # PostgreSQL client, currently not used
 requests
 segno
 typer
