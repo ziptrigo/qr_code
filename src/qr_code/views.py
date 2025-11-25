@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -110,6 +110,13 @@ def login_page(request):
 def register_page(request):
     """Render the register page (GET /register/)."""
     return render(request, 'register.html')
+
+
+def logout_page(request: HttpRequest) -> HttpResponse:
+    """Log out the current user and redirect to the homepage."""
+    if request.user.is_authenticated:
+        logout(request)
+    return redirect('home')
 
 
 @login_required
