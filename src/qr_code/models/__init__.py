@@ -1,4 +1,4 @@
 from .qrcode import QRCode, generate_short_code
-from .user import CustomUser
+from .user import User
 
-__all__ = ['CustomUser', 'QRCode', 'generate_short_code']
+__all__ = ['User', 'QRCode', 'generate_short_code']
