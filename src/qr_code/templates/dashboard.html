@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - QR Code App{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <h1 class="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">QR codes</h1>
+
+    <!-- Search -->
+    <div class="mb-8">
+        <form method="get" class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input type="text" name="q" value="{{ query|default:'' }}" 
+                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-primary focus:border-brand-primary sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                placeholder="Search by QR code name">
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+            <!-- Header -->
+            <li class="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between sm:px-6">
+                <div class="flex items-center">
+                    <div class="flex items-center h-5">
+                        <input type="checkbox" class="focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
+                    </div>
+                    <div class="ml-4 flex items-center">
+                         <span class="text-sm font-medium text-gray-900 dark:text-gray-100 mr-4">Select all</span>
+                         <a href="?sort=name&q={{ query|default:'' }}" class="group flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            QR code name
+                            <svg class="ml-1 h-4 w-4 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- List -->
+            {% for qr in qrcodes %}
+            <li class="px-4 py-4 flex items-center sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150 ease-in-out">
+                <div class="flex items-center min-w-0 flex-1">
+                    <div class="flex items-center h-5 mr-4">
+                        <input type="checkbox" name="selected_qr" value="{{ qr.id }}" class="focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
+                    </div>
+                    <div class="flex-shrink-0">
+                        <!-- Placeholder or actual image logic -->
+                         <!-- Assuming we can serve the file. If not, we might need a specific view or media url -->
+                         <!-- Using a generic placeholder if image_file is not a URL -->
+                        <img class="h-12 w-12 rounded object-cover bg-gray-100" src="{% if qr.image_file %}/media/{{ qr.image_file }}{% else %}{% static 'images/logo_32x32.png' %}{% endif %}" alt="{{ qr.name }}">
+                    </div>
+                    <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4">
+                        <div>
+                            <p class="text-sm font-medium text-brand-primary truncate">{{ qr.name }}</p>
+                            <p class="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                                <span class="truncate">{{ qr.content }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <li class="px-4 py-12 text-center sm:px-6">
+                <p class="text-sm text-gray-500 dark:text-gray-400">No QR codes found.</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

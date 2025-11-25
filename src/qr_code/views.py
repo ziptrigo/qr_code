@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model, login
-from django.http import Http404, JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -109,6 +110,32 @@ def login_page(request):
 def register_page(request):
     """Render the register page (GET /register/)."""
     return render(request, 'register.html')
+
+
+@login_required
+def dashboard(request: HttpRequest) -> HttpResponse:
+    """
+    Render the user dashboard with their QR codes.
+    """
+    user = request.user
+    query = request.GET.get('q', '')
+    sort = request.GET.get('sort', '')
+
+    qrcodes = QRCode.objects.filter(created_by=user)
+
+    if query:
+        qrcodes = qrcodes.filter(name__icontains=query)
+
+    if sort == 'name':
+        qrcodes = qrcodes.order_by('name')
+    else:
+        qrcodes = qrcodes.order_by('-created_at')
+
+    context = {
+        'qrcodes': qrcodes,
+        'query': query,
+    }
+    return render(request, 'dashboard.html', context)
 
 
 @api_view(['POST'])

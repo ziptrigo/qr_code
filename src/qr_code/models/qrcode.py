@@ -36,6 +36,7 @@ class QRCode(models.Model):
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='qrcodes')
 
     # QR Code content and settings
+    name = models.CharField(max_length=255, default="Untitled QR Code", help_text="Name of the QR code")
     content = models.TextField(help_text="The actual content encoded in the QR code")
     original_url = models.URLField(
         max_length=2000,

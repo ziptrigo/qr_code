@@ -11,6 +11,7 @@ from .views import (
     redirect_view,
     register_page,
     signup,
+    dashboard,
 )
 
 router = DefaultRouter()
@@ -24,6 +25,7 @@ urlpatterns = [
     path('', home_page, name='home'),
     path('login/', login_page, name='login-page'),
     path('register/', register_page, name='register-page'),
+    path('dashboard/', dashboard, name='dashboard'),
     path('hello/', hello_page, name='hello-page'),
     path('go/<str:short_code>/', redirect_view, name='qrcode-redirect'),
 ]
