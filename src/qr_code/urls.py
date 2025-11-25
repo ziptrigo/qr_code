@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     QRCodeViewSet,
+    dashboard,
     hello_api,
     hello_page,
     home_page,
@@ -11,7 +12,6 @@ from .views import (
     redirect_view,
     register_page,
     signup,
-    dashboard,
 )
 
 router = DefaultRouter()
