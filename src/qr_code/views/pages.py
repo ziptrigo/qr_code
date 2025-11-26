@@ -1,5 +1,6 @@
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
@@ -37,6 +38,9 @@ def logout_page(request: HttpRequest) -> HttpResponse:
 def dashboard(request: HttpRequest) -> HttpResponse:
     """Render the user dashboard with their QR codes."""
     user = request.user
+    if isinstance(user, AnonymousUser):  # Narrow type for static checkers; guarded by @login_required.
+        raise RuntimeError('Authenticated user required')
+
     query = request.GET.get('q', '')
     sort = request.GET.get('sort', '')
 
