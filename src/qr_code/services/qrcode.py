@@ -15,15 +15,7 @@ class QRCodeGenerator:
 
     @staticmethod
     def generate_qr_code(qr_code_instance: QRCode) -> str:
-        """
-        Generate a QR code image file based on the QRCode model instance.
-
-        Args:
-            qr_code_instance: QRCode model instance with configuration
-
-        Returns:
-            str: Path to the generated file
-        """
+        """Generate a QR code image file based on the QRCode model instance."""
         # Create QR code with segno
         error_level_map = {'L': 'L', 'M': 'M', 'Q': 'Q', 'H': 'H'}
 
@@ -69,28 +61,12 @@ class QRCodeGenerator:
 
     @staticmethod
     def _parse_color(color_value: str) -> str | None:
-        """
-        Parse color value to format accepted by segno.
-
-        Args:
-            color_value: Color as string (name, hex, or 'transparent')
-
-        Returns:
-            Color value suitable for segno (None for transparent)
-        """
+        """Parse color value to format accepted by segno."""
         if color_value.lower() == 'transparent':
             return None
         return color_value
 
     @staticmethod
     def get_file_url(image_file: str) -> str:
-        """
-        Get the full URL for accessing the QR code image.
-
-        Args:
-            image_file: Relative path to the image file
-
-        Returns:
-            str: Full URL to access the file
-        """
+        """Get the full URL for accessing the QR code image."""
         return f'{settings.MEDIA_URL}{image_file}'

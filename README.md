@@ -1,3 +1,5 @@
+[![Project License - MIT](https://img.shields.io/pypi/l/hd_active.svg)](https://github.com/joaonc/qr_code/blob/main/LICENSE.txt)
+
 # QR Code Generator Service
 
 A complete QR code generation and management service with Django REST API, session-based authentication, URL shortening, and CLI interface.
@@ -14,6 +16,7 @@ A complete QR code generation and management service with Django REST API, sessi
 
 ## Quick Start
 
+### Windows
 ```powershell
 # Install dependencies
 .venv313\Scripts\Activate.ps1
@@ -25,6 +28,29 @@ python manage.py createsuperuser
 
 # Create media directory
 New-Item -ItemType Directory -Force -Path media\qrcodes
+
+# Run server
+python manage.py runserver
+```
+
+### Mac / Linux
+```bash
+# Create and activate virtual environment
+python3.13 -m venv .venv313
+source .venv313/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment file (optional but recommended)
+cp .env.example .env
+
+# Setup database
+python manage.py migrate
+python manage.py createsuperuser
+
+# Create media directory
+mkdir -p media/qrcodes
 
 # Run server
 python manage.py runserver

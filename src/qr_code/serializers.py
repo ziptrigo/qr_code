@@ -9,11 +9,13 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
     """Serializer for creating QR codes."""
 
     url = serializers.URLField(
-        write_only=True, required=False, help_text="Original URL for QR code"
+        write_only=True, required=False, help_text='Original URL for QR code'
     )
     data = serializers.CharField(
-        write_only=True, required=False, help_text="Alternative to url - any data to encode"
-    )
+        write_only=True,
+        required=False,
+        help_text='Alternative to url - any data to encode',
+    )  # type: ignore[assignment]
 
     class Meta:
         model = QRCode

@@ -1,18 +1,14 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .api import QRCodeViewSet, hello_api, login_view, redirect_view, signup
 from .views import (
-    QRCodeViewSet,
     dashboard,
-    hello_api,
     hello_page,
     home_page,
     login_page,
-    login_view,
     logout_page,
-    redirect_view,
     register_page,
-    signup,
 )
 
 router = DefaultRouter()

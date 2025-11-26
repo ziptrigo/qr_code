@@ -1,7 +1,14 @@
 import re
+from typing import TYPE_CHECKING
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 from rest_framework import serializers
+
+if TYPE_CHECKING:  # Use a proper type for static analysis only.
+    from .models import User as UserType
+else:
+    UserType = AbstractBaseUser
 
 User = get_user_model()
 
@@ -31,7 +38,7 @@ class SignupSerializer(serializers.Serializer):
             raise serializers.ValidationError('User with that email already exists.')
         return value
 
-    def create(self, validated_data: dict) -> User:
+    def create(self, validated_data: dict) -> UserType:
         """Create and return a new user."""
         user = User.objects.create_user(
             username=validated_data['email'],
