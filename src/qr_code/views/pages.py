@@ -13,7 +13,12 @@ def hello_page(request: HttpRequest) -> HttpResponse:
 
 
 def home_page(request: HttpRequest) -> HttpResponse:
-    """Render the homepage (GET /)."""
+    """Render the homepage (GET /).
+
+    If the user is authenticated, redirect to the dashboard instead.
+    """
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     return render(request, 'home.html')
 
 

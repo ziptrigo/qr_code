@@ -54,10 +54,15 @@
                         <input type="checkbox" name="selected_qr" value="{{ qr.id }}" class="focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
                     </div>
                     <div class="flex-shrink-0">
-                        <!-- Placeholder or actual image logic -->
-                         <!-- Assuming we can serve the file. If not, we might need a specific view or media url -->
-                         <!-- Using a generic placeholder if image_file is not a URL -->
-                        <img class="h-12 w-12 rounded object-cover bg-gray-100" src="{% if qr.image_file %}/media/{{ qr.image_file }}{% else %}{% static 'images/logo_32x32.png' %}{% endif %}" alt="{{ qr.name }}">
+                        <!-- QR thumbnail is clickable to open a larger modal preview -->
+                        <button type="button"
+                                class="focus:outline-none group"
+                                data-full-src="{% if qr.image_file %}/media/{{ qr.image_file }}{% else %}{% static 'images/logo_128x128.png' %}{% endif %}"
+                                aria-label="Open QR code preview">
+                            <img class="h-12 w-12 rounded object-cover bg-gray-100 transform transition-transform duration-150 ease-out group-hover:scale-110"
+                                 src="{% if qr.image_file %}/media/{{ qr.image_file }}{% else %}{% static 'images/logo_32x32.png' %}{% endif %}"
+                                 alt="{{ qr.name }}">
+                        </button>
                     </div>
                     <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4">
                         <div>
@@ -77,4 +82,95 @@
         </ul>
     </div>
 </div>
+
+<!-- QR Code Modal Preview -->
+<div id="qr-modal-overlay"
+     class="fixed inset-0 z-40 hidden bg-black/60 dark:bg-black/70 flex items-center justify-center transition-opacity duration-150 ease-out">
+    <div class="bg-gray-900 dark:bg-black p-24 rounded-lg relative max-w-full max-h-full flex items-center justify-center transform transition-transform duration-150 ease-out scale-95">
+        <button type="button"
+                id="qr-modal-close"
+                class="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-semibold focus:outline-none"
+                aria-label="Close QR code preview">
+            &times;
+        </button>
+        <img id="qr-modal-image"
+             src=""
+             alt="QR code preview"
+             class="max-h-[70vh] max-w-[70vw] object-contain bg-white rounded" />
+    </div>
+</div>
+
+<script>
+  (function(){
+    const overlay = document.getElementById('qr-modal-overlay');
+    const modalImg = document.getElementById('qr-modal-image');
+    const closeBtn = document.getElementById('qr-modal-close');
+
+    function openModal(src) {
+      if (!overlay || !modalImg) return;
+      modalImg.src = src || '';
+      overlay.classList.remove('hidden');
+      // trigger fade/scale in
+      requestAnimationFrame(function() {
+        overlay.classList.remove('opacity-0');
+        const panel = overlay.querySelector('div');
+        if (panel) {
+          panel.classList.remove('scale-95');
+        }
+      });
+    }
+
+    function closeModal() {
+      if (!overlay || !modalImg) return;
+      // fade/scale out then hide
+      overlay.classList.add('opacity-0');
+      const panel = overlay.querySelector('div');
+      if (panel) {
+        panel.classList.add('scale-95');
+      }
+      setTimeout(function() {
+        overlay.classList.add('hidden');
+        modalImg.src = '';
+      }, 150);
+    }
+
+    document.addEventListener('click', function(ev) {
+      const target = ev.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      // Thumbnail button click
+      const thumbButton = target.closest('button[data-full-src]');
+      if (thumbButton) {
+        const fullSrc = thumbButton.getAttribute('data-full-src');
+        if (fullSrc) {
+          openModal(fullSrc);
+        }
+        return;
+      }
+
+      // Click outside modal content closes (but not when clicking the inner panel)
+      if (target === overlay) {
+        closeModal();
+      }
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        closeModal();
+      });
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') {
+        if (!overlay.classList.contains('hidden')) {
+          closeModal();
+        }
+      }
+    });
+  })();
+</script>
+
 {% endblock %}

@@ -8,9 +8,11 @@ from .services import QRCodeGenerator
 class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
     """Serializer for creating QR codes."""
 
-    url = serializers.URLField(
-        write_only=True, required=False, help_text='Original URL for QR code'
-    )
+    url = serializers.CharField(
+        write_only=True,
+        required=False,
+        help_text='Original URL for QR code (or any text)',
+    )  # type: ignore[assignment]
     data = serializers.CharField(
         write_only=True,
         required=False,

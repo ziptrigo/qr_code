@@ -203,6 +203,20 @@ class TestSignupEndpoint:
 
 
 @pytest.mark.django_db
+class TestHomeRedirect:
+    """Tests for home page behavior depending on authentication state."""
+
+    def test_home_redirects_authenticated_user_to_dashboard(self, client, user):
+        """Authenticated users visiting / should be redirected to /dashboard/."""
+        assert client.login(username=user.username, password='testpass123') is True
+
+        response = client.get('/')
+
+        assert response.status_code == 302
+        assert response.url == '/dashboard/'
+
+
+@pytest.mark.django_db
 class TestLoginEndpoint:
     """Test cases for the login endpoint."""
 

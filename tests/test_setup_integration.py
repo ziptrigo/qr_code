@@ -111,3 +111,30 @@ class TestSetupIntegration:
 
         assert qr.scan_count == 3
         assert qr.last_scanned_at is not None
+
+    def test_dashboard_renders_qr_thumbnail_with_modal_attributes(self, client):
+        """Dashboard page should render clickable QR thumbnails with data-full-src for modal preview."""
+        user = User.objects.create_user(
+            username='dashthumb@example.com',
+            email='dashthumb@example.com',
+            password='testpass123',
+            name='Dash Thumb',
+        )
+        QRCode.objects.create(
+            content='https://example.com/dashboard',
+            created_by=user,
+            qr_format='png',
+            image_file='qrcodes/example.png',
+        )
+
+        # Log the user in
+        assert client.login(username=user.username, password='testpass123') is True
+
+        response = client.get('/dashboard/')
+
+        assert response.status_code == 200
+        content = response.content.decode('utf-8')
+        # Ensure we have the data-full-src attribute pointing at the media path
+        assert 'data-full-src="/media/qrcodes/example.png"' in content
+        # Ensure the modal container exists
+        assert 'id="qr-modal-overlay"' in content

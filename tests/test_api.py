@@ -44,6 +44,21 @@ class TestQRCodeAPI:
         qr = QRCode.objects.get(id=response.data['id'])
         assert qr.content == 'Hello World!'
 
+    def test_create_qrcode_with_non_url_text_in_url_field(self, authenticated_client):
+        """Test creating a QR code when arbitrary text is sent via the url field."""
+        endpoint = reverse('qrcode-list')
+        payload = {
+            'url': 'Just some text, not a URL',
+            'qr_format': 'png',
+        }
+
+        response = authenticated_client.post(endpoint, payload, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        qr = QRCode.objects.get(id=response.data['id'])
+        assert qr.content == 'Just some text, not a URL'
+        assert qr.original_url == 'Just some text, not a URL'
+
     def test_create_qrcode_with_url_shortening(self, authenticated_client):
         """Test creating a QR code with URL shortening."""
         url = reverse('qrcode-list')
