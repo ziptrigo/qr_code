@@ -27,7 +27,7 @@
       <label class="block mb-1 text-sm font-medium">Text / URL to encode</label>
       <textarea name="url" maxlength="1000" rows="4" required
                 class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"></textarea>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Up to 1000 characters. Must be a valid URL when using short URL.</p>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Up to 1000 characters. Can be any text; short URL is only meaningful when the content is a URL.</p>
     </div>
 
     <!-- Options row: format + short URL -->
@@ -67,10 +67,14 @@
       </div>
     </div>
 
-    <!-- Final generate button -->
-    <div class="mt-6">
+    <!-- Final actions: Cancel + Generate -->
+    <div class="mt-6 flex items-center justify-end gap-3">
+      <a href="/dashboard/"
+         class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
+        Cancel
+      </a>
       <button type="submit"
-              class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
+              class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
         Generate QR code
       </button>
     </div>

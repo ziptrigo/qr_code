@@ -92,9 +92,9 @@ See [SETUP.md](SETUP.md) for complete installation, configuration, and usage ins
 2. Click the **Generate QR code** button on the right of the search bar to open `/qrcodes/new/`.
 3. Fill in:
    - **Name** – a label to identify this QR code in your dashboard.
-   - **Text / URL to encode** – any text up to 1000 characters. If you tick *Generate short URL*, this should be a valid URL.
+   - **Text / URL to encode** – any text up to 1000 characters. This can be plain text or a URL.
    - **Format** – choose between PNG, SVG or PDF.
-   - *(Optional)* **Generate short URL** – when enabled and the content is a valid URL, the service will store the original URL and encode a shortened redirect URL in the QR code.
+   - *(Optional)* **Generate short URL** – when enabled and the content is a valid URL, the service will store the original URL and encode a shortened redirect URL in the QR code. If the content is not a URL, this option has no effect.
 4. Click **Generate QR code preview** to see what the QR image will look like. This does **not** save anything yet.
 5. When satisfied, click **Generate QR code**. The QR code is saved via the API and you are redirected back to `/dashboard/`, where the new entry appears in the list.
 
