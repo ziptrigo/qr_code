@@ -10,20 +10,24 @@ A Python project for generating and manipulating QR codes.
 
 ## Tech Stack
 - Python 3.13
-- Django 5.2 for API interface
+- Django 5.2 for API and web interface (session-based auth, htmx + Tailwind templates)
 - typer for CLI interface
 - segno package for QR code generation
 - RDBMS for data storage
 
 ## App name and project structure
 The app name is `qr_code`.
-The app code should be located under `src/qr_code`.
+The app code is located under `src/qr_code`.
 All references should reflect this structure.
-Database tables related to the app should have the prefix `qr_code`.
+Database tables related to the app have the prefix `qr_code`.
 Models are stored under `src/qr_code/models`, each model in its own file.
+API views live under `src/qr_code/api`, services under `src/qr_code/services`, and HTML templates under `src/qr_code/templates`.
 
 ## Current Status
 Initial version done. Testing functionality and fixing bugs.
+- Authentication flow implemented with `/login/`, `/register/`, and `/logout/`.
+- Dashboard `/dashboard/` lists the authenticated user’s QR codes (search + sort).
+- QR generator page `/qrcodes/new/` lets users preview and save QR codes.
 
 ## Next Steps
 1. Test authentication endpoints.
@@ -51,10 +55,15 @@ Initial version done. Testing functionality and fixing bugs.
 Frontend design language is minimal with a green-gray color palette from `src/qr_code/static/images/logo_128x128.png`.
 All pages support light/dark mode including login and register.
 Form validation includes existence checks and email format validation before backend calls.
-On valid login, redirect to 'hello' page.
+On valid login, redirect to the dashboard page.
 Include a 'remember me' checkbox with corresponding behavior.
 User-facing error messages are simple; developer-facing errors are verbose and technical.
 CSS stack uses Tailwind.
+
+The QR dashboard and generator follow this stack:
+- `dashboard.html` shows the user’s QR codes with search and a "Generate QR code" button.
+- `qrcode_generator.html` provides name, text/URL, format (PNG/SVG/PDF), short URL toggle, preview, and final save.
+- Preview uses `POST /api/qrcodes/preview` (no DB row), final save uses `POST /api/qrcodes/` and redirects back to `/dashboard/`.
 
 ### Documentation
 Create documentation in MD format under the `docs` directory, all lowercased files.

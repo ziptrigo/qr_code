@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate QR Code - QR Code App{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Generate QR code</h1>
+
+  <div id="qrcode-msg" class="mb-4 text-sm"></div>
+
+  <form id="qrcode-form"
+        hx-post="/api/qrcodes/"
+        hx-trigger="submit"
+        hx-swap="none">
+    {% csrf_token %}
+
+    <!-- Name -->
+    <div class="mb-4">
+      <label class="block mb-1 text-sm font-medium">Name</label>
+      <input type="text" name="name" maxlength="255" required
+             class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
+    </div>
+
+    <!-- Text / URL -->
+    <div class="mb-4">
+      <label class="block mb-1 text-sm font-medium">Text / URL to encode</label>
+      <textarea name="url" maxlength="1000" rows="4" required
+                class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"></textarea>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Up to 1000 characters. Must be a valid URL when using short URL.</p>
+    </div>
+
+    <!-- Options row: format + short URL -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <label class="block mb-1 text-sm font-medium">Format</label>
+        <select name="qr_format"
+                class="w-40 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
+          <option value="png" selected>PNG</option>
+          <option value="svg">SVG</option>
+          <option value="pdf">PDF</option>
+        </select>
+      </div>
+
+      <label class="inline-flex items-center gap-2 mt-2 sm:mt-6">
+        <input type="checkbox" name="use_url_shortening" value="true" class="rounded">
+        <span class="text-sm">Generate short URL (for valid URLs only)</span>
+      </label>
+    </div>
+
+    <!-- Preview + Image -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <button type="button"
+              id="qrcode-preview-btn"
+              hx-post="/api/qrcodes/preview"
+              hx-trigger="click"
+              hx-swap="none"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
+        Generate QR code preview
+      </button>
+
+      <div class="flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-md p-2 min-h-[96px] min-w-[96px] self-start">
+        <img id="qrcode-preview-img"
+             src="{% static 'images/logo_128x128.png' %}"
+             alt="QR code preview"
+             class="h-24 w-24 object-contain">
+      </div>
+    </div>
+
+    <!-- Final generate button -->
+    <div class="mt-6">
+      <button type="submit"
+              class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
+        Generate QR code
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  (function(){
+    const form = document.getElementById('qrcode-form');
+    const msg = document.getElementById('qrcode-msg');
+    const previewBtn = document.getElementById('qrcode-preview-btn');
+    const previewImg = document.getElementById('qrcode-preview-img');
+
+    form.addEventListener('submit', function(ev){
+      if (!form.checkValidity()) {
+        msg.textContent = 'Please fill in the name and provide valid text/URL (up to 1000 characters).';
+        msg.className = 'mb-4 text-sm text-red-600';
+        return;
+      }
+      msg.textContent = '';
+      msg.className = 'mb-4 text-sm';
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(e){
+      const status = e.detail.xhr.status;
+
+      // Preview button request
+      if (e.target === previewBtn) {
+        try {
+          const data = JSON.parse(e.detail.xhr.responseText || '{}');
+          if (status >= 200 && status < 300 && data.image_url) {
+            previewImg.src = data.image_url;
+          } else {
+            const userMsg = data.detail || data.message || 'Could not generate preview.';
+            msg.textContent = userMsg;
+            msg.className = 'mb-4 text-sm text-red-600';
+            console.error('Preview error (developer details):', data);
+          }
+        } catch (err) {
+          msg.textContent = 'Unexpected error while generating preview.';
+          msg.className = 'mb-4 text-sm text-red-600';
+          console.error('Preview error (non-JSON):', e.detail.xhr.responseText);
+        }
+        return;
+      }
+
+      // Final create request (form)
+      if (e.target === form) {
+        try {
+          const data = JSON.parse(e.detail.xhr.responseText || '{}');
+          if (status >= 200 && status < 300) {
+            window.location = '/dashboard/';
+          } else {
+            const userMsg = data.detail || data.message || 'Could not generate QR code.';
+            msg.textContent = userMsg;
+            msg.className = 'mb-4 text-sm text-red-600';
+            console.error('Create QR error (developer details):', data);
+          }
+        } catch (err) {
+          if (status >= 200 && status < 300) {
+            window.location = '/dashboard/';
+          } else {
+            msg.textContent = 'An unexpected error occurred.';
+            msg.className = 'mb-4 text-sm text-red-600';
+            console.error('Create QR error (non-JSON):', e.detail.xhr.responseText);
+          }
+        }
+      }
+    });
+  })();
+</script>
+{% endblock %}

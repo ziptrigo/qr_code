@@ -29,7 +29,7 @@ class QRCodeGenerator:
         media_qrcodes = Path(settings.MEDIA_ROOT) / 'qrcodes'
         media_qrcodes.mkdir(parents=True, exist_ok=True)
 
-        file_name = f"{qr_code_instance.id}.{qr_code_instance.qr_format}"
+        file_name = f'{qr_code_instance.id}.{qr_code_instance.qr_format}'
         file_path = media_qrcodes / file_name
 
         # Prepare color values
