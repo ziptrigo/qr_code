@@ -21,6 +21,7 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
         model = QRCode
         fields = [
             'id',
+            'name',
             'qr_format',
             'size',
             'error_correction',

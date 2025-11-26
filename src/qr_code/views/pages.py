@@ -61,3 +61,9 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         'query': query,
     }
     return render(request, 'dashboard.html', context)
+
+
+@login_required
+def qrcode_generator(request: HttpRequest) -> HttpResponse:
+    """Render the QR code generator page."""
+    return render(request, 'qrcode_generator.html')

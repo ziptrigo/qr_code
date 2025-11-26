@@ -1,3 +1,5 @@
+import uuid
+
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect
 from rest_framework import status, viewsets
@@ -7,6 +9,7 @@ from rest_framework.response import Response
 
 from ..models import QRCode
 from ..serializers import QRCodeCreateSerializer, QRCodeSerializer
+from ..services import QRCodeGenerator
 
 
 class QRCodeViewSet(viewsets.ModelViewSet):
@@ -30,6 +33,59 @@ class QRCodeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Save with the current user."""
         serializer.save()
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def qrcode_preview(request):
+    """Generate a QR code image for preview without saving to the database."""
+    serializer = QRCodeCreateSerializer(
+        data=request.data,
+        context={'request': request},
+    )
+    serializer.is_valid(raise_exception=True)
+    validated_data = dict(serializer.validated_data)
+
+    url = validated_data.pop('url', None)
+    data = validated_data.pop('data', None)
+
+    if url:
+        content = url
+    else:
+        content = data
+
+    if not content:
+        return Response(
+            {'detail': "Either 'url' or 'data' must be provided."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    qr_instance = QRCode(
+        id=uuid.uuid4(),
+        created_by=request.user,
+        content=content,
+        **{
+            key: value
+            for key, value in validated_data.items()
+            if key
+            in {
+                'name',
+                'qr_format',
+                'size',
+                'error_correction',
+                'border',
+                'background_color',
+                'foreground_color',
+                'use_url_shortening',
+            }
+        },
+        image_file='preview.png',
+    )
+
+    image_path = QRCodeGenerator.generate_qr_code(qr_instance)
+    image_url = QRCodeGenerator.get_file_url(image_path)
+
+    return Response({'image_url': image_url}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

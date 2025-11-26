@@ -4,6 +4,7 @@ from .pages import (
     home_page,
     login_page,
     logout_page,
+    qrcode_generator,
     register_page,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     'home_page',
     'login_page',
     'logout_page',
+    'qrcode_generator',
     'register_page',
 ]
