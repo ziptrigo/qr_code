@@ -2,7 +2,7 @@
 
 # QR Code Generator Service
 
-A complete QR code generation and management service with Django REST API, session-based authentication, URL shortening, and CLI interface.
+A complete QR code generation and management service with Django REST API, session-based authentication, URL shortening, web dashboard, and CLI interface.
 
 ## Features
 
@@ -10,6 +10,7 @@ A complete QR code generation and management service with Django REST API, sessi
 - 🔗 **URL Shortening**: Built-in URL shortener with redirect tracking
 - 📊 **Analytics**: Track scan counts and timestamps
 - 🔐 **Session Authentication**: Secure API access with session-based auth
+- 🖥️ **Web Dashboard**: Login/register flow, QR code listing with search and sort, and an interactive QR code generator page (preview + save)
 - 💻 **CLI Interface**: Command-line tool for all operations
 - 🗄️ **Database Flexible**: SQLite for development, PostgreSQL-ready for production
 - 🖼️ **Transparency Support**: PNG with transparent backgrounds
@@ -64,11 +65,38 @@ See [SETUP.md](SETUP.md) for complete installation, configuration, and usage ins
 
 - `POST /api/signup` - Create user account (email, name, password)
 - `POST /api/login` - Authenticate with email and password
-- `POST /api/qrcodes/` - Create QR code
+- `POST /api/qrcodes/` - Create QR code (supports `name`, formats PNG/SVG/PDF, colors, and optional URL shortening)
+- `POST /api/qrcodes/preview` - Generate a QR code image for preview without saving it to the database
 - `GET /api/qrcodes/` - List QR codes
 - `GET /api/qrcodes/{id}/` - Get QR code details
 - `DELETE /api/qrcodes/{id}/` - Delete QR code
 - `GET /go/{short_code}/` - Redirect and track (public)
+
+## Web UI
+
+- `/` - Home page with project overview and logo
+- `/login/` - Login form using htmx + session-based auth
+- `/register/` - Registration form using htmx
+- `/dashboard/` - Authenticated dashboard listing the user’s QR codes with search and sort options
+- `/qrcodes/new/` - QR code generator page with:
+  - Name field
+  - Text/URL textarea (up to 1000 characters)
+  - Format dropdown (PNG, SVG, PDF)
+  - "Generate short URL" checkbox
+  - Preview button that calls `POST /api/qrcodes/preview` and shows a live QR image
+  - Final "Generate QR code" button that saves via `POST /api/qrcodes/` and redirects back to the dashboard
+
+### How to use the generator
+
+1. Log in (or register) and go to the `/dashboard/` page.
+2. Click the **Generate QR code** button on the right of the search bar to open `/qrcodes/new/`.
+3. Fill in:
+   - **Name** – a label to identify this QR code in your dashboard.
+   - **Text / URL to encode** – any text up to 1000 characters. If you tick *Generate short URL*, this should be a valid URL.
+   - **Format** – choose between PNG, SVG or PDF.
+   - *(Optional)* **Generate short URL** – when enabled and the content is a valid URL, the service will store the original URL and encode a shortened redirect URL in the QR code.
+4. Click **Generate QR code preview** to see what the QR image will look like. This does **not** save anything yet.
+5. When satisfied, click **Generate QR code**. The QR code is saved via the API and you are redirected back to `/dashboard/`, where the new entry appears in the list.
 
 ## Development
 
