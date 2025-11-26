@@ -1,29 +1,18 @@
-from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.contrib.auth import authenticate, get_user_model, login
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .auth_serializers import LoginSerializer, SignupSerializer
-from .models import QRCode
-from .serializers import QRCodeCreateSerializer, QRCodeSerializer
+from ..auth_serializers import LoginSerializer, SignupSerializer
+from ..models import QRCode
+from ..serializers import QRCodeCreateSerializer, QRCodeSerializer
 
 User = get_user_model()
 
 
 class QRCodeViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for QR Code operations.
-
-    Endpoints:
-    - POST /api/qrcodes/ - Create a new QR code
-    - GET /api/qrcodes/ - List all QR codes for authenticated user
-    - GET /api/qrcodes/{id}/ - Retrieve a specific QR code
-    - DELETE /api/qrcodes/{id}/ - Delete a QR code
-    """
+    """ViewSet for QR Code operations."""
 
     permission_classes = [IsAuthenticated]
 
@@ -48,101 +37,29 @@ class QRCodeViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def redirect_view(request, short_code):
-    """
-    Redirect endpoint for shortened URLs.
-
-    This endpoint:
-    1. Looks up the QR code by short_code
-    2. Increments the scan count
-    3. Redirects to the original URL
-
-    Path: /go/{short_code}/
-    """
+    """Redirect endpoint for shortened URLs."""
     try:
         qr_code = QRCode.objects.get(short_code=short_code)
     except QRCode.DoesNotExist:
-        raise Http404("QR Code not found")
+        msg = 'QR Code not found'
+        raise Http404(msg)
 
-    # Increment scan count
     qr_code.increment_scan_count()
 
-    # Redirect to original URL
     if qr_code.original_url:
         return redirect(qr_code.original_url)
-    else:
-        return Response(
-            {"error": "No redirect URL available for this QR code"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+
+    return Response(
+        {"error": "No redirect URL available for this QR code"},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def hello_api(request):
-    """
-    Simple hello API endpoint.
-    Returns a JSON response with a hello message.
-
-    Path: /api/hello
-    """
+    """Simple hello API endpoint."""
     return JsonResponse({'message': 'Hello, world!'})
-
-
-def hello_page(request):
-    """
-    Render the hello page.
-
-    Path: /hello/
-    """
-    return render(request, 'hello.html')
-
-
-def home_page(request):
-    """Render the homepage (GET /)."""
-    return render(request, 'home.html')
-
-
-def login_page(request):
-    """Render the login page (GET /login/)."""
-    return render(request, 'login.html')
-
-
-def register_page(request):
-    """Render the register page (GET /register/)."""
-    return render(request, 'register.html')
-
-
-def logout_page(request: HttpRequest) -> HttpResponse:
-    """Log out the current user and redirect to the homepage."""
-    if request.user.is_authenticated:
-        logout(request)
-    return redirect('home')
-
-
-@login_required
-def dashboard(request: HttpRequest) -> HttpResponse:
-    """
-    Render the user dashboard with their QR codes.
-    """
-    user = request.user
-    query = request.GET.get('q', '')
-    sort = request.GET.get('sort', '')
-
-    qrcodes = QRCode.objects.filter(created_by=user)
-
-    if query:
-        qrcodes = qrcodes.filter(name__icontains=query)
-
-    if sort == 'name':
-        qrcodes = qrcodes.order_by('name')
-    else:
-        qrcodes = qrcodes.order_by('-created_at')
-
-    context = {
-        'qrcodes': qrcodes,
-        'query': query,
-    }
-    return render(request, 'dashboard.html', context)
 
 
 @api_view(['POST'])
@@ -152,7 +69,6 @@ def signup(request):
     serializer = SignupSerializer(data=request.data)
     if not serializer.is_valid():
         errors = serializer.errors
-        # Special-case email uniqueness per spec
         if 'email' in errors:
             for err in errors['email']:
                 if 'User with that email already exists.' in str(err):
@@ -179,12 +95,7 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    """
-    Login endpoint: authenticate by email/password, start session, return session id and user info.
-
-    Supports optional "remember" parameter (truthy values: 1, true, on, yes) to persist
-    the session for 14 days. If not provided or falsy, the session expires on browser close.
-    """
+    """Login endpoint: authenticate and start session with optional remember flag."""
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
@@ -196,10 +107,8 @@ def login_view(request):
 
     login(request, user)
 
-    # Remember Me behavior
     remember_raw = str(request.data.get('remember', '')).lower()
     remember = remember_raw in {'1', 'true', 'on', 'yes'}
-    # 14 days if remember, else session-only (expires on browser close)
     request.session.set_expiry(1209600 if remember else 0)
 
     if not request.session.session_key:
