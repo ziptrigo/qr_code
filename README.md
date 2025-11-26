@@ -59,7 +59,7 @@ python manage.py runserver
 
 ## Documentation
 
-See [SETUP.md](SETUP.md) for complete installation, configuration, and usage instructions.
+See [setup.md](docs/setup.md) for complete installation, configuration, and usage instructions.
 
 ## API Endpoints
 
