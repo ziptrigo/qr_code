@@ -38,7 +38,9 @@ def logout_page(request: HttpRequest) -> HttpResponse:
 def dashboard(request: HttpRequest) -> HttpResponse:
     """Render the user dashboard with their QR codes."""
     user = request.user
-    if isinstance(user, AnonymousUser):  # Narrow type for static checkers; guarded by @login_required.
+
+    # Narrow type for static checkers; guarded by @login_required.
+    if isinstance(user, AnonymousUser):
         raise RuntimeError('Authenticated user required')
 
     query = request.GET.get('q', '')
