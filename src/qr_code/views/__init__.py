@@ -1,4 +1,3 @@
-from .api import QRCodeViewSet, hello_api, login_view, redirect_view, signup
 from .pages import (
     dashboard,
     hello_page,
@@ -9,11 +8,6 @@ from .pages import (
 )
 
 __all__ = [
-    'QRCodeViewSet',
-    'hello_api',
-    'login_view',
-    'redirect_view',
-    'signup',
     'dashboard',
     'hello_page',
     'home_page',
