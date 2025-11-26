@@ -56,10 +56,10 @@
                     <div class="flex-shrink-0">
                         <!-- QR thumbnail is clickable to open a larger modal preview -->
                         <button type="button"
-                                class="focus:outline-none"
+                                class="focus:outline-none group"
                                 data-full-src="{% if qr.image_file %}/media/{{ qr.image_file }}{% else %}{% static 'images/logo_128x128.png' %}{% endif %}"
                                 aria-label="Open QR code preview">
-                            <img class="h-12 w-12 rounded object-cover bg-gray-100"
+                            <img class="h-12 w-12 rounded object-cover bg-gray-100 transform transition-transform duration-150 ease-out group-hover:scale-110"
                                  src="{% if qr.image_file %}/media/{{ qr.image_file }}{% else %}{% static 'images/logo_32x32.png' %}{% endif %}"
                                  alt="{{ qr.name }}">
                         </button>
