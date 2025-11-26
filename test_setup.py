@@ -118,6 +118,7 @@ def test_url_shortening(user):
         return False
 
 
+@pytest.mark.django_db
 def test_scan_tracking():
     """Test scan tracking."""
     print('\nTesting scan tracking...')
