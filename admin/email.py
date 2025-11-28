@@ -5,6 +5,8 @@ import boto3
 import typer
 from botocore.exceptions import ClientError
 
+from admin.utils import logger
+
 app = typer.Typer(help='Simple SES email sender for testing.')
 
 
@@ -35,12 +37,12 @@ def _send_email(
                 },
             },
         )
-    except ClientError as exc:
-        typer.echo(f'Error sending email: {exc}', err=True)
-        raise
+    except ClientError as e:
+        logger.error(f'Error sending email: {e}')
+        raise typer.Exit(1)
 
     message_id = response['MessageId']
-    typer.echo(f'Email sent, MessageId = {message_id}')
+    logger.info(f'Email sent, MessageId = {message_id}')
 
 
 @app.command('send')
