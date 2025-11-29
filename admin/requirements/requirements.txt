@@ -1,7 +1,7 @@
 asgiref==3.10.0
     # via django
 boto3==1.41.5
-    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    # via -r requirements.in
 botocore==1.41.5
     # via
     #   boto3
@@ -16,10 +16,10 @@ colorama==0.4.6
     # via click
 django==5.2.8
     # via
-    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    #   -r requirements.in
     #   djangorestframework
 djangorestframework==3.16.1
-    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    # via -r requirements.in
 idna==3.11
     # via requests
 jmespath==1.0.1
@@ -31,19 +31,19 @@ markdown-it-py==4.0.0
 mdurl==0.1.2
     # via markdown-it-py
 pillow==12.0.0
-    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    # via -r requirements.in
 pygments==2.19.2
     # via rich
 python-dateutil==2.9.0.post0
     # via botocore
 requests==2.32.5
-    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    # via -r requirements.in
 rich==14.2.0
     # via typer
 s3transfer==0.15.0
     # via boto3
 segno==1.6.6
-    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    # via -r requirements.in
 shellingham==1.5.4
     # via typer
 six==1.17.0
@@ -51,7 +51,7 @@ six==1.17.0
 sqlparse==0.5.3
     # via django
 typer==0.20.0
-    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.in
+    # via -r requirements.in
 typing-extensions==4.15.0
     # via typer
 tzdata==2025.2
