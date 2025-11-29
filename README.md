@@ -10,6 +10,7 @@ A complete QR code generation and management service with Django REST API, sessi
 - 🔗 **URL Shortening**: Built-in URL shortener with redirect tracking
 - 📊 **Analytics**: Track scan counts and timestamps
 - 🔐 **Session Authentication**: Secure API access with session-based auth
+- 🔑 **Forgot Password**: Email-based password reset with time-limited tokens
 - 🖥️ **Web Dashboard**: Login/register flow, QR code listing with search and sort, and an interactive QR code generator page (preview + save)
 - 💻 **CLI Interface**: Command-line tool for all operations
 - 🗄️ **Database Flexible**: SQLite for development, PostgreSQL-ready for production
@@ -65,6 +66,8 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 
 - `POST /api/signup` - Create user account (email, name, password)
 - `POST /api/login` - Authenticate with email and password
+- `POST /api/forgot-password` - Request a password reset email (always returns 200)
+- `POST /api/reset-password` - Reset password using a valid token (`token`, `password`, `password_confirm`)
 - `POST /api/qrcodes/` - Create QR code (supports `name`, formats PNG/SVG/PDF, colors, and optional URL shortening)
 - `POST /api/qrcodes/preview` - Generate a QR code image for preview without saving it to the database
 - `GET /api/qrcodes/` - List QR codes
@@ -75,8 +78,12 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 ## Web UI
 
 - `/` - Home page with project overview and logo
-- `/login/` - Login form using htmx + session-based auth
+- `/login/` - Login form using htmx + session-based auth (includes "Forgot your password?" link)
 - `/register/` - Registration form using htmx
+- `/forgot-password/` - Request a reset link via email. After submit, a generic success message is shown
+  regardless of whether the email exists
+- `/reset-password/<token>/` - Enter a new password. Invalid or expired tokens show an expiry page with a link
+  back to login
 - `/dashboard/` - Authenticated dashboard listing the user’s QR codes with search and sort options
 - `/qrcodes/new/` - QR code generator page with:
   - Name field
@@ -85,6 +92,12 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
   - "Generate short URL" checkbox
   - Preview button that calls `POST /api/qrcodes/preview` and shows a live QR image
   - Final "Generate QR code" button that saves via `POST /api/qrcodes/` and redirects back to the dashboard
+
+### Password reset and email configuration
+
+- `PASSWORD_RESET_TOKEN_TTL_HOURS` (default: 4) controls token validity window
+- `EMAIL_BACKEND` can be `console` (dev) or `ses` (production)
+- For SES, set `SES_REGION` and `SES_SENDER` in your environment or settings
 
 ### How to use the generator
 
