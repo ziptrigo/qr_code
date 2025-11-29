@@ -1,22 +1,13 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, ClassVar, cast
 
 from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
 
-if TYPE_CHECKING:
-    from .user import User
-
 
 class PasswordResetToken(models.Model):
-    # Explicitly declare the default manager for type checkers (mypy) while preserving
-    # Django's runtime behavior by assigning a plain Manager instance.
-    objects: ClassVar[models.Manager['PasswordResetToken']] = cast(
-        models.Manager['PasswordResetToken'], models.Manager()
-    )
     """Time-limited token to allow a user to reset their password."""
 
     user = models.ForeignKey(
@@ -33,8 +24,7 @@ class PasswordResetToken(models.Model):
         verbose_name_plural = 'Password reset tokens'
 
     def __str__(self) -> str:  # pragma: no cover - representation only
-        user_id = getattr(self, 'user_id', None)
-        return f'PasswordResetToken(user={user_id}, token={self.token})'
+        return f'PasswordResetToken(user={self.user_id}, token={self.token})'
 
     @property
     def is_used(self) -> bool:
@@ -52,4 +42,4 @@ class PasswordResetToken(models.Model):
 
         # 48 characters of URL-safe randomness is plenty.
         token = get_random_string(48)
-        return cast('PasswordResetToken', cls.objects.create(user=user, token=token))
+        return cls.objects.create(user=user, token=token)

@@ -1,5 +1,7 @@
 """Unit tests for password reset email rendering using Jinja2 template."""
 
+from __future__ import annotations
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
