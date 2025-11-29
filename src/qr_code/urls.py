@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/signup', signup, name='signup'),
     path('api/login', login_view, name='login'),
     path('api/forgot-password', forgot_password, name='forgot-password'),
+    path('api/reset-password', reset_password, name='reset-password'),
     path('api/qrcodes/preview', qrcode_preview, name='qrcode-preview'),
     path('', home_page, name='home'),
     path('login/', login_page, name='login-page'),
