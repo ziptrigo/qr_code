@@ -8,11 +8,6 @@ from ..models import QRCode
 from ..services.password_reset import PasswordResetService, get_password_reset_service
 
 
-def hello_page(request: HttpRequest) -> HttpResponse:
-    """Render the hello page (GET /hello/)."""
-    return render(request, 'hello.html')
-
-
 def home_page(request: HttpRequest) -> HttpResponse:
     """Render the homepage (GET /).
 

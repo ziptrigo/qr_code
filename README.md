@@ -131,13 +131,14 @@ python cli.py list
 
 ## Tech Stack
 
-- **Backend**: Django 5.2 + Django REST Framework
+- **Backend**: [Django](https://www.djangoproject.com) + [Django REST Framework](https://www.django-rest-framework.org)
+- **Frontend**: [htmx](https://htmx.org) + [Alpine.js](https://alpinejs.dev) + [Tailwind CSS](https://tailwindcss.com)
 - **Authentication**: Session-based authentication
-- **QR Generation**: segno
+- **QR Generation**: [segno](https://github.com/heuer/segno/)
 - **CLI**: typer
-- **Database**: SQLite (PostgreSQL-ready)
-- **Tooling**: pytest, pytest-cov, black, isort
+- **Database**: SQLite (MySQL / PostgreSQL ready)
+- **Tooling**: [pytest](https://pytest.org), pytest-cov, black, isort
 
 ## License
 
-MIT
+[MIT](https://mit-license.org)
