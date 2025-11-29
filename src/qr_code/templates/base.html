@@ -184,8 +184,11 @@
         document.addEventListener('click', function (e) {
           const target = e.target instanceof Element ? e.target : null;
           if (!target) return;
-          const btn = target.closest('#theme-toggle');
+          // Check if we clicked the button itself or any child (like the img)
+          const btn = target.id === 'theme-toggle' ? target : target.closest('#theme-toggle');
           if (!btn) return;
+          e.preventDefault();
+          e.stopPropagation();
           const cur = currentMode();
           const nxt = nextMode(cur);
           try { localStorage.setItem('theme', nxt); } catch (_) { /* ignore */ }
