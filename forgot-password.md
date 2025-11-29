@@ -28,7 +28,7 @@ To send the email, abstract the sending logic.
 We're going to implement that logic using AWS SES at this point, but later this may be changed and 
 we want this change to be transparent to the rest of the code.
 
-In the email being send, there's a link to reset the password.
+In the email being sent, there's a link to reset the password.
 This link is to be valid for a few hours. Implement a mechanism to invalidate this link after that
 time has elapsed.  This time should be configurable.
 

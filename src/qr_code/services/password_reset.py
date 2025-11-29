@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from django.conf import settings
 from django.urls import reverse
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..models.user import PasswordResetToken, User
 from .email_service import EmailBackend, get_email_backend
@@ -64,20 +66,43 @@ def get_password_reset_service() -> PasswordResetService:
 
 
 def render_password_reset_email(*, user: User, reset_url: str) -> tuple[str, str, str]:
-    """Render email subject, text, and HTML body for a reset email."""
+    """Render email subject, text, and HTML body for a reset email using Jinja2.
 
-    subject = "Reset your QR Code account password"
-    text_body = (
-        "You requested a password reset for your QR Code account.\n\n"
-        f"Click the link below to set a new password (valid for "
-        f"{settings.PASSWORD_RESET_TOKEN_TTL_HOURS} hours):\n{reset_url}\n\n"
-        "If you did not request this, you can ignore this email."
+    Template: ``src/qr_code/static/emails/password_reset.j2``.
+    """
+
+    base_dir = Path(settings.BASE_DIR)
+    template_path = base_dir / 'src' / 'qr_code' / 'static' / 'emails'
+
+    env = Environment(
+        loader=FileSystemLoader(str(template_path)),
+        autoescape=select_autoescape(['html', 'xml']),
     )
-    html_body = (
-        "<p>You requested a password reset for your QR Code account.</p>"
-        f"<p>Click the link below to set a new password (valid for "
-        f"{settings.PASSWORD_RESET_TOKEN_TTL_HOURS} hours):</p>"
-        f'<p><a href="{reset_url}">{reset_url}</a></p>'
-        "<p>If you did not request this, you can ignore this email.</p>"
+    template = env.get_template('password_reset.j2')
+
+    rendered = template.render(
+        user=user,
+        reset_url=reset_url,
+        ttl_hours=settings.PASSWORD_RESET_TOKEN_TTL_HOURS,
     )
+
+    # The template is structured as three sections one after another:
+    # subject (first line), then text body, then HTML body.
+    lines = [line for line in rendered.splitlines() if not line.strip().startswith('{#')]
+
+    # Subject: first non-empty line.
+    non_empty = [line for line in lines if line.strip()]
+    subject = non_empty[0] if non_empty else 'Reset your QR Code account password'
+
+    # Heuristically split into text and HTML by blank line before first '<p>' or '<' tag.
+    joined = '\n'.join(non_empty[1:])
+    marker = '<p>'
+    idx = joined.find(marker)
+    if idx == -1:
+        text_body = joined.strip()
+        html_body = f'<pre>{text_body}</pre>' if text_body else ''
+    else:
+        text_body = joined[:idx].strip()
+        html_body = joined[idx:].strip()
+
     return subject, text_body, html_body
