@@ -7,7 +7,8 @@ from django.conf import settings
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from ..models.user import PasswordResetToken, User
+from ..models.password_reset_token import PasswordResetToken
+from ..models.user import User
 from .email_service import EmailBackend, get_email_backend
 
 

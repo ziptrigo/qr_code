@@ -98,8 +98,7 @@ def forgot_password(request):
     return Response(
         {
             'detail': (
-                'If the account exists, an email will be sent with a password '
-                'reset link.'
+                'If the account exists, an email will be sent with a password ' 'reset link.'
             ),
         },
         status=status.HTTP_200_OK,

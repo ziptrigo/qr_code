@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
-from src.qr_code.models.user import PasswordResetToken
+from src.qr_code.models.password_reset_token import PasswordResetToken
 from src.qr_code.services.password_reset import PasswordResetService
 
 User = get_user_model()
@@ -621,6 +621,7 @@ class TestPasswordResetFlow:
         token_obj = PasswordResetToken.create_for_user(user)
 
         from datetime import timedelta
+
         from django.utils import timezone
 
         token_obj.created_at = timezone.now() - timedelta(hours=2)
