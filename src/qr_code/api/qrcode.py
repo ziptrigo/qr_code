@@ -1,6 +1,6 @@
 import uuid
 
-from django.http import Http404, JsonResponse
+from django.http import Http404
 from django.shortcuts import redirect
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -107,5 +107,3 @@ def redirect_view(request, short_code):
         {"error": "No redirect URL available for this QR code"},
         status=status.HTTP_400_BAD_REQUEST,
     )
-
-
