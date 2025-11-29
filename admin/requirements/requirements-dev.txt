@@ -1,4 +1,4 @@
-asgiref==3.10.0
+asgiref==3.11.0
     # via
     #   -r requirements.txt
     #   django
@@ -33,7 +33,7 @@ colorama==0.4.6
     #   -r requirements.txt
     #   click
     #   pytest
-coverage[toml]==7.11.3
+coverage[toml]==7.12.0
     # via pytest-cov
 django==5.2.8
     # via
@@ -53,13 +53,13 @@ djangorestframework-stubs==3.16.5
     # via -r requirements-dev.in
 factory-boy==3.3.3
     # via -r requirements-dev.in
-faker==38.0.0
+faker==38.2.0
     # via factory-boy
 flake8==7.3.0
     # via
     #   -r requirements-dev.in
     #   flake8-pyproject
-flake8-pyproject==1.2.3
+flake8-pyproject==1.2.4
     # via -r requirements-dev.in
 idna==3.11
     # via
@@ -76,6 +76,8 @@ jmespath==1.0.1
     #   -r requirements.txt
     #   boto3
     #   botocore
+librt==0.6.2
+    # via mypy
 markdown-it-py==4.0.0
     # via
     #   -r requirements.txt
@@ -90,7 +92,7 @@ mdurl==0.1.2
     # via
     #   -r requirements.txt
     #   markdown-it-py
-mypy==1.18.2
+mypy==1.19.0
     # via -r requirements-dev.in
 mypy-boto3-ses==1.41.0
     # via boto3-stubs
@@ -163,7 +165,7 @@ six==1.17.0
     # via
     #   -r requirements.txt
     #   python-dateutil
-sqlparse==0.5.3
+sqlparse==0.5.4
     # via
     #   -r requirements.txt
     #   django
