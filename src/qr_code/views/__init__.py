@@ -1,7 +1,6 @@
 from .pages import (
     dashboard,
     forgot_password_page,
-    hello_page,
     home_page,
     login_page,
     logout_page,
@@ -13,7 +12,6 @@ from .pages import (
 __all__ = [
     'dashboard',
     'forgot_password_page',
-    'hello_page',
     'home_page',
     'login_page',
     'logout_page',

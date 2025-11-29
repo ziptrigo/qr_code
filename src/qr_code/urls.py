@@ -4,7 +4,6 @@ from rest_framework.routers import DefaultRouter
 from .api import (
     QRCodeViewSet,
     forgot_password,
-    hello_api,
     login_view,
     qrcode_preview,
     redirect_view,
@@ -14,7 +13,6 @@ from .api import (
 from .views import (
     dashboard,
     forgot_password_page,
-    hello_page,
     home_page,
     login_page,
     logout_page,
@@ -28,7 +26,6 @@ router.register(r'qrcodes', QRCodeViewSet, basename='qrcode')
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('api/hello', hello_api, name='hello-api'),
     path('api/signup', signup, name='signup'),
     path('api/login', login_view, name='login'),
     path('api/forgot-password', forgot_password, name='forgot-password'),
@@ -42,6 +39,5 @@ urlpatterns = [
     path('register/', register_page, name='register-page'),
     path('dashboard/', dashboard, name='dashboard'),
     path('qrcodes/new/', qrcode_generator, name='qrcode-new'),
-    path('hello/', hello_page, name='hello-page'),
     path('go/<str:short_code>/', redirect_view, name='qrcode-redirect'),
 ]

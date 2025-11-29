@@ -1,9 +1,8 @@
 from .auth import forgot_password, login_view, reset_password, signup
-from .qrcode import QRCodeViewSet, hello_api, qrcode_preview, redirect_view
+from .qrcode import QRCodeViewSet, qrcode_preview, redirect_view
 
 __all__ = [
     'QRCodeViewSet',
-    'hello_api',
     'qrcode_preview',
     'redirect_view',
     'login_view',

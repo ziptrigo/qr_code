@@ -109,8 +109,3 @@ def redirect_view(request, short_code):
     )
 
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def hello_api(request):
-    """Simple hello API endpoint."""
-    return JsonResponse({'message': 'Hello, world!'})
