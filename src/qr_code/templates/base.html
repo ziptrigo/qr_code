@@ -13,9 +13,19 @@
     <script>
       (function () {
         try {
-          const ls = localStorage.getItem('theme');
+          const mode = localStorage.getItem('theme') || 'system';
           const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          const wantDark = ls === 'dark' || (ls !== 'light' && prefersDark);
+          let wantDark = false;
+          
+          if (mode === 'dark') {
+            wantDark = true;
+          } else if (mode === 'light') {
+            wantDark = false;
+          } else {
+            // system
+            wantDark = prefersDark;
+          }
+          
           if (wantDark) {
             document.documentElement.classList.add('dark');
           } else {
@@ -25,11 +35,12 @@
       })();
     </script>
 
-    <!-- Tailwind (Play CDN) with brand config -->
+    <!-- Tailwind (Play CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind -->
     <script>
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = {
-        darkMode: ['class', 'media'],
+      tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             colors: {
@@ -42,7 +53,6 @@
         }
       };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- htmx -->
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
@@ -138,17 +148,21 @@
         let mqlHandlerAttached = false;
 
         function applyTheme(mode) {
+          const html = document.documentElement;
+          
           if (mode === 'light') {
-            document.documentElement.classList.remove('dark');
+            html.classList.remove('dark');
           } else if (mode === 'dark') {
-            document.documentElement.classList.add('dark');
+            html.classList.add('dark');
           } else {
+            // system
             if (mql.matches) {
-              document.documentElement.classList.add('dark');
+              html.classList.add('dark');
             } else {
-              document.documentElement.classList.remove('dark');
+              html.classList.remove('dark');
             }
           }
+          
           const { btn, icon } = getEls();
           const ICONS = getIcons(btn);
           if (icon && ICONS) {
@@ -187,13 +201,15 @@
           // Check if we clicked the button itself or any child (like the img)
           const btn = target.id === 'theme-toggle' ? target : target.closest('#theme-toggle');
           if (!btn) return;
+
           e.preventDefault();
           e.stopPropagation();
           const cur = currentMode();
           const nxt = nextMode(cur);
+          
           try { localStorage.setItem('theme', nxt); } catch (_) { /* ignore */ }
-          applyTheme(nxt);
-          attachMqlIfNeeded(nxt);
+          // Reload page to apply new theme (Tailwind CDN doesn't support runtime dark mode changes)
+          window.location.reload();
         });
       })();
     </script>
