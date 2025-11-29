@@ -32,7 +32,7 @@
             <li class="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between sm:px-6">
                 <div class="flex items-center">
                     <div class="flex items-center h-5">
-                        <input type="checkbox" class="focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
+                        <input type="checkbox" id="select-all" class="focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
                     </div>
                     <div class="ml-4 flex items-center">
                          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 mr-4">Select all</span>
@@ -51,7 +51,7 @@
             <li class="px-4 py-4 flex items-center sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150 ease-in-out">
                 <div class="flex items-center min-w-0 flex-1">
                     <div class="flex items-center h-5 mr-4">
-                        <input type="checkbox" name="selected_qr" value="{{ qr.id }}" class="focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
+                        <input type="checkbox" name="selected_qr" value="{{ qr.id }}" class="qr-checkbox focus:ring-brand-primary h-4 w-4 text-brand-primary border-gray-300 rounded">
                     </div>
                     <div class="flex-shrink-0">
                         <!-- QR thumbnail is clickable to open a larger modal preview -->
@@ -170,6 +170,17 @@
         }
       }
     });
+
+    // Select all checkbox functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function() {
+        const qrCheckboxes = document.querySelectorAll('.qr-checkbox');
+        qrCheckboxes.forEach(function(checkbox) {
+          checkbox.checked = selectAllCheckbox.checked;
+        });
+      });
+    }
   })();
 </script>
 
