@@ -27,6 +27,11 @@ def login_page(request: HttpRequest) -> HttpResponse:
     return render(request, 'login.html')
 
 
+def forgot_password_page(request: HttpRequest) -> HttpResponse:
+    """Render the forgot password page (GET /forgot-password/)."""
+    return render(request, 'forgot_password.html')
+
+
 def register_page(request: HttpRequest) -> HttpResponse:
     """Render the register page (GET /register/)."""
     return render(request, 'register.html')

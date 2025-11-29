@@ -11,6 +11,7 @@ from .api import (
 )
 from .views import (
     dashboard,
+    forgot_password_page,
     hello_page,
     home_page,
     login_page,
@@ -30,6 +31,7 @@ urlpatterns = [
     path('api/qrcodes/preview', qrcode_preview, name='qrcode-preview'),
     path('', home_page, name='home'),
     path('login/', login_page, name='login-page'),
+    path('forgot-password/', forgot_password_page, name='forgot-password-page'),
     path('logout/', logout_page, name='logout-page'),
     path('register/', register_page, name='register-page'),
     path('dashboard/', dashboard, name='dashboard'),
