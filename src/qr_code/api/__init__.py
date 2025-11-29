@@ -1,4 +1,4 @@
-from .auth import login_view, signup
+from .auth import forgot_password, login_view, reset_password, signup
 from .qrcode import QRCodeViewSet, hello_api, qrcode_preview, redirect_view
 
 __all__ = [
@@ -8,4 +8,6 @@ __all__ = [
     'redirect_view',
     'login_view',
     'signup',
+    'forgot_password',
+    'reset_password',
 ]
