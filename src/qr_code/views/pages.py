@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AnonymousUser
@@ -5,6 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from ..models import QRCode
+from ..services.password_reset import PasswordResetService, get_password_reset_service
 
 
 def hello_page(request: HttpRequest) -> HttpResponse:
@@ -30,6 +33,17 @@ def login_page(request: HttpRequest) -> HttpResponse:
 def forgot_password_page(request: HttpRequest) -> HttpResponse:
     """Render the forgot password page (GET /forgot-password/)."""
     return render(request, 'forgot_password.html')
+
+
+def reset_password_page(request: HttpRequest, token: str) -> HttpResponse:
+    """Render the reset password page or expired page based on token."""
+
+    service: PasswordResetService = get_password_reset_service()
+    token_obj = service.validate_token(token)
+    if token_obj is None:
+        return render(request, 'reset_password_expired.html')
+
+    return render(request, 'reset_password.html', {'token': token})
 
 
 def register_page(request: HttpRequest) -> HttpResponse:
