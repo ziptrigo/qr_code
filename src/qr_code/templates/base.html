@@ -120,9 +120,14 @@
     </main>
 
     <footer class="bg-gray-100 dark:bg-gray-800 mt-auto py-6">
-        <div class="container mx-auto px-4 flex justify-center space-x-8">
-            <a href="#" class="hover:text-brand-primary">FAQ</a>
-            <a href="#" class="hover:text-brand-primary">Feedback</a>
+        <div class="container mx-auto px-4 flex items-center justify-between space-x-8">
+            <div class="flex justify-center space-x-8 flex-1">
+                <a href="#" class="hover:text-brand-primary">FAQ</a>
+                <a href="#" class="hover:text-brand-primary">Feedback</a>
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                &copy; {% now "Y" %} Joao Coelho. Licensed under MIT.
+            </div>
         </div>
     </footer>
 
