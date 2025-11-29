@@ -153,3 +153,11 @@ MIGRATION_MODULES = {
 # QR Code settings
 QR_CODE_BASE_URL = os.getenv('QR_CODE_BASE_URL', 'http://localhost:8000')
 QR_CODE_REDIRECT_PATH = '/go/'
+
+# Password reset settings
+PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_TTL_HOURS', '4'))
+
+# Email settings
+EMAIL_BACKEND_KIND = os.getenv('EMAIL_BACKEND_KIND', 'console')
+SES_REGION = os.getenv('SES_REGION', 'us-east-1')
+SES_SENDER = os.getenv('SES_SENDER', 'no-reply@example.com')

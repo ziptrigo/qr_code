@@ -1,6 +1,7 @@
 boto3
 django
 djangorestframework
+jinja2
 # mysqlclient           # MySQL client, currently not used
 pillow
 # psycopg               # PostgreSQL client, currently not used

@@ -7,6 +7,9 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
+from src.qr_code.models.user import PasswordResetToken
+from src.qr_code.services.password_reset import PasswordResetService
+
 User = get_user_model()
 
 
@@ -468,3 +471,159 @@ class TestAuthenticationFlow:
         assert qrcode1_id not in qrcode2_ids
         assert qrcode2_id in qrcode2_ids
         assert qrcode2_id not in qrcode1_ids
+
+
+@pytest.mark.django_db
+class TestPasswordResetFlow:
+    """Tests for forgot-password and reset-password endpoints."""
+
+    def _setup_fake_backend(self, monkeypatch):
+        calls: list[dict[str, str]] = []
+
+        class FakeBackend:
+            def send_email(
+                self,
+                to: str,
+                subject: str,
+                text_body: str,
+                html_body: str | None = None,
+            ) -> None:
+                calls.append(
+                    {
+                        'to': to,
+                        'subject': subject,
+                        'text': text_body,
+                        'html': html_body or '',
+                    }
+                )
+
+        def _get_service() -> PasswordResetService:
+            return PasswordResetService(email_backend=FakeBackend())
+
+        # Patch the helper used by the API module so SES is never touched.
+        monkeypatch.setattr(
+            'src.qr_code.api.auth._get_password_reset_service',
+            _get_service,
+        )
+
+        return calls
+
+    def test_forgot_password_existing_email_creates_token_and_sends_email(
+        self,
+        api_client,
+        user,
+        monkeypatch,
+    ) -> None:
+        calls = self._setup_fake_backend(monkeypatch)
+        url = reverse('forgot-password')
+
+        response = api_client.post(url, {'email': user.email}, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 'detail' in response.data
+        assert PasswordResetToken.objects.filter(user=user).count() == 1
+        assert len(calls) == 1
+        assert calls[0]['to'] == user.email
+
+    def test_forgot_password_nonexistent_email_is_generic_and_creates_no_token(
+        self,
+        api_client,
+        monkeypatch,
+    ) -> None:
+        calls = self._setup_fake_backend(monkeypatch)
+        url = reverse('forgot-password')
+
+        response = api_client.post(
+            url,
+            {'email': 'no-such-user@example.com'},
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 'detail' in response.data
+        assert PasswordResetToken.objects.count() == 0
+        assert len(calls) == 0
+
+    def test_forgot_password_missing_email_returns_400(self, api_client) -> None:
+        url = reverse('forgot-password')
+        response = api_client.post(url, {}, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'email' in response.data
+
+    def test_reset_password_success(self, api_client, user) -> None:
+        token_obj = PasswordResetToken.create_for_user(user)
+        url = reverse('reset-password')
+        data = {
+            'token': token_obj.token,
+            'password': 'newpass123',
+            'password_confirm': 'newpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+
+        # Verify the user can log in with the new password via the API.
+        login_url = reverse('login')
+        login_response = api_client.post(
+            login_url,
+            {'email': user.email, 'password': 'newpass123'},
+            format='json',
+        )
+        assert login_response.status_code == status.HTTP_200_OK
+
+    def test_reset_password_invalid_token(self, api_client) -> None:
+        url = reverse('reset-password')
+        data = {
+            'token': 'invalid-token',
+            'password': 'newpass123',
+            'password_confirm': 'newpass123',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'detail' in response.data
+
+    def test_reset_password_mismatched_passwords(self, api_client, user) -> None:
+        token_obj = PasswordResetToken.create_for_user(user)
+        url = reverse('reset-password')
+        data = {
+            'token': token_obj.token,
+            'password': 'onepass',
+            'password_confirm': 'otherpass',
+        }
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'password_confirm' in response.data
+
+    def test_reset_password_token_cannot_be_reused(self, api_client, user) -> None:
+        token_obj = PasswordResetToken.create_for_user(user)
+        url = reverse('reset-password')
+        data = {
+            'token': token_obj.token,
+            'password': 'newpass123',
+            'password_confirm': 'newpass123',
+        }
+
+        first = api_client.post(url, data, format='json')
+        assert first.status_code == status.HTTP_200_OK
+
+        second = api_client.post(url, data, format='json')
+        assert second.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_password_reset_token_expiration_property(self, user, settings) -> None:
+        settings.PASSWORD_RESET_TOKEN_TTL_HOURS = 1
+        token_obj = PasswordResetToken.create_for_user(user)
+
+        from datetime import timedelta
+        from django.utils import timezone
+
+        token_obj.created_at = timezone.now() - timedelta(hours=2)
+        token_obj.save(update_fields=['created_at'])
+
+        assert token_obj.is_expired is True
