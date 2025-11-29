@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
-from src.qr_code.models.user import PasswordResetToken
+from src.qr_code.models.password_reset_token import PasswordResetToken
 from src.qr_code.services.password_reset import PasswordResetService
 
 User = get_user_model()
@@ -521,7 +521,7 @@ class TestPasswordResetFlow:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'detail' in response.data
-        assert PasswordResetToken.objects.filter(user=user).count() == 1
+        assert PasswordResetToken.objects.filter(user=user).count() == 1  # type: ignore
         assert len(calls) == 1
         assert calls[0]['to'] == user.email
 
@@ -541,7 +541,7 @@ class TestPasswordResetFlow:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'detail' in response.data
-        assert PasswordResetToken.objects.count() == 0
+        assert PasswordResetToken.objects.count() == 0  # type: ignore
         assert len(calls) == 0
 
     def test_forgot_password_missing_email_returns_400(self, api_client) -> None:
@@ -621,6 +621,7 @@ class TestPasswordResetFlow:
         token_obj = PasswordResetToken.create_for_user(user)
 
         from datetime import timedelta
+
         from django.utils import timezone
 
         token_obj.created_at = timezone.now() - timedelta(hours=2)
