@@ -1,75 +1,93 @@
 asgiref==3.10.0
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   django
 black==25.11.0
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+boto3==1.41.5
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+boto3-stubs[ses]==1.41.5
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+botocore==1.41.5
+    # via
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+    #   boto3
+    #   s3transfer
+botocore-stubs==1.41.5
+    # via boto3-stubs
 certifi==2025.11.12
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   requests
 charset-normalizer==3.4.4
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   requests
 click==8.3.1
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   black
     #   typer
 colorama==0.4.6
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   click
     #   pytest
 coverage[toml]==7.11.3
     # via pytest-cov
 django==5.2.8
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework
 django-stubs==5.2.7
     # via
-    #   -r requirements-dev.in
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
     #   djangorestframework-stubs
 django-stubs-ext==5.2.7
     # via django-stubs
 djangorestframework==3.16.1
-    # via -r requirements.txt
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
 djangorestframework-stubs==3.16.5
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 factory-boy==3.3.3
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 faker==38.0.0
     # via factory-boy
 flake8==7.3.0
     # via
-    #   -r requirements-dev.in
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
     #   flake8-pyproject
 flake8-pyproject==1.2.3
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 idna==3.11
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   requests
 iniconfig==2.3.0
     # via pytest
 isort==7.0.0
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+jmespath==1.0.1
+    # via
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+    #   boto3
+    #   botocore
 markdown-it-py==4.0.0
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   rich
 mccabe==0.7.0
     # via flake8
 mdurl==0.1.2
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   markdown-it-py
 mypy==1.18.2
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+mypy-boto3-ses==1.41.0
+    # via boto3-stubs
 mypy-extensions==1.1.0
     # via
     #   black
@@ -83,7 +101,7 @@ pathspec==0.12.1
     #   black
     #   mypy
 pillow==12.0.0
-    # via -r requirements.txt
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
 platformdirs==4.5.0
     # via black
 pluggy==1.6.0
@@ -96,56 +114,72 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   pytest
     #   rich
 pytest==9.0.1
     # via
-    #   -r requirements-dev.in
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
     #   pytest-cov
     #   pytest-django
 pytest-cov==7.0.0
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 pytest-django==4.11.1
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+python-dateutil==2.9.0.post0
+    # via
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+    #   botocore
 python-dotenv==1.2.1
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 pytokens==0.3.0
     # via black
 requests==2.32.5
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   djangorestframework-stubs
 rich==14.2.0
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   typer
     #   typer-invoke
+s3transfer==0.15.0
+    # via
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+    #   boto3
 segno==1.6.6
-    # via -r requirements.txt
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
 shellingham==1.5.4
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   typer
+six==1.17.0
+    # via
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+    #   python-dateutil
 sqlparse==0.5.3
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   django
 typer==0.20.0
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   typer-invoke
 typer-invoke==0.4.0
-    # via -r requirements-dev.in
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+types-awscrt==0.29.0
+    # via botocore-stubs
 types-pyyaml==6.0.12.20250915
     # via
     #   django-stubs
     #   djangorestframework-stubs
 types-requests==2.32.4.20250913
     # via djangorestframework-stubs
+types-s3transfer==0.15.0
+    # via boto3-stubs
 typing-extensions==4.15.0
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework-stubs
@@ -153,11 +187,12 @@ typing-extensions==4.15.0
     #   typer
 tzdata==2025.2
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   django
     #   faker
 urllib3==2.5.0
     # via
-    #   -r requirements.txt
+    #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+    #   botocore
     #   requests
     #   types-requests

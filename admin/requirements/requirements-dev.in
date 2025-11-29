@@ -1,15 +1,16 @@
 -r requirements.txt
 
 black
+boto3-stubs[ses]
 django-stubs
 djangorestframework-stubs
 factory-boy
-flake8-pyproject
 flake8
+flake8-pyproject
 isort
 mypy
+pytest
 pytest-cov
 pytest-django
-pytest
 python-dotenv
 typer-invoke

@@ -1,3 +1,4 @@
+boto3
 django
 djangorestframework
 # mysqlclient           # MySQL client, currently not used
