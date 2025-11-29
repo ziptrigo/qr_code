@@ -1,3 +1,9 @@
+#!python
+"""
+Send emails using AWS SES.
+"""
+
+
 import sys
 from typing import Annotated
 
@@ -7,7 +13,12 @@ from botocore.exceptions import ClientError
 
 from admin.utils import logger
 
-app = typer.Typer(help='Simple SES email sender for testing.')
+app = typer.Typer(
+    help=__doc__,
+    no_args_is_help=True,
+    add_completion=False,
+    rich_markup_mode='markdown',
+)
 
 
 SES_REGION = 'us-east-1'  # change if you created SES in another region
@@ -70,6 +81,8 @@ def email_send(
 ) -> None:
     """
     Send a test email via Amazon SES.
+
+    Requires AWS credentials. Use the ``aws`` CLI to configure them.
     """
     try:
         _send_email(
