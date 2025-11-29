@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -46,7 +44,7 @@ class PasswordResetService:
     @staticmethod
     def validate_token(token: str) -> PasswordResetToken | None:
         try:
-            prt = PasswordResetToken.objects.get(token=token)
+            prt: PasswordResetToken = PasswordResetToken.objects.get(token=token)  # type: ignore
         except PasswordResetToken.DoesNotExist:
             return None
 

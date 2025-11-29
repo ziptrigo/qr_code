@@ -521,7 +521,7 @@ class TestPasswordResetFlow:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'detail' in response.data
-        assert PasswordResetToken.objects.filter(user=user).count() == 1
+        assert PasswordResetToken.objects.filter(user=user).count() == 1  # type: ignore
         assert len(calls) == 1
         assert calls[0]['to'] == user.email
 
@@ -541,7 +541,7 @@ class TestPasswordResetFlow:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'detail' in response.data
-        assert PasswordResetToken.objects.count() == 0
+        assert PasswordResetToken.objects.count() == 0  # type: ignore
         assert len(calls) == 0
 
     def test_forgot_password_missing_email_returns_400(self, api_client) -> None:

@@ -1,10 +1,11 @@
-from __future__ import annotations
-
 from datetime import UTC, datetime, timedelta
+from typing import Self
 
 from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
+
+from .user import User
 
 
 class PasswordResetToken(models.Model):
@@ -24,7 +25,7 @@ class PasswordResetToken(models.Model):
         verbose_name_plural = 'Password reset tokens'
 
     def __str__(self) -> str:  # pragma: no cover - representation only
-        return f'PasswordResetToken(user={self.user_id}, token={self.token})'
+        return f'PasswordResetToken(user={self.user_id}, token={self.token})'  # type: ignore
 
     @property
     def is_used(self) -> bool:
@@ -37,9 +38,9 @@ class PasswordResetToken(models.Model):
         return datetime.now(UTC) >= expires_at
 
     @classmethod
-    def create_for_user(cls, user: 'User') -> 'PasswordResetToken':
+    def create_for_user(cls, user: User) -> Self:
         """Create and return a new token for the given user."""
 
         # 48 characters of URL-safe randomness is plenty.
         token = get_random_string(48)
-        return cls.objects.create(user=user, token=token)
+        return cls.objects.create(user=user, token=token)  # type: ignore
