@@ -9,11 +9,38 @@
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'images/logo_32x32.png' %}">
 
-    <!-- Tailwind (Play CDN) with brand config -->
+    <!-- Early theme boot: apply class before CSS to avoid FOUC -->
     <script>
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = {
-        darkMode: ['class', 'media'],
+      (function () {
+        try {
+          const mode = localStorage.getItem('theme') || 'system';
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          let wantDark = false;
+          
+          if (mode === 'dark') {
+            wantDark = true;
+          } else if (mode === 'light') {
+            wantDark = false;
+          } else {
+            // system
+            wantDark = prefersDark;
+          }
+          
+          if (wantDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (_) { /* noop */ }
+      })();
+    </script>
+
+    <!-- Tailwind (Play CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             colors: {
@@ -26,7 +53,6 @@
         }
       };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- htmx -->
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
@@ -62,7 +88,21 @@
                 <a href="#" class="text-lg hover:text-brand-primary">About</a>
                 <a href="#" class="text-lg hover:text-brand-primary">Contact</a>
             </div>
-            <div>
+            <div class="flex items-center space-x-4">
+                <!-- Theme toggle button -->
+                <button
+                  id="theme-toggle"
+                  type="button"
+                  class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                  aria-label="Toggle theme"
+                  title="Toggle theme"
+                  data-icon-light="{% static 'images/theme-light_128x128.png' %}"
+                  data-icon-dark="{% static 'images/theme-dark_128x128.png' %}"
+                  data-icon-system="{% static 'images/theme-system_128x128.png' %}"
+                >
+                  <img id="theme-icon" alt="Theme icon" class="h-6 w-6" src="{% static 'images/theme-system_128x128.png' %}">
+                </button>
+
                 {% if request.user.is_authenticated %}
                     <form method="post" action="{% url 'logout-page' %}">
                         {% csrf_token %}
@@ -85,5 +125,93 @@
             <a href="#" class="hover:text-brand-primary">Feedback</a>
         </div>
     </footer>
+
+    <!-- Theme control script: cycles system -> light -> dark and persists to localStorage -->
+    <script>
+      (function () {
+        function getEls() {
+          const btn = document.getElementById('theme-toggle');
+          const icon = document.getElementById('theme-icon');
+          return { btn, icon };
+        }
+
+        function getIcons(btn) {
+          if (!btn) return {};
+          return {
+            light: btn.getAttribute('data-icon-light'),
+            dark: btn.getAttribute('data-icon-dark'),
+            system: btn.getAttribute('data-icon-system'),
+          };
+        }
+
+        const mql = window.matchMedia('(prefers-color-scheme: dark)');
+        let mqlHandlerAttached = false;
+
+        function applyTheme(mode) {
+          const html = document.documentElement;
+          
+          if (mode === 'light') {
+            html.classList.remove('dark');
+          } else if (mode === 'dark') {
+            html.classList.add('dark');
+          } else {
+            // system
+            if (mql.matches) {
+              html.classList.add('dark');
+            } else {
+              html.classList.remove('dark');
+            }
+          }
+          
+          const { btn, icon } = getEls();
+          const ICONS = getIcons(btn);
+          if (icon && ICONS) {
+            icon.src = ICONS[mode] || ICONS.system || icon.src;
+          }
+        }
+
+        function attachMqlIfNeeded(mode) {
+          if (mode === 'system' && !mqlHandlerAttached) {
+            mql.addEventListener('change', () => {
+              if ((localStorage.getItem('theme') || 'system') === 'system') {
+                applyTheme('system');
+              }
+            });
+            mqlHandlerAttached = true;
+          }
+        }
+
+        function currentMode() {
+          return localStorage.getItem('theme') || 'system';
+        }
+
+        function nextMode(mode) {
+          return mode === 'system' ? 'light' : (mode === 'light' ? 'dark' : 'system');
+        }
+
+        // Initialize icon and theme on load
+        const initial = currentMode();
+        applyTheme(initial);
+        attachMqlIfNeeded(initial);
+
+        // Delegated click handler works even if header gets re-rendered
+        document.addEventListener('click', function (e) {
+          const target = e.target instanceof Element ? e.target : null;
+          if (!target) return;
+          // Check if we clicked the button itself or any child (like the img)
+          const btn = target.id === 'theme-toggle' ? target : target.closest('#theme-toggle');
+          if (!btn) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+          const cur = currentMode();
+          const nxt = nextMode(cur);
+          
+          try { localStorage.setItem('theme', nxt); } catch (_) { /* ignore */ }
+          // Reload page to apply new theme (Tailwind CDN doesn't support runtime dark mode changes)
+          window.location.reload();
+        });
+      })();
+    </script>
 </body>
 </html>
