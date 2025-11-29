@@ -6,11 +6,15 @@ black==25.11.0
     # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 boto3==1.41.5
     # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
+boto3-stubs[ses]==1.41.5
+    # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
 botocore==1.41.5
     # via
     #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
     #   boto3
     #   s3transfer
+botocore-stubs==1.41.5
+    # via boto3-stubs
 certifi==2025.11.12
     # via
     #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
@@ -82,6 +86,8 @@ mdurl==0.1.2
     #   markdown-it-py
 mypy==1.18.2
     # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+mypy-boto3-ses==1.41.0
+    # via boto3-stubs
 mypy-extensions==1.1.0
     # via
     #   black
@@ -161,12 +167,16 @@ typer==0.20.0
     #   typer-invoke
 typer-invoke==0.4.0
     # via -r C:/Users/joaon/code/qr_code/admin/requirements/requirements-dev.in
+types-awscrt==0.29.0
+    # via botocore-stubs
 types-pyyaml==6.0.12.20250915
     # via
     #   django-stubs
     #   djangorestframework-stubs
 types-requests==2.32.4.20250913
     # via djangorestframework-stubs
+types-s3transfer==0.15.0
+    # via boto3-stubs
 typing-extensions==4.15.0
     # via
     #   -r C:/Users/joaon/code/qr_code/admin/requirements/requirements.txt
