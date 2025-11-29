@@ -69,6 +69,8 @@ iniconfig==2.3.0
     # via pytest
 isort==7.0.0
     # via -r requirements-dev.in
+jinja2==3.1.6
+    # via -r requirements.txt
 jmespath==1.0.1
     # via
     #   -r requirements.txt
@@ -78,6 +80,10 @@ markdown-it-py==4.0.0
     # via
     #   -r requirements.txt
     #   rich
+markupsafe==3.0.3
+    # via
+    #   -r requirements.txt
+    #   jinja2
 mccabe==0.7.0
     # via flake8
 mdurl==0.1.2
