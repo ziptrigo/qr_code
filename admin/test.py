@@ -1,6 +1,6 @@
 #!python
 """
-Testing with `pytest`.
+Testing with pytest.
 """
 
 import typer
