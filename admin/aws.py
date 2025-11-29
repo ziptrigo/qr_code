@@ -1,6 +1,10 @@
 #!python
 """
 AWS login.
+
+Requires the AWS CLI to be installed.
+
+https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html
 """
 import os
 from pathlib import Path
@@ -22,10 +26,10 @@ def select_aws_profile(profile: str | None = None) -> str:
     """
     Returns the AWS profile. Allows for multiple profiles.
 
-    1. Check ``.env`` for selected profile.
+    1. Check ``.env`` for the selected profile.
     2. Check profiles in ``~/.aws/config``.
-       2.1 If only one profile in the config file, use that.
-       2.2 If multiple profiles in the config file, ask user.
+       2.1 If only one profile is in the config file, use that.
+       2.2 If multiple profiles are in the config file, ask the user.
 
     Note that in the AWS config file, the section is called ``profile AWSGeneral-399484477925``
     and the profile is ``AWSGeneral-399484477925``.
@@ -44,9 +48,13 @@ def select_aws_profile(profile: str | None = None) -> str:
         if len(aws_profiles) == 1:
             aws_profile = aws_profiles[0]
         else:
-            import questionary
+            from rich.prompt import Prompt
 
-            aws_profile = questionary.select('Select AWS Profile', aws_profiles).ask()
+            console_input = Prompt.ask(
+                'Select AWS Profile',
+                choices=aws_profiles,
+            )
+            aws_profile = console_input
             if aws_profile is None:
                 logger.error('No AWS profile selected.')
                 raise typer.Exit(code=1)

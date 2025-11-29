@@ -1,6 +1,8 @@
 #!python
 """
 Send emails using AWS SES.
+
+AWS credentials must be configured.
 """
 
 
