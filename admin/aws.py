@@ -73,12 +73,12 @@ def select_aws_profile(profile: str | None = None) -> str:
 @app.command(name='login')
 def aws_login(
     profile: Annotated[
-        str | None, typer.Option(help='Specify the AWS profile to use. ', show_default=False)
+        str | None, typer.Option(help='AWS profile to use. ', show_default=False)
     ] = None,
     dry: DryAnnotation = False,
 ):
     """
-    Login to AWS, in order to use `aws` in CLI and `boto3` in Python.
+    Login to AWS, to use `aws` in CLI and `boto3` in Python.
     """
     run('aws', 'sso', 'login', '--profile', select_aws_profile(profile), dry=dry)
 

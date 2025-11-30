@@ -32,11 +32,13 @@ def _send_email(
     subject: str,
     text_body: str,
     html_body: str | None = None,
+    profile: str | None = None,
 ) -> None:
     if html_body is None:
         html_body = f'<pre>{text_body}</pre>'
 
-    client = boto3.client('ses', region_name=SES_REGION)
+    session = boto3.Session(profile_name=profile)
+    client = session.client('ses', region_name=SES_REGION)
 
     try:
         response = client.send_email(
@@ -62,15 +64,15 @@ def _send_email(
 def email_send(
     to: Annotated[
         str,
-        typer.Argument(help='Recipient email address.'),
+        typer.Argument(help='Recipient email address.', show_default=False),
     ],
     subject: Annotated[
         str,
-        typer.Option('--subject', '-s', help='Email subject.'),
+        typer.Option('--subject', '-s', help='Email subject.', show_default=False),
     ],
     text: Annotated[
         str,
-        typer.Option('--text', '-t', help='Plain-text body.'),
+        typer.Option('--text', '-t', help='Plain-text body.', show_default=False),
     ],
     html: Annotated[
         str | None,
@@ -78,9 +80,13 @@ def email_send(
             '--html',
             '-H',
             help='HTML body. If omitted, a simple HTML version of --text is used.',
+            show_default=False,
         ),
     ] = None,
-) -> None:
+    profile: Annotated[
+        str | None, typer.Option(help='AWS profile to use.', show_default=False)
+    ] = None,
+):
     """
     Send a test email via Amazon SES.
 
@@ -92,6 +98,7 @@ def email_send(
             subject=subject,
             text_body=text,
             html_body=html,
+            profile=profile,
         )
     except ClientError:
         sys.exit(1)
