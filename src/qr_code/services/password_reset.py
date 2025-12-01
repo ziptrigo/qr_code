@@ -37,9 +37,9 @@ class PasswordResetService:
         self.email_backend.send_email(user.email, subject, text_body, html_body)
 
     def _build_reset_url(self, token: str) -> str:
-        base = settings.QR_CODE_BASE_URL.rstrip("/")
-        path = reverse("reset-password-page", args=[token])
-        return f"{base}{path}"
+        base = settings.QR_CODE_BASE_URL.rstrip('/')
+        path = reverse('reset-password-page', args=[token])
+        return f'{base}{path}'
 
     @staticmethod
     def validate_token(token: str) -> PasswordResetToken | None:
@@ -57,7 +57,7 @@ class PasswordResetService:
         from datetime import UTC, datetime
 
         prt.used_at = datetime.now(UTC)
-        prt.save(update_fields=["used_at"])
+        prt.save(update_fields=['used_at'])
 
 
 def get_password_reset_service() -> PasswordResetService:

@@ -11,7 +11,7 @@ from typing import Annotated
 
 import boto3
 import typer
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 from admin.utils import logger
 
@@ -52,6 +52,12 @@ def _send_email(
                 },
             },
         )
+    except NoCredentialsError:
+        logger.error(
+            f'AWS credentials not found. Check your AWS profile configuration or '
+            f'run: aws configure [--profile {profile or "PROFILE"}]'
+        )
+        raise typer.Exit(1)
     except ClientError as e:
         logger.error(f'Error sending email: {e}')
         raise typer.Exit(1)
