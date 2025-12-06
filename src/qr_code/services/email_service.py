@@ -15,7 +15,7 @@ class EmailBackend(Protocol):
         subject: str,
         text_body: str,
         html_body: str | None = None,
-    ) -> None:  # pragma: no cover - interface
+    ):  # pragma: no cover - interface
         ...
 
 
@@ -32,26 +32,26 @@ class SesEmailBackend:
         subject: str,
         text_body: str,
         html_body: str | None = None,
-    ) -> None:
+    ):
         if html_body is None:
-            html_body = f"<pre>{text_body}</pre>"
+            html_body = f'<pre>{text_body}</pre>'
 
-        client = boto3.client("ses", region_name=self.region)
+        client = boto3.client('ses', region_name=self.region)
 
         try:
             client.send_email(
                 Source=self.sender,
-                Destination={"ToAddresses": [to]},
+                Destination={'ToAddresses': [to]},
                 Message={
-                    "Subject": {"Data": subject, "Charset": "UTF-8"},
-                    "Body": {
-                        "Text": {"Data": text_body, "Charset": "UTF-8"},
-                        "Html": {"Data": html_body, "Charset": "UTF-8"},
+                    'Subject': {'Data': subject, 'Charset': 'UTF-8'},
+                    'Body': {
+                        'Text': {'Data': text_body, 'Charset': 'UTF-8'},
+                        'Html': {'Data': html_body, 'Charset': 'UTF-8'},
                     },
                 },
             )
         except ClientError as exc:  # pragma: no cover - network error path
-            raise RuntimeError(f"Error sending email via SES: {exc}") from exc
+            raise RuntimeError(f'Error sending email via SES: {exc}') from exc
 
 
 @dataclass(slots=True)
@@ -67,21 +67,21 @@ class ConsoleEmailBackend:
         subject: str,
         text_body: str,
         html_body: str | None = None,
-    ) -> None:  # pragma: no cover - trivial
-        print("=== Email ===")
-        print(f"To: {to}")
-        print(f"Subject: {subject}")
-        print("Text:")
+    ):  # pragma: no cover - trivial
+        print('=== Email ===')
+        print(f'To: {to}')
+        print(f'Subject: {subject}')
+        print('Text:')
         print(text_body)
         if html_body:
-            print("HTML:")
+            print('HTML:')
             print(html_body)
 
 
 def get_email_backend() -> EmailBackend:
-    backend = getattr(settings, "EMAIL_BACKEND_KIND", "console").lower()
-    if backend == "ses":
-        region = getattr(settings, "SES_REGION", "us-east-1")
-        sender = getattr(settings, "SES_SENDER", "no-reply@example.com")
+    backend = getattr(settings, 'EMAIL_BACKEND_KIND', 'console').lower()
+    if backend == 'ses':
+        region = getattr(settings, 'SES_REGION', 'us-east-1')
+        sender = getattr(settings, 'SES_SENDER', 'no-reply@example.com')
         return SesEmailBackend(region=region, sender=sender)
     return ConsoleEmailBackend()
