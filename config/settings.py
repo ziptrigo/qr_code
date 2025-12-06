@@ -160,6 +160,9 @@ QR_CODE_REDIRECT_PATH = '/go/'
 # Password reset settings
 PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_TTL_HOURS', '4'))
 
+# Email confirmation settings
+EMAIL_CONFIRMATION_TOKEN_TTL_HOURS = int(os.getenv('EMAIL_CONFIRMATION_TOKEN_TTL_HOURS', '48'))
+
 # Email settings
 EMAIL_BACKEND_KIND = os.getenv('EMAIL_BACKEND_KIND', 'console')
 SES_REGION = os.getenv('SES_REGION', 'us-east-1')

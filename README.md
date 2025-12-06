@@ -10,6 +10,7 @@ A complete QR code generation and management service with Django REST API, sessi
 - 🔗 **URL Shortening**: Built-in URL shortener with redirect tracking
 - 📊 **Analytics**: Track scan counts and timestamps
 - 🔐 **Session Authentication**: Secure API access with session-based auth
+- 📧 **Email Confirmation**: New users must confirm their email before logging in (48-hour link validity)
 - 🔑 **Forgot Password**: Email-based password reset with time-limited tokens
 - 🖥️ **Web Dashboard**: Login/register flow, QR code listing with search and sort, and an interactive QR code generator page (preview + save)
 - 💻 **CLI Interface**: Command-line tool for all operations
@@ -64,8 +65,10 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 
 ## API Endpoints
 
-- `POST /api/signup` - Create user account (email, name, password)
-- `POST /api/login` - Authenticate with email and password
+- `POST /api/signup` - Create user account and send confirmation email (email, name, password)
+- `POST /api/login` - Authenticate with email and password (requires confirmed email)
+- `POST /api/resend-confirmation` - Resend email confirmation link (email)
+- `POST /api/confirm-email` - Confirm email using token (token)
 - `POST /api/forgot-password` - Request a password reset email (always returns 200)
 - `POST /api/reset-password` - Reset password using a valid token (`token`, `password`, `password_confirm`)
 - `POST /api/qrcodes/` - Create QR code (supports `name`, formats PNG/SVG/PDF, colors, and optional URL shortening)
@@ -79,12 +82,14 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 
 - `/` - Home page with project overview and logo
 - `/login/` - Login form using htmx + session-based auth (includes "Forgot your password?" link)
-- `/register/` - Registration form using htmx
+- `/register/` - Registration form using htmx (sends confirmation email upon successful registration)
+- `/confirm-email/<token>/` - Confirm email address using the token from the confirmation email
+- `/confirm-email/success/` - Success page shown after email confirmation with Login button
 - `/forgot-password/` - Request a reset link via email. After submit, a generic success message is shown
   regardless of whether the email exists
 - `/reset-password/<token>/` - Enter a new password. Invalid or expired tokens show an expiry page with a link
   back to login
-- `/dashboard/` - Authenticated dashboard listing the user’s QR codes with search and sort options
+- `/dashboard/` - Authenticated dashboard listing the user's QR codes with search and sort options (requires confirmed email)
 - `/qrcodes/new/` - QR code generator page with:
   - Name field
   - Text/URL textarea (up to 1000 characters)
@@ -93,15 +98,24 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
   - Preview button that calls `POST /api/qrcodes/preview` and shows a live QR image
   - Final "Generate QR code" button that saves via `POST /api/qrcodes/` and redirects back to the dashboard
 
-### Password reset and email configuration
+### Email confirmation and password reset configuration
 
-- `PASSWORD_RESET_TOKEN_TTL_HOURS` (default: 4) controls token validity window
+- `EMAIL_CONFIRMATION_TOKEN_TTL_HOURS` (default: 48) controls email confirmation link validity
+- `PASSWORD_RESET_TOKEN_TTL_HOURS` (default: 4) controls password reset link validity
 - `EMAIL_BACKEND` can be `console` (dev) or `ses` (production)
 - For SES, set `SES_REGION` and `SES_SENDER` in your environment or settings
 
+### Registration and login flow
+
+1. Users register via `/register/` or `POST /api/signup`
+2. A confirmation email is sent with a link valid for 48 hours
+3. Users must click the confirmation link before they can log in
+4. If the link expires, users can request a new one via the expired confirmation page
+5. Once confirmed, users can log in normally at `/login/`
+
 ### How to use the generator
 
-1. Log in (or register) and go to the `/dashboard/` page.
+1. Register an account and confirm your email, then log in and go to the `/dashboard/` page.
 2. Click the **Generate QR code** button on the right of the search bar to open `/qrcodes/new/`.
 3. Fill in:
    - **Name** – a label to identify this QR code in your dashboard.

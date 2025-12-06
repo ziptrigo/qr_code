@@ -27,16 +27,19 @@ API views live under `src/qr_code/api`, services under `src/qr_code/services`, a
 ## Current Status
 Initial version done. Testing functionality and fixing bugs.
 - Authentication flow implemented with `/login/`, `/register/`, and `/logout/`.
+- Email confirmation flow implemented: users must confirm email before login, 48-hour token validity,
+  `/confirm-email/<token>/` for confirmation, resend functionality on expired links.
 - Forgot password flow implemented: `/forgot-password/` (initiation), `/reset-password/<token>/` (HTML),
   `POST /api/forgot-password` and `POST /api/reset-password` endpoints with time-limited tokens and email.
-- Dashboard `/dashboard/` lists the authenticated user’s QR codes (search + sort).
+- Dashboard `/dashboard/` lists the authenticated user's QR codes (search + sort).
 - QR generator page `/qrcodes/new/` lets users preview and save QR codes.
 
 ## Next Steps
-1. Test authentication endpoints.
+1. Test authentication endpoints including email confirmation.
 2. Test QRCode endpoints with session auth.
 3. Test forgot password and reset flows (token validity, expiry, single-use).
-4. Fix issues as needed.
+4. Test email confirmation flow (signup, confirmation, expiry, resend).
+5. Fix issues as needed.
 
 ## Notes
 ### Coding guidelines
@@ -102,7 +105,15 @@ The backend service is implemented in Django. The APIs are:
 The CLI interface will be implemented using the typer library and have a
 similar interface to the API.
 
-4. Forgot password
+4. Email confirmation
+- On registration via `POST /api/signup`, a confirmation email is sent (does not auto-login)
+- HTML: `/confirm-email/<token>/` validates token and redirects to success or expired page
+- `/confirm-email/success/` shows confirmation success with Login button
+- Expired confirmation page offers resend functionality via `POST /api/resend-confirmation`
+- Tokens are single-use and time-limited by `EMAIL_CONFIRMATION_TOKEN_TTL_HOURS` (default 48)
+- Login is blocked for unconfirmed users with error message
+
+5. Forgot password
 - HTML: `/forgot-password/` to request email; `/reset-password/<token>/` to set a new password
 - API: `POST /api/forgot-password` (accepts `email`) and `POST /api/reset-password`
   (accepts `token`, `password`, `password_confirm`); responses avoid leaking whether the
@@ -110,9 +121,12 @@ similar interface to the API.
 - Tokens are single-use and time-limited by `PASSWORD_RESET_TOKEN_TTL_HOURS` (default 4)
 
 ### Authentication
-Session-based authentication using Django sessions.
-- POST /api/signup (name, email, password) creates user and logs in.
-- POST /api/login (email, password) logs in and returns session id in JSON.
+Session-based authentication using Django sessions with email confirmation.
+- POST /api/signup (name, email, password) creates user and sends confirmation email (no auto-login).
+- POST /api/resend-confirmation (email) resends confirmation email if account exists and unconfirmed.
+- POST /api/confirm-email (token) confirms email address using valid token.
+- POST /api/login (email, password) logs in and returns session id in JSON (requires confirmed email).
 - POST /api/forgot-password (email) initiates password reset and returns 200 regardless of existence.
 - POST /api/reset-password (token, password, password_confirm) resets password when token is valid.
 - API calls require SessionAuthentication; ensure CSRF tokens are provided where applicable.
+- Time-limited tokens use the `TimeLimitedToken` model with token_type field ('password_reset' or 'email_confirmation').

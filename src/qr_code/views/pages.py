@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from ..models import QRCode
+from ..services.email_confirmation import get_email_confirmation_service
 from ..services.password_reset import PasswordResetService, get_password_reset_service
 
 
@@ -84,3 +85,22 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 def qrcode_generator(request: HttpRequest) -> HttpResponse:
     """Render the QR code generator page."""
     return render(request, 'qrcode_generator.html')
+
+
+def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:
+    """Validate email confirmation token and redirect accordingly."""
+
+    service = get_email_confirmation_service()
+    token_obj = service.validate_token(token)
+    
+    if token_obj is None:
+        return render(request, 'email_confirmation_expired.html')
+    
+    # Confirm the email
+    service.confirm_email(token_obj)
+    return redirect('email-confirmation-success')
+
+
+def email_confirmation_success(request: HttpRequest) -> HttpResponse:
+    """Render the email confirmation success page."""
+    return render(request, 'email_confirmation_success.html')
