@@ -1,4 +1,11 @@
-from .auth import forgot_password, login_view, reset_password, signup
+from .auth import (
+    confirm_email,
+    forgot_password,
+    login_view,
+    resend_confirmation,
+    reset_password,
+    signup,
+)
 from .qrcode import QRCodeViewSet, qrcode_preview, redirect_view
 
 __all__ = [
@@ -9,4 +16,6 @@ __all__ = [
     'signup',
     'forgot_password',
     'reset_password',
+    'resend_confirmation',
+    'confirm_email',
 ]

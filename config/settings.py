@@ -142,6 +142,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom user model
 AUTH_USER_MODEL = 'qr_code.User'
 
+# Login URL for @login_required decorator
+LOGIN_URL = '/login/'
+
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
@@ -159,6 +162,9 @@ QR_CODE_REDIRECT_PATH = '/go/'
 
 # Password reset settings
 PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_TTL_HOURS', '4'))
+
+# Email confirmation settings
+EMAIL_CONFIRMATION_TOKEN_TTL_HOURS = int(os.getenv('EMAIL_CONFIRMATION_TOKEN_TTL_HOURS', '48'))
 
 # Email settings
 EMAIL_BACKEND_KIND = os.getenv('EMAIL_BACKEND_KIND', 'console')

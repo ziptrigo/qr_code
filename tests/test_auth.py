@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 
-from src.qr_code.models.password_reset_token import PasswordResetToken
+from src.qr_code.models.time_limited_token import TimeLimitedToken
 from src.qr_code.services.password_reset import PasswordResetService
 
 User = get_user_model()
@@ -29,14 +29,13 @@ class TestSignupEndpoint:
         response = api_client.post(url, data, format='json')
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert 'user' in response.data
-        assert 'sessionid' in response.data
-        assert response.data['user']['email'] == 'john@example.com'
-        assert response.data['user']['name'] == 'John Doe'
+        assert response.data['message'] == (
+            'Account created! Please check your email to confirm your address.'
+        )
         assert User.objects.filter(email='john@example.com').exists()
 
-    def test_signup_creates_session(self, api_client):
-        """Test that signup creates a session."""
+    def test_signup_does_not_create_session(self, api_client):
+        """Test that signup does not create a session (requires email confirmation first)."""
         url = reverse('signup')
         data = {
             'name': 'Jane Doe',
@@ -47,8 +46,8 @@ class TestSignupEndpoint:
         response = api_client.post(url, data, format='json')
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['sessionid'] is not None
-        assert len(response.data['sessionid']) > 0
+        assert 'sessionid' not in response.data
+        assert 'user' not in response.data
 
     def test_signup_password_too_short(self, api_client):
         """Test that signup rejects passwords shorter than 6 characters."""
@@ -145,23 +144,22 @@ class TestSignupEndpoint:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'email' in response.data
 
-    def test_signup_user_logged_in(self, api_client):
-        """Test that user is automatically logged in after signup."""
+    def test_signup_user_not_logged_in(self, api_client):
+        """Test that user is NOT automatically logged in after signup."""
         url = reverse('signup')
         data = {
-            'name': 'Logged In User',
-            'email': 'loggedin@example.com',
+            'name': 'Not Logged In User',
+            'email': 'notloggedin@example.com',
             'password': 'password123',
         }
 
         response = api_client.post(url, data, format='json')
 
         assert response.status_code == status.HTTP_201_CREATED
-        # Verify user can access authenticated endpoints
-        # (Check by using the client after signup)
+        # Verify user CANNOT access authenticated endpoints
         qrcode_list_url = reverse('qrcode-list')
         auth_response = api_client.get(qrcode_list_url)
-        assert auth_response.status_code == status.HTTP_200_OK
+        assert auth_response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_signup_password_with_special_chars(self, api_client):
         """Test that signup accepts passwords with special characters."""
@@ -175,10 +173,12 @@ class TestSignupEndpoint:
         response = api_client.post(url, data, format='json')
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['user']['email'] == 'special@example.com'
+        assert User.objects.filter(email='special@example.com').exists()
 
-    def test_signup_user_can_login_after(self, api_client):
-        """Test that newly created user can log in."""
+    def test_signup_user_cannot_login_without_confirmation(self, api_client):
+        """Test that newly created user cannot log in without email confirmation."""
+        from datetime import UTC, datetime
+
         signup_url = reverse('signup')
         signup_data = {
             'name': 'New User',
@@ -190,17 +190,25 @@ class TestSignupEndpoint:
         signup_response = api_client.post(signup_url, signup_data, format='json')
         assert signup_response.status_code == status.HTTP_201_CREATED
 
-        # Logout by creating a new client
-        new_client = api_client.__class__()
-
-        # Login with same credentials
+        # Try to login without confirming email
         login_url = reverse('login')
         login_data = {
             'email': 'newuser@example.com',
             'password': 'password123',
         }
-        login_response = new_client.post(login_url, login_data, format='json')
+        login_response = api_client.post(login_url, login_data, format='json')
 
+        assert login_response.status_code == status.HTTP_403_FORBIDDEN
+        assert 'confirm your email' in login_response.data['detail'].lower()
+
+        # Manually confirm email for second part of test
+        user = User.objects.get(email='newuser@example.com')
+        user.email_confirmed = True
+        user.email_confirmed_at = datetime.now(UTC)
+        user.save()
+
+        # Now login should work
+        login_response = api_client.post(login_url, login_data, format='json')
         assert login_response.status_code == status.HTTP_200_OK
         assert login_response.data['user']['email'] == 'newuser@example.com'
 
@@ -364,8 +372,10 @@ class TestLoginEndpoint:
 class TestAuthenticationFlow:
     """Test cases for complete authentication flows."""
 
-    def test_full_signup_and_qrcode_creation_flow(self, api_client):
-        """Test complete flow: signup -> create QR code."""
+    def test_full_signup_confirm_login_and_qrcode_creation_flow(self, api_client):
+        """Test complete flow: signup -> confirm email -> login -> create QR code."""
+        from datetime import UTC, datetime
+
         # Signup
         signup_url = reverse('signup')
         signup_data = {
@@ -376,7 +386,22 @@ class TestAuthenticationFlow:
         signup_response = api_client.post(signup_url, signup_data, format='json')
         assert signup_response.status_code == status.HTTP_201_CREATED
 
-        # Create QR code (should be authenticated from signup)
+        # Manually confirm email (simulating user clicking confirmation link)
+        user = User.objects.get(email='qrcreator@example.com')
+        user.email_confirmed = True
+        user.email_confirmed_at = datetime.now(UTC)
+        user.save()
+
+        # Login
+        login_url = reverse('login')
+        login_data = {
+            'email': 'qrcreator@example.com',
+            'password': 'password123',
+        }
+        login_response = api_client.post(login_url, login_data, format='json')
+        assert login_response.status_code == status.HTTP_200_OK
+
+        # Create QR code (should be authenticated from login)
         qrcode_url = reverse('qrcode-list')
         qrcode_data = {
             'url': 'https://example.com',
@@ -423,7 +448,9 @@ class TestAuthenticationFlow:
 
     def test_multiple_users_separate_qrcodes(self, api_client):
         """Test that different users have separate QR codes."""
-        # Create first user and QR code
+        from datetime import UTC, datetime
+
+        # Create first user
         signup_url = reverse('signup')
         user1_data = {
             'name': 'User One',
@@ -433,6 +460,19 @@ class TestAuthenticationFlow:
         signup_response1 = api_client.post(signup_url, user1_data, format='json')
         assert signup_response1.status_code == status.HTTP_201_CREATED
 
+        # Confirm and login first user
+        user1 = User.objects.get(email='user1@example.com')
+        user1.email_confirmed = True
+        user1.email_confirmed_at = datetime.now(UTC)
+        user1.save()
+
+        login_url = reverse('login')
+        login1 = api_client.post(
+            login_url, {'email': 'user1@example.com', 'password': 'password123'}, format='json'
+        )
+        assert login1.status_code == status.HTTP_200_OK
+
+        # Create QR code for user1
         qrcode_url = reverse('qrcode-list')
         qrcode1_data = {
             'url': 'https://user1.com',
@@ -452,6 +492,18 @@ class TestAuthenticationFlow:
         signup_response2 = client2.post(signup_url, user2_data, format='json')
         assert signup_response2.status_code == status.HTTP_201_CREATED
 
+        # Confirm and login second user
+        user2 = User.objects.get(email='user2@example.com')
+        user2.email_confirmed = True
+        user2.email_confirmed_at = datetime.now(UTC)
+        user2.save()
+
+        login2 = client2.post(
+            login_url, {'email': 'user2@example.com', 'password': 'password123'}, format='json'
+        )
+        assert login2.status_code == status.HTTP_200_OK
+
+        # Create QR code for user2
         qrcode2_data = {
             'url': 'https://user2.com',
             'qr_format': 'png',
@@ -521,7 +573,12 @@ class TestPasswordResetFlow:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'detail' in response.data
-        assert PasswordResetToken.objects.filter(user=user).count() == 1  # type: ignore
+        assert (
+            TimeLimitedToken.objects.filter(
+                user=user, token_type=TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
+            ).count()
+            == 1
+        )  # type: ignore
         assert len(calls) == 1
         assert calls[0]['to'] == user.email
 
@@ -541,7 +598,7 @@ class TestPasswordResetFlow:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'detail' in response.data
-        assert PasswordResetToken.objects.count() == 0  # type: ignore
+        assert TimeLimitedToken.objects.count() == 0  # type: ignore
         assert len(calls) == 0
 
     def test_forgot_password_missing_email_returns_400(self, api_client) -> None:
@@ -552,7 +609,9 @@ class TestPasswordResetFlow:
         assert 'email' in response.data
 
     def test_reset_password_success(self, api_client, user) -> None:
-        token_obj = PasswordResetToken.create_for_user(user)
+        token_obj = TimeLimitedToken.create_for_user(
+            user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
+        )
         url = reverse('reset-password')
         data = {
             'token': token_obj.token,
@@ -588,7 +647,9 @@ class TestPasswordResetFlow:
         assert 'detail' in response.data
 
     def test_reset_password_mismatched_passwords(self, api_client, user) -> None:
-        token_obj = PasswordResetToken.create_for_user(user)
+        token_obj = TimeLimitedToken.create_for_user(
+            user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
+        )
         url = reverse('reset-password')
         data = {
             'token': token_obj.token,
@@ -602,7 +663,9 @@ class TestPasswordResetFlow:
         assert 'password_confirm' in response.data
 
     def test_reset_password_token_cannot_be_reused(self, api_client, user) -> None:
-        token_obj = PasswordResetToken.create_for_user(user)
+        token_obj = TimeLimitedToken.create_for_user(
+            user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
+        )
         url = reverse('reset-password')
         data = {
             'token': token_obj.token,
@@ -618,7 +681,9 @@ class TestPasswordResetFlow:
 
     def test_password_reset_token_expiration_property(self, user, settings) -> None:
         settings.PASSWORD_RESET_TOKEN_TTL_HOURS = 1
-        token_obj = PasswordResetToken.create_for_user(user)
+        token_obj = TimeLimitedToken.create_for_user(
+            user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
+        )
 
         from datetime import timedelta
 

@@ -5,7 +5,7 @@ from django.conf import settings
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from ..models.password_reset_token import PasswordResetToken
+from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
 from .email_service import EmailBackend, get_email_backend
 
@@ -28,7 +28,7 @@ class PasswordResetService:
         except User.DoesNotExist:
             return
 
-        prt = PasswordResetToken.create_for_user(user)
+        prt = TimeLimitedToken.create_for_user(user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET)
         reset_url = self._build_reset_url(prt.token)
         subject, text_body, html_body = render_password_reset_email(
             user=user,
@@ -42,10 +42,12 @@ class PasswordResetService:
         return f'{base}{path}'
 
     @staticmethod
-    def validate_token(token: str) -> PasswordResetToken | None:
+    def validate_token(token: str) -> TimeLimitedToken | None:
         try:
-            prt: PasswordResetToken = PasswordResetToken.objects.get(token=token)  # type: ignore
-        except PasswordResetToken.DoesNotExist:
+            prt: TimeLimitedToken = TimeLimitedToken.objects.get(
+                token=token, token_type=TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
+            )  # type: ignore
+        except TimeLimitedToken.DoesNotExist:
             return None
 
         if prt.is_used or prt.is_expired:
@@ -53,7 +55,7 @@ class PasswordResetService:
         return prt
 
     @staticmethod
-    def mark_used(prt: PasswordResetToken) -> None:
+    def mark_used(prt: TimeLimitedToken) -> None:
         from datetime import UTC, datetime
 
         prt.used_at = datetime.now(UTC)

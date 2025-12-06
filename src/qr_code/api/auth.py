@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from ..auth_serializers import LoginSerializer, SignupSerializer
+from ..services.email_confirmation import get_email_confirmation_service
 from ..services.password_reset import PasswordResetService, get_password_reset_service
 
 User = get_user_model()
@@ -17,7 +18,7 @@ def _get_password_reset_service() -> PasswordResetService:
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
-    """Signup endpoint: create user, start session, return session id and user info."""
+    """Signup endpoint: create user and send confirmation email."""
     serializer = SignupSerializer(data=request.data)
     if not serializer.is_valid():
         errors = serializer.errors
@@ -31,15 +32,13 @@ def signup(request):
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     user = serializer.save()
-    login(request, user)
-    if not request.session.session_key:
-        request.session.save()
+
+    # Send confirmation email
+    confirmation_service = get_email_confirmation_service()
+    confirmation_service.send_confirmation_email(user)
 
     return Response(
-        {
-            'user': {'id': user.id, 'email': user.email, 'name': getattr(user, 'name', '')},
-            'sessionid': request.session.session_key,
-        },
+        {'message': 'Account created! Please check your email to confirm your address.'},
         status=status.HTTP_201_CREATED,
     )
 
@@ -56,6 +55,18 @@ def login_view(request):
     user = authenticate(request, username=email, password=password)
     if user is None:
         return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if email is confirmed
+    if not user.email_confirmed:
+        return Response(
+            {
+                'detail': (
+                    'Please confirm your email address before logging in.\n'
+                    'Check your inbox for the confirmation link.'
+                )
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     login(request, user)
 
@@ -139,3 +150,64 @@ def reset_password(request):
     service.mark_used(token_obj)
 
     return Response({'detail': 'Password has been reset.'}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_confirmation(request):
+    """Resend email confirmation link.
+
+    The response is always 200 with a generic message, regardless of whether the
+    email exists or is already confirmed.
+    """
+
+    email = str(request.data.get('email', '')).strip()
+    if not email:
+        return Response(
+            {'email': ['This field is required.']},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        user = User.objects.get(email=email)
+        if not user.email_confirmed:
+            service = get_email_confirmation_service()
+            service.send_confirmation_email(user)
+    except User.DoesNotExist:
+        pass  # Don't reveal whether the email exists
+
+    return Response(
+        {
+            'detail': (
+                'If the account exists and is not yet confirmed, '
+                'a confirmation email will be sent.'
+            ),
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def confirm_email(request):
+    """Confirm email using a valid token."""
+
+    token = str(request.data.get('token', '')).strip()
+
+    if not token:
+        return Response(
+            {'token': ['This field is required.']},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    service = get_email_confirmation_service()
+    token_obj = service.validate_token(token)
+    if token_obj is None:
+        return Response(
+            {'detail': 'Invalid or expired token.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    service.confirm_email(token_obj)
+
+    return Response({'detail': 'Email has been confirmed.'}, status=status.HTTP_200_OK)
