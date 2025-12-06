@@ -61,7 +61,7 @@ def login_view(request):
         return Response(
             {
                 'detail': (
-                    'Please confirm your email address before logging in. '
+                    'Please confirm your email address before logging in.\n'
                     'Check your inbox for the confirmation link.'
                 )
             },
