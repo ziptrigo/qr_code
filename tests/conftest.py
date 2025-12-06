@@ -20,12 +20,19 @@ def api_client():
 @pytest.fixture
 def user(db):
     """Create a test user."""
-    return User.objects.create_user(
+    from datetime import UTC, datetime
+
+    user = User.objects.create_user(
         username='testuser@example.com',
         email='testuser@example.com',
         password='testpass123',
         name='Test User',
     )
+    # Mark email as confirmed for backward compatibility with existing tests
+    user.email_confirmed = True
+    user.email_confirmed_at = datetime.now(UTC)
+    user.save()
+    return user
 
 
 @pytest.fixture
