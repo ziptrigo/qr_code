@@ -13,6 +13,7 @@ from .api import (
     signup,
 )
 from .views import (
+    account_created_page,
     confirm_email_page,
     dashboard,
     email_confirmation_success,
@@ -39,6 +40,7 @@ urlpatterns = [
     path('api/qrcodes/preview', qrcode_preview, name='qrcode-preview'),
     path('', home_page, name='home'),
     path('login/', login_page, name='login-page'),
+    path('account-created/', account_created_page, name='account-created'),
     path('forgot-password/', forgot_password_page, name='forgot-password-page'),
     path('reset-password/<str:token>/', reset_password_page, name='reset-password-page'),
     path('confirm-email/success/', email_confirmation_success, name='email-confirmation-success'),

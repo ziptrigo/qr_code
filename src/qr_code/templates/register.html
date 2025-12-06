@@ -71,11 +71,8 @@
       try {
         const data = JSON.parse(e.detail.xhr.responseText || '{}');
         if (status >= 200 && status < 300) {
-          // Show success message instead of redirecting
-          msg.textContent = data.message || 'Account created! Please check your email to confirm your address.';
-          msg.className = 'mb-4 text-sm text-green-600 dark:text-green-400';
-          // Optionally disable the form
-          form.querySelectorAll('input, button').forEach(el => el.disabled = true);
+          // Redirect to account created page
+          window.location = '/account-created/';
         } else {
           const userMsg = data.detail || data.message || 'Could not create account.';
           msg.textContent = userMsg;
@@ -84,9 +81,8 @@
         }
       } catch (err) {
         if (status >= 200 && status < 300) {
-          msg.textContent = 'Account created! Please check your email to confirm your address.';
-          msg.className = 'mb-4 text-sm text-green-600 dark:text-green-400';
-          form.querySelectorAll('input, button').forEach(el => el.disabled = true);
+          // Redirect to account created page
+          window.location = '/account-created/';
         } else {
           msg.textContent = 'An unexpected error occurred.';
           msg.className = 'mb-4 text-sm text-red-600';

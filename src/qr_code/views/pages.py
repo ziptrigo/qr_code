@@ -45,6 +45,11 @@ def register_page(request: HttpRequest) -> HttpResponse:
     return render(request, 'register.html')
 
 
+def account_created_page(request: HttpRequest) -> HttpResponse:
+    """Render the account created confirmation page."""
+    return render(request, 'account_created.html')
+
+
 def logout_page(request: HttpRequest) -> HttpResponse:
     """Log out the current user and redirect to the homepage."""
     if request.user.is_authenticated:
