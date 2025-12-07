@@ -98,6 +98,7 @@ class TestEmailForm(forms.Form):
         label='Recipient email',
         required=True,
         help_text='Email address to send the test email to.',
+        widget=forms.EmailInput(attrs={'size': '60'}),
     )
 
 
