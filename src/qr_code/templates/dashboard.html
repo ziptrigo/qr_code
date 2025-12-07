@@ -31,7 +31,7 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <div class="bg-white dark:bg-gray-800 shadow overflow-visible sm:rounded-md">
         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
             <!-- Header -->
             <li class="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between sm:px-6">
@@ -86,9 +86,9 @@
                             aria-label="QR code actions">
                         <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
                     </button>
-                    <div class="qr-dropdown-menu hidden absolute mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border border-gray-200 dark:border-gray-700"
+                    <div class="qr-dropdown-menu hidden absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border border-gray-200 dark:border-gray-700 origin-top-right"
                          data-qr-id="{{ qr.id }}"
-                         style="right: 0; transform-origin: top right;">
+                         style="right: 0;">
                         <a href="{% url 'qrcode-edit' qr.id %}"
                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md">
                             <i class="fas fa-edit mr-2"></i>Edit
