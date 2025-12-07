@@ -86,10 +86,11 @@
                             aria-label="QR code actions">
                         <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
                     </button>
-                    <div class="qr-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-700"
-                         data-qr-id="{{ qr.id }}">
+                    <div class="qr-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border border-gray-200 dark:border-gray-700 origin-top-right"
+                         data-qr-id="{{ qr.id }}"
+                         style="transform-origin: top right;">
                         <a href="{% url 'qrcode-edit' qr.id %}"
-                           class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                           class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md">
                             <i class="fas fa-edit mr-2"></i>Edit
                         </a>
                     </div>
@@ -251,6 +252,32 @@
             closeAllDropdowns();
             menu.classList.remove('hidden');
             currentOpenDropdown = menu;
+            
+            // Adjust position if dropdown would overflow viewport
+            const menuRect = menu.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+            
+            // Check if menu overflows bottom of viewport
+            if (menuRect.bottom > viewportHeight) {
+              // Position above the button instead
+              menu.style.bottom = '100%';
+              menu.style.top = 'auto';
+              menu.style.marginTop = '0';
+              menu.style.marginBottom = '0.5rem';
+            } else {
+              // Reset to default positioning
+              menu.style.bottom = 'auto';
+              menu.style.top = '100%';
+              menu.style.marginTop = '0.5rem';
+              menu.style.marginBottom = '0';
+            }
+            
+            // Check if menu overflows right edge of viewport
+            if (menuRect.right > viewportWidth) {
+              menu.style.right = '0';
+              menu.style.left = 'auto';
+            }
           }
         }
       });
