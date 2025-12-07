@@ -35,5 +35,74 @@
             </form>
         </div>
     </div>
+
+    <div class="module">
+        <h2>Show Environment</h2>
+        <div class="form-row">
+            <p>Display all environment variables available to this server process.</p>
+            <form id="show-env-form" method="post" action="{% url 'custom_admin:admin_tools' %}">
+                {% csrf_token %}
+                <input type="hidden" name="show_environment" value="1">
+                <button type="button" id="show-env-btn">Show</button>
+            </form>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirm-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:20px; border-radius:4px; min-width:300px; max-width:90%; box-shadow:0 2px 10px rgba(0,0,0,0.3); margin:auto;">
+                <h3>Confirm</h3>
+                <p>Are you sure?</p>
+                <div style="margin-top:15px; display:flex; gap:8px; justify-content:flex-end;">
+                    <button type="button" id="confirm-cancel">Cancel</button>
+                    <button type="button" id="confirm-yes" class="default">Yes, continue</button>
+                </div>
+            </div>
+        </div>
+
+        {% if environment_variables %}
+        <div class="results">
+            <h3>Environment Variables</h3>
+            <table class="listing" style="width:100%; table-layout:fixed;">
+                <thead>
+                    <tr>
+                        <th style="width:30%">Name</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for key, value in environment_variables %}
+                    <tr>
+                        <td><code>{{ key }}</code></td>
+                        <td><code style="white-space:pre-wrap; word-break:break-all;">{{ value }}</code></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
 </div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+(function(){
+    const btn = document.getElementById('show-env-btn');
+    const modal = document.getElementById('confirm-modal');
+    const cancelBtn = document.getElementById('confirm-cancel');
+    const yesBtn = document.getElementById('confirm-yes');
+    const form = document.getElementById('show-env-form');
+    if (!btn || !modal || !cancelBtn || !yesBtn || !form) return;
+    btn.addEventListener('click', function(){
+        modal.style.display = 'flex';
+    });
+    cancelBtn.addEventListener('click', function(){
+        modal.style.display = 'none';
+    });
+    yesBtn.addEventListener('click', function(){
+        form.submit();
+    });
+})();
+</script>
 {% endblock %}
