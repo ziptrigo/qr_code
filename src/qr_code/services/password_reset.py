@@ -37,7 +37,7 @@ class PasswordResetService:
         self.email_backend.send_email(user.email, subject, text_body, html_body)
 
     def _build_reset_url(self, token: str) -> str:
-        base = settings.QR_CODE_BASE_URL.rstrip('/')
+        base = settings.BASE_URL.rstrip('/')
         path = reverse('reset-password-page', args=[token])
         return f'{base}{path}'
 

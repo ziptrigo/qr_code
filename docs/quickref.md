@@ -187,7 +187,7 @@ Get-Acl media\qrcodes
 
 Edit `.env` file:
 ```env
-QR_CODE_BASE_URL=http://localhost:8000
+BASE_URL=http://localhost:8000
 API_BASE_URL=http://localhost:8000
 DEBUG=True
 ```
