@@ -125,7 +125,7 @@ pygments==2.19.2
     #   -r requirements.txt
     #   pytest
     #   rich
-pytest==9.0.1
+pytest==9.0.2
     # via
     #   -r requirements-dev.in
     #   pytest-cov
@@ -139,7 +139,7 @@ python-dateutil==2.9.0.post0
     #   -r requirements.txt
     #   botocore
 python-dotenv==1.2.1
-    # via -r requirements-dev.in
+    # via -r requirements.txt
 pytokens==0.3.0
     # via black
 requests==2.32.5
