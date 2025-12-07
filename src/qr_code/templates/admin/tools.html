@@ -43,7 +43,9 @@
             <form id="show-env-form" method="post" action="{% url 'custom_admin:admin_tools' %}">
                 {% csrf_token %}
                 <input type="hidden" name="show_environment" value="1">
-                <button type="button" id="show-env-btn" class="default">Show</button>
+                <div>
+                    <input type="submit" id="show-env-btn" value="Show" class="default">
+                </div>
             </form>
         </div>
 
@@ -93,14 +95,19 @@
     const cancelBtn = document.getElementById('confirm-cancel');
     const yesBtn = document.getElementById('confirm-yes');
     const form = document.getElementById('show-env-form');
-    if (!btn || !modal || !cancelBtn || !yesBtn || !form) return;
-    btn.addEventListener('click', function(){
+    if (!modal || !cancelBtn || !yesBtn || !form) return;
+    let confirmed = false;
+    form.addEventListener('submit', function(e){
+        if (confirmed) return;
+        e.preventDefault();
         modal.style.display = 'flex';
     });
     cancelBtn.addEventListener('click', function(){
         modal.style.display = 'none';
     });
     yesBtn.addEventListener('click', function(){
+        confirmed = true;
+        modal.style.display = 'none';
         form.submit();
     });
 })();
