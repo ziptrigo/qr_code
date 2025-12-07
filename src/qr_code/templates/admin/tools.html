@@ -62,7 +62,7 @@
         </div>
 
         {% if environment_variables %}
-        <div class="results">
+        <div id="env-results" class="results">
             <h3>Environment Variables</h3>
             <table class="listing" style="width:100%; table-layout:fixed;">
                 <thead>
@@ -89,15 +89,33 @@
 {% block extrahead %}
 {{ block.super }}
 <script>
-(function(){
+// Ensure DOM is ready before querying elements added in the body
+document.addEventListener('DOMContentLoaded', function(){
     const btn = document.getElementById('show-env-btn');
     const modal = document.getElementById('confirm-modal');
     const cancelBtn = document.getElementById('confirm-cancel');
     const yesBtn = document.getElementById('confirm-yes');
     const form = document.getElementById('show-env-form');
-    if (!modal || !cancelBtn || !yesBtn || !form) return;
+    if (!btn || !modal || !cancelBtn || !yesBtn || !form) return;
+
+    // Initialize button label based on whether results are present
+    const setButtonLabel = () => {
+        const results = document.getElementById('env-results');
+        btn.value = results ? 'Hide' : 'Show';
+    };
+    setButtonLabel();
+
     let confirmed = false;
     form.addEventListener('submit', function(e){
+        const results = document.getElementById('env-results');
+        // If results are visible, treat submit as a local toggle to hide
+        if (results) {
+            e.preventDefault();
+            results.remove(); // remove from DOM as requested
+            setButtonLabel();
+            return;
+        }
+        // Otherwise, we are about to show them: ask for confirmation
         if (confirmed) return;
         e.preventDefault();
         modal.style.display = 'flex';
@@ -110,6 +128,6 @@
         modal.style.display = 'none';
         form.submit();
     });
-})();
+});
 </script>
 {% endblock %}
