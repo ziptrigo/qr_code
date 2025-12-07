@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Admin Tools</h1>
+    
+    {% if messages %}
+        <ul class="messagelist">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <div class="module">
+        <h2>Email Testing</h2>
+        <div class="form-row">
+            <p>Send a test email to your account ({{ user.email }}).</p>
+            <form method="post" action="{% url 'custom_admin:admin_tools' %}">
+                {% csrf_token %}
+                <div>
+                    <input type="submit" name="send_test_email" value="Send test email" class="default">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
