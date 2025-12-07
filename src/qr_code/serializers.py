@@ -83,6 +83,38 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
         return instance
 
 
+class QRCodeUpdateSerializer(serializers.ModelSerializer[QRCode]):
+    """Serializer for updating QR codes (name only)."""
+
+    class Meta:
+        model = QRCode
+        fields = [
+            'id',
+            'name',
+            'content',
+            'original_url',
+            'qr_format',
+            'use_url_shortening',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'content',
+            'original_url',
+            'qr_format',
+            'use_url_shortening',
+            'created_at',
+            'updated_at',
+        ]
+
+    def update(self, instance, validated_data):
+        """Update only the name field."""
+        instance.name = validated_data.get('name', instance.name)
+        instance.save(update_fields=['name'])
+        return instance
+
+
 class QRCodeSerializer(serializers.ModelSerializer):
     """Serializer for retrieving QR code details."""
 

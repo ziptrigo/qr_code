@@ -189,6 +189,79 @@ class TestQRCodeAPI:
             qr = QRCode.objects.get(id=response.data['id'])
             assert qr.qr_format == fmt
 
+    def test_update_qrcode_name(self, authenticated_client, qr_code):
+        """Test updating a QR code name."""
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        data = {'name': 'Updated QR Code Name'}
+
+        response = authenticated_client.put(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        qr_code.refresh_from_db()
+        assert qr_code.name == 'Updated QR Code Name'
+
+    def test_update_qrcode_name_only(self, authenticated_client, qr_code):
+        """Test that only the name field can be updated, other fields are ignored."""
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        original_content = qr_code.content
+        original_format = qr_code.qr_format
+        data = {
+            'name': 'New Name',
+            'content': 'Should be ignored',
+            'qr_format': 'svg',  # Try to change format
+        }
+
+        response = authenticated_client.put(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        qr_code.refresh_from_db()
+        assert qr_code.name == 'New Name'
+        assert qr_code.content == original_content  # Should not change
+        assert qr_code.qr_format == original_format  # Should not change
+
+    def test_update_qrcode_not_owned(self, authenticated_client, user):
+        """Test that users cannot update QR codes they don't own."""
+        # Create another user and their QR code
+        other_user = User.objects.create_user(
+            username='otheruser@example.com',
+            email='otheruser@example.com',
+            password='otherpass',
+            name='Other User',
+        )
+        other_qr = QRCode.objects.create(
+            content='https://other.com', created_by=other_user, image_file='other.png'
+        )
+
+        url = reverse('qrcode-detail', kwargs={'pk': other_qr.id})
+        data = {'name': 'Hacked Name'}
+
+        response = authenticated_client.put(url, data, format='json')
+
+        # Should return 404 (not found) because get_queryset filters by user
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        other_qr.refresh_from_db()
+        assert other_qr.name != 'Hacked Name'
+
+    def test_update_qrcode_empty_name(self, authenticated_client, qr_code):
+        """Test updating QR code with empty name fails validation."""
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        data = {'name': ''}
+
+        response = authenticated_client.put(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_partial_update_qrcode(self, authenticated_client, qr_code):
+        """Test partial update (PATCH) of QR code name."""
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        data = {'name': 'Patched Name'}
+
+        response = authenticated_client.patch(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        qr_code.refresh_from_db()
+        assert qr_code.name == 'Patched Name'
+
 
 @pytest.mark.django_db
 @pytest.mark.integration

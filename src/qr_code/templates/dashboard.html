@@ -24,7 +24,7 @@
                 <i class="fas fa-times"></i>
             </button>
         </form>
-        <a href="{% url 'qrcode-new' %}"
+        <a href="{% url 'qrcode-create' %}"
            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
             Generate QR code
         </a>
@@ -76,6 +76,22 @@
                                 <span class="truncate">{{ qr.content }}</span>
                             </p>
                         </div>
+                    </div>
+                </div>
+                <!-- Dropdown menu -->
+                <div class="relative ml-4">
+                    <button type="button"
+                            class="qr-dropdown-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors"
+                            data-qr-id="{{ qr.id }}"
+                            aria-label="QR code actions">
+                        <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <div class="qr-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-700"
+                         data-qr-id="{{ qr.id }}">
+                        <a href="{% url 'qrcode-edit' qr.id %}"
+                           class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-edit mr-2"></i>Edit
+                        </a>
                     </div>
                 </div>
             </li>
@@ -207,6 +223,52 @@
         });
       });
     }
+
+    // Dropdown menu functionality
+    const dropdownButtons = document.querySelectorAll('.qr-dropdown-btn');
+    const dropdownMenus = document.querySelectorAll('.qr-dropdown-menu');
+    let currentOpenDropdown = null;
+
+    function closeAllDropdowns() {
+      dropdownMenus.forEach(function(menu) {
+        menu.classList.add('hidden');
+      });
+      currentOpenDropdown = null;
+    }
+
+    dropdownButtons.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const qrId = btn.getAttribute('data-qr-id');
+        const menu = document.querySelector('.qr-dropdown-menu[data-qr-id="' + qrId + '"]');
+        
+        if (menu) {
+          // If this dropdown is already open, close it
+          if (currentOpenDropdown === menu) {
+            closeAllDropdowns();
+          } else {
+            // Close all dropdowns first, then open this one
+            closeAllDropdowns();
+            menu.classList.remove('hidden');
+            currentOpenDropdown = menu;
+          }
+        }
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      
+      // Don't close if clicking inside a dropdown menu
+      const isInsideDropdown = target.closest('.qr-dropdown-menu');
+      const isDropdownButton = target.closest('.qr-dropdown-btn');
+      
+      if (!isInsideDropdown && !isDropdownButton) {
+        closeAllDropdowns();
+      }
+    });
   })();
 </script>
 

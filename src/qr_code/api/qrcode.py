@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from ..models import QRCode
-from ..serializers import QRCodeCreateSerializer, QRCodeSerializer
+from ..serializers import QRCodeCreateSerializer, QRCodeSerializer, QRCodeUpdateSerializer
 from ..services import QRCodeGenerator
 
 
@@ -25,9 +25,11 @@ class QRCodeViewSet(viewsets.ModelViewSet):
         return QRCode.objects.none()
 
     def get_serializer_class(self):
-        """Use different serializers for create vs retrieve."""
+        """Use different serializers for create, update, and retrieve."""
         if self.action == 'create':
             return QRCodeCreateSerializer
+        elif self.action in ('update', 'partial_update'):
+            return QRCodeUpdateSerializer
         return QRCodeSerializer
 
     def perform_create(self, serializer):

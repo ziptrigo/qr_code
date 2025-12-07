@@ -87,9 +87,33 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-def qrcode_generator(request: HttpRequest) -> HttpResponse:
-    """Render the QR code generator page."""
-    return render(request, 'qrcode_generator.html')
+def qrcode_editor(request: HttpRequest, qr_id: str | None = None) -> HttpResponse:
+    """Render the QR code editor page for creating or editing QR codes.
+
+    Args:
+        request: The HTTP request object.
+        qr_id: Optional UUID of the QR code to edit. If None, create mode.
+    """
+    user = request.user
+
+    # Narrow type for static checkers; guarded by @login_required.
+    if isinstance(user, AnonymousUser):
+        raise RuntimeError('Authenticated user required')
+
+    qrcode = None
+    if qr_id:
+        # Edit mode: fetch the QR code and validate ownership
+        try:
+            qrcode = QRCode.objects.get(id=qr_id, created_by=user)
+        except QRCode.DoesNotExist:
+            # Return 404 if QR code doesn't exist or doesn't belong to user
+            from django.http import Http404
+
+            msg = 'QR Code not found'
+            raise Http404(msg)
+
+    context = {'qrcode': qrcode}
+    return render(request, 'qrcode_editor.html', context)
 
 
 def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:

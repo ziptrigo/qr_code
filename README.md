@@ -75,6 +75,8 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 - `POST /api/qrcodes/preview` - Generate a QR code image for preview without saving it to the database
 - `GET /api/qrcodes/` - List QR codes
 - `GET /api/qrcodes/{id}/` - Get QR code details
+- `PUT /api/qrcodes/{id}/` - Update QR code name (only the name field can be modified)
+- `PATCH /api/qrcodes/{id}/` - Partially update QR code name
 - `DELETE /api/qrcodes/{id}/` - Delete QR code
 - `GET /go/{short_code}/` - Redirect and track (public)
 
@@ -90,13 +92,20 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 - `/reset-password/<token>/` - Enter a new password. Invalid or expired tokens show an expiry page with a link
   back to login
 - `/dashboard/` - Authenticated dashboard listing the user's QR codes with search and sort options (requires confirmed email)
-- `/qrcodes/new/` - QR code generator page with:
+  - Each QR code row includes a dropdown menu (three-dots icon) with actions:
+    - **Edit** - Opens the edit page for that QR code
+- `/qrcodes/create/` - QR code creation page with:
   - Name field
   - Text/URL textarea (up to 1000 characters)
   - Format dropdown (PNG, SVG, PDF)
   - "Generate short URL" checkbox
   - Preview button that calls `POST /api/qrcodes/preview` and shows a live QR image
-  - Final "Generate QR code" button that saves via `POST /api/qrcodes/` and redirects back to the dashboard
+  - Final "Save" button that saves via `POST /api/qrcodes/` and redirects back to the dashboard
+- `/qrcodes/edit/{id}/` - QR code editing page with:
+  - Name field (editable)
+  - Text/URL display (read-only, grayed out)
+  - QR code preview (existing image)
+  - "Save" button that updates via `PUT /api/qrcodes/{id}/` and redirects back to the dashboard
 
 ### Email confirmation and password reset configuration
 
@@ -113,17 +122,24 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 4. If the link expires, users can request a new one via the expired confirmation page
 5. Once confirmed, users can log in normally at `/login/`
 
-### How to use the generator
+### How to create a QR code
 
 1. Register an account and confirm your email, then log in and go to the `/dashboard/` page.
-2. Click the **Generate QR code** button on the right of the search bar to open `/qrcodes/new/`.
+2. Click the **Generate QR code** button on the right of the search bar to open `/qrcodes/create/`.
 3. Fill in:
    - **Name** – a label to identify this QR code in your dashboard.
    - **Text / URL to encode** – any text up to 1000 characters. This can be plain text or a URL.
    - **Format** – choose between PNG, SVG or PDF.
    - *(Optional)* **Generate short URL** – when enabled and the content is a valid URL, the service will store the original URL and encode a shortened redirect URL in the QR code. If the content is not a URL, this option has no effect.
-4. Click **Generate QR code preview** to see what the QR image will look like. This does **not** save anything yet.
-5. When satisfied, click **Generate QR code**. The QR code is saved via the API and you are redirected back to `/dashboard/`, where the new entry appears in the list.
+4. Click **Preview** to see what the QR image will look like. This does **not** save anything yet.
+5. When satisfied, click **Save**. The QR code is saved via the API and you are redirected back to `/dashboard/`, where the new entry appears in the list.
+
+### How to edit a QR code
+
+1. From the `/dashboard/` page, click the three-dots menu icon on the right side of any QR code row.
+2. Select **Edit** from the dropdown menu to open `/qrcodes/edit/{id}/`.
+3. Update the **Name** field as needed. The QR code content and format cannot be changed (displayed as read-only).
+4. Click **Save** to update the QR code name via the API. You'll be redirected back to `/dashboard/`.
 
 ## Development
 
