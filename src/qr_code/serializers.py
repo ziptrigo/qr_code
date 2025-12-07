@@ -83,6 +83,38 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
         return instance
 
 
+class QRCodeUpdateSerializer(serializers.ModelSerializer[QRCode]):
+    """Serializer for updating QR codes (name only)."""
+
+    class Meta:
+        model = QRCode
+        fields = [
+            'id',
+            'name',
+            'content',
+            'original_url',
+            'qr_format',
+            'use_url_shortening',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'content',
+            'original_url',
+            'qr_format',
+            'use_url_shortening',
+            'created_at',
+            'updated_at',
+        ]
+
+    def update(self, instance, validated_data):
+        """Update only the name field."""
+        instance.name = validated_data.get('name', instance.name)
+        instance.save(update_fields=['name'])
+        return instance
+
+
 class QRCodeSerializer(serializers.ModelSerializer):
     """Serializer for retrieving QR code details."""
 
@@ -117,7 +149,7 @@ class QRCodeSerializer(serializers.ModelSerializer):
         """Get full URL to the QR code image."""
         request = self.context.get('request')
         if request and obj.image_file:
-            return request.build_absolute_uri(f"{settings.MEDIA_URL}{obj.image_file}")
+            return request.build_absolute_uri(f'{settings.MEDIA_URL}{obj.image_file}')
         return None
 
     def get_redirect_url(self, obj):

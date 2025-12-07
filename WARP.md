@@ -32,14 +32,20 @@ Initial version done. Testing functionality and fixing bugs.
 - Forgot password flow implemented: `/forgot-password/` (initiation), `/reset-password/<token>/` (HTML),
   `POST /api/forgot-password` and `POST /api/reset-password` endpoints with time-limited tokens and email.
 - Dashboard `/dashboard/` lists the authenticated user's QR codes (search + sort).
-- QR generator page `/qrcodes/new/` lets users preview and save QR codes.
+  - Each QR code row has a dropdown menu (three-dots icon) with Edit action.
+  - Clear search button (X icon) to reset filtering.
+- QR code creation/editing:
+  - `/qrcodes/create/` page lets users preview and save new QR codes.
+  - `/qrcodes/edit/<id>/` page lets users edit the name of existing QR codes (content is read-only).
+  - Both pages use the same template (`qrcode_editor.html`) with conditional rendering.
 
 ## Next Steps
 1. Test authentication endpoints including email confirmation.
 2. Test QRCode endpoints with session auth.
 3. Test forgot password and reset flows (token validity, expiry, single-use).
 4. Test email confirmation flow (signup, confirmation, expiry, resend).
-5. Fix issues as needed.
+5. Test edit functionality (PUT endpoint, ownership validation, UI behavior).
+6. Fix issues as needed.
 
 ## Notes
 ### Coding guidelines
@@ -67,10 +73,15 @@ Include a 'remember me' checkbox with corresponding behavior.
 User-facing error messages are simple; developer-facing errors are verbose and technical.
 CSS stack uses Tailwind.
 
-The QR dashboard and generator follow this stack:
-- `dashboard.html` shows the user’s QR codes with search and a "Generate QR code" button.
-- `qrcode_generator.html` provides name, text/URL, format (PNG/SVG/PDF), short URL toggle, preview, and final save.
-- Preview uses `POST /api/qrcodes/preview` (no DB row), final save uses `POST /api/qrcodes/` and redirects back to `/dashboard/`.
+The QR dashboard and editor follow this stack:
+- `dashboard.html` shows the user's QR codes with search, clear search button, and a "Generate QR code" button.
+  - Each row has a dropdown menu (three-dots icon) with Edit option.
+- `qrcode_editor.html` handles both create and edit modes:
+  - Create mode (`/qrcodes/create/`): name, text/URL, format (PNG/SVG/PDF), short URL toggle, preview, and save.
+  - Edit mode (`/qrcodes/edit/<id>/`): editable name, read-only content display, QR preview, and save.
+- Preview uses `POST /api/qrcodes/preview` (no DB row).
+- Create saves via `POST /api/qrcodes/`, edit updates via `PUT /api/qrcodes/<id>/`.
+- Both redirect back to `/dashboard/` after successful save.
 
 ### Documentation
 Create documentation in MD format under the `docs` directory, all lowercased files.
@@ -97,7 +108,9 @@ When creating a QR code, the user should be able to specify the following:
 2. API interface
 The backend service is implemented in Django. The APIs are:
    2.1. Create QR code: A POST endpoint with the payload described above.
-   2.2. Retrieve QR code: An endpoint that will save in the DB the number
+   2.2. Edit QR code: A PUT endpoint that allows updating the QR code name only.
+        Other fields (content, format, etc.) are read-only.
+   2.3. Retrieve QR code: An endpoint that will save in the DB the number
         of times the QR code was read (ie, the endpoint was called) and
         forward the user to the original url.
 
@@ -130,3 +143,28 @@ Session-based authentication using Django sessions with email confirmation.
 - POST /api/reset-password (token, password, password_confirm) resets password when token is valid.
 - API calls require SessionAuthentication; ensure CSRF tokens are provided where applicable.
 - Time-limited tokens use the `TimeLimitedToken` model with token_type field ('password_reset' or 'email_confirmation').
+
+### QR Code Management
+- GET /api/qrcodes/ - List user's QR codes (filtered by created_by)
+- POST /api/qrcodes/ - Create new QR code with full customization options
+- GET /api/qrcodes/<id>/ - Retrieve QR code details
+- PUT /api/qrcodes/<id>/ - Update QR code name only (uses QRCodeUpdateSerializer)
+- PATCH /api/qrcodes/<id>/ - Partial update of QR code name
+- DELETE /api/qrcodes/<id>/ - Delete QR code
+- POST /api/qrcodes/preview - Generate preview without saving to DB
+- Ownership validation: Users can only access/modify their own QR codes via get_queryset filtering
+
+### HTML Pages
+- `/dashboard/` - List QR codes with search (with clear button), sort, and dropdown actions per row
+- `/qrcodes/create/` - Create new QR code (name 'qrcode-create')
+- `/qrcodes/edit/<uuid:qr_id>/` - Edit existing QR code name (name 'qrcode-edit')
+- Both create/edit use `qrcode_editor.html` template with conditional rendering based on `qrcode` context
+
+### Testing
+Tests are located in `tests/` directory using pytest.
+- test_api.py includes tests for:
+  - QR code creation with various options
+  - QR code listing and retrieval
+  - QR code updates (name only, ownership validation, empty name validation)
+  - Authentication and authorization
+  - URL shortening functionality

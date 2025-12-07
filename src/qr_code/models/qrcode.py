@@ -99,7 +99,7 @@ class QRCode(models.Model):
         from django.conf import settings
 
         if self.short_code:
-            return f"{settings.QR_CODE_BASE_URL}{settings.QR_CODE_REDIRECT_PATH}{self.short_code}"
+            return f'{settings.BASE_URL}{settings.QR_CODE_REDIRECT_PATH}{self.short_code}'
         return None
 
     def increment_scan_count(self):

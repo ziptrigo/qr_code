@@ -25,10 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8eho-(3@jki^spuj0q%+k!m9a@%d82mqy+fxe65w)6jr_e=ld2'
+SECRET_KEY = os.getenv(
+    'SECRET_KEY', 'django-insecure-8eho-(3@jki^spuj0q%+k!m9a@%d82mqy+fxe65w)6jr_e=ld2'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1']
 
 ALLOWED_HOSTS: list[str] = ['localhost', '127.0.0.1', 'joaonc.pythonanywhere.com']
 
@@ -125,7 +127,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'src' / 'qr_code' / 'static',
 ]
@@ -158,7 +160,7 @@ MIGRATION_MODULES = {
 }
 
 # QR Code settings
-QR_CODE_BASE_URL = os.getenv('QR_CODE_BASE_URL', 'http://localhost:8000')
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
 QR_CODE_REDIRECT_PATH = '/go/'
 
 # Password reset settings

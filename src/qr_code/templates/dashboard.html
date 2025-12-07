@@ -15,18 +15,23 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </div>
-            <input type="text" name="q" value="{{ query|default:'' }}" 
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-primary focus:border-brand-primary sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+            <input type="text" name="q" id="search-input" value="{{ query|default:'' }}" 
+                class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-primary focus:border-brand-primary sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
                 placeholder="Search by name">
+            <button type="button" id="clear-search" 
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors{% if not query %} hidden{% endif %}"
+                aria-label="Clear search">
+                <i class="fas fa-times"></i>
+            </button>
         </form>
-        <a href="{% url 'qrcode-new' %}"
+        <a href="{% url 'qrcode-create' %}"
            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
             Generate QR code
         </a>
     </div>
 
     <!-- Table -->
-    <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <div class="bg-white dark:bg-gray-800 shadow overflow-visible sm:rounded-md">
         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
             <!-- Header -->
             <li class="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between sm:px-6">
@@ -73,6 +78,23 @@
                         </div>
                     </div>
                 </div>
+                <!-- Dropdown menu -->
+                <div class="relative ml-4 flex-shrink-0">
+                    <button type="button"
+                            class="qr-dropdown-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors"
+                            data-qr-id="{{ qr.id }}"
+                            aria-label="QR code actions">
+                        <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <div class="qr-dropdown-menu hidden absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 border border-gray-200 dark:border-gray-700 origin-top-right"
+                         data-qr-id="{{ qr.id }}"
+                         style="right: 0;">
+                        <a href="{% url 'qrcode-edit' qr.id %}"
+                           class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md">
+                            <i class="fas fa-edit mr-2"></i>Edit
+                        </a>
+                    </div>
+                </div>
             </li>
             {% empty %}
             <li class="px-4 py-12 text-center sm:px-6">
@@ -102,6 +124,27 @@
 
 <script>
   (function(){
+    // Clear search functionality
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search');
+
+    if (clearBtn && searchInput) {
+      // Clear search and reload page without query param
+      clearBtn.addEventListener('click', function() {
+        window.location.href = window.location.pathname;
+      });
+
+      // Show/hide clear button based on input value
+      searchInput.addEventListener('input', function() {
+        if (searchInput.value.trim()) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      });
+    }
+
+    // QR modal functionality
     const overlay = document.getElementById('qr-modal-overlay');
     const modalImg = document.getElementById('qr-modal-image');
     const closeBtn = document.getElementById('qr-modal-close');
@@ -181,6 +224,73 @@
         });
       });
     }
+
+    // Dropdown menu functionality
+    const dropdownButtons = document.querySelectorAll('.qr-dropdown-btn');
+    const dropdownMenus = document.querySelectorAll('.qr-dropdown-menu');
+    let currentOpenDropdown = null;
+
+    function closeAllDropdowns() {
+      dropdownMenus.forEach(function(menu) {
+        menu.classList.add('hidden');
+      });
+      currentOpenDropdown = null;
+    }
+
+    dropdownButtons.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const qrId = btn.getAttribute('data-qr-id');
+        const menu = document.querySelector('.qr-dropdown-menu[data-qr-id="' + qrId + '"]');
+        
+        if (menu) {
+          // If this dropdown is already open, close it
+          if (currentOpenDropdown === menu) {
+            closeAllDropdowns();
+          } else {
+            // Close all dropdowns first, then open this one
+            closeAllDropdowns();
+            menu.classList.remove('hidden');
+            currentOpenDropdown = menu;
+            
+            // Adjust position if dropdown would overflow viewport bottom
+            setTimeout(function() {
+              const menuRect = menu.getBoundingClientRect();
+              const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+              
+              // Check if menu overflows bottom of viewport
+              if (menuRect.bottom > viewportHeight) {
+                // Position above the button instead
+                menu.style.bottom = '100%';
+                menu.style.top = 'auto';
+                menu.style.marginTop = '0';
+                menu.style.marginBottom = '0.5rem';
+              } else {
+                // Reset to default positioning
+                menu.style.bottom = 'auto';
+                menu.style.top = '100%';
+                menu.style.marginTop = '0.5rem';
+                menu.style.marginBottom = '0';
+              }
+            }, 0);
+          }
+        }
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      
+      // Don't close if clicking inside a dropdown menu
+      const isInsideDropdown = target.closest('.qr-dropdown-menu');
+      const isDropdownButton = target.closest('.qr-dropdown-btn');
+      
+      if (!isInsideDropdown && !isDropdownButton) {
+        closeAllDropdowns();
+      }
+    });
   })();
 </script>
 
