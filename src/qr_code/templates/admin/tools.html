@@ -43,7 +43,7 @@
             <form id="show-env-form" method="post" action="{% url 'custom_admin:admin_tools' %}">
                 {% csrf_token %}
                 <input type="hidden" name="show_environment" value="1">
-                <button type="button" id="show-env-btn">Show</button>
+                <button type="button" id="show-env-btn" class="default">Show</button>
             </form>
         </div>
 
