@@ -97,10 +97,10 @@ def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:
 
     service = get_email_confirmation_service()
     token_obj = service.validate_token(token)
-    
+
     if token_obj is None:
         return render(request, 'email_confirmation_expired.html')
-    
+
     # Confirm the email
     service.confirm_email(token_obj)
     return redirect('email-confirmation-success')
