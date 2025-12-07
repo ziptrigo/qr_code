@@ -17,7 +17,7 @@ class EmailConfirmationService:
 
     email_backend: EmailBackend
 
-    def send_confirmation_email(self, user: User) -> None:
+    def send_confirmation_email(self, user: User):
         """Create a confirmation token for the user and send confirmation email."""
 
         token = TimeLimitedToken.create_for_user(
@@ -51,7 +51,7 @@ class EmailConfirmationService:
         return tlt
 
     @staticmethod
-    def confirm_email(token: TimeLimitedToken) -> None:
+    def confirm_email(token: TimeLimitedToken):
         """Mark the user's email as confirmed and the token as used."""
 
         user = token.user
