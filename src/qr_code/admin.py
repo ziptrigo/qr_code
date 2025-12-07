@@ -1,8 +1,17 @@
+from datetime import datetime
+
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib import messages
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
+from django.urls import path
+from django.utils import timezone
 
 from .models import QRCode, User
 from .models.time_limited_token import TimeLimitedToken
+from .services.email_service import get_email_backend
 
 
 @admin.register(User)
@@ -82,3 +91,72 @@ class TimeLimitedTokenAdmin(admin.ModelAdmin):
     @admin.display(description='Used', boolean=True)
     def is_used(self, obj: TimeLimitedToken) -> bool:
         return obj.is_used
+
+
+class TestEmailForm(forms.Form):
+    recipient: forms.EmailField = forms.EmailField(
+        label='Recipient email',
+        required=True,
+        help_text='Email address to send the test email to.',
+        widget=forms.EmailInput(attrs={'size': '60'}),
+    )
+
+
+class CustomAdminSite(admin.AdminSite):
+    """Custom admin site with additional tools."""
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('tools/', self.admin_view(self.tools_view), name='admin_tools'),
+        ]
+        return custom_urls + urls
+
+    def tools_view(self, request: HttpRequest) -> HttpResponse:
+        """Custom admin page for various tools."""
+        if request.method == 'POST' and 'send_test_email' in request.POST:
+            form = TestEmailForm(request.POST)
+            if form.is_valid():
+                recipient = form.cleaned_data['recipient']
+                current_datetime = timezone.now().strftime('%Y-%m-%d %H:%M:%S %Z')
+
+                subject = 'Test email from the admin panel'
+                text_body = (
+                    'This is a test email.\n'
+                    'Sent from the Django admin panel.\n'
+                    f'\nSent: {current_datetime}'
+                )
+
+                try:
+                    email_backend = get_email_backend()
+                    email_backend.send_email(
+                        to=recipient,
+                        subject=subject,
+                        text_body=text_body,
+                    )
+                    messages.success(request, f'Test email sent to {recipient}')
+                    form = TestEmailForm(initial={'recipient': recipient})
+                except Exception as e:
+                    messages.error(request, f'Failed to send email: {str(e)}')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+        else:
+            # Prefill with the logged-in user's email for convenience
+            initial_email = getattr(request.user, 'email', '') or ''
+            form = TestEmailForm(initial={'recipient': initial_email})
+
+        context = {
+            **self.each_context(request),
+            'title': 'Admin Tools',
+            'form': form,
+        }
+        return render(request, 'admin/tools.html', context)
+
+
+# Create custom admin site instance
+custom_admin_site = CustomAdminSite(name='custom_admin')
+
+# Register models with custom admin site
+custom_admin_site.register(User, UserAdmin)
+custom_admin_site.register(QRCode, QRCodeAdmin)
+custom_admin_site.register(TimeLimitedToken, TimeLimitedTokenAdmin)
