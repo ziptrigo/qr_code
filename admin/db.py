@@ -54,7 +54,8 @@ def db_users(
     table.add_column('ID', style='cyan', no_wrap=True)
     table.add_column('Username', style='magenta')
     table.add_column('Email', style='green')
-    table.add_column('Name', style='blue')
+    table.add_column('Name')
+    table.add_column('Admin', justify='center')
 
     for user in users:
         table.add_row(
@@ -62,6 +63,7 @@ def db_users(
             user.username,
             user.email,
             user.name,
+            'x' if user.is_staff else '',
         )
 
     console = Console()
