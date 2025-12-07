@@ -117,7 +117,7 @@ class QRCodeSerializer(serializers.ModelSerializer):
         """Get full URL to the QR code image."""
         request = self.context.get('request')
         if request and obj.image_file:
-            return request.build_absolute_uri(f"{settings.MEDIA_URL}{obj.image_file}")
+            return request.build_absolute_uri(f'{settings.MEDIA_URL}{obj.image_file}')
         return None
 
     def get_redirect_url(self, obj):

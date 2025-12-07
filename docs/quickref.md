@@ -157,7 +157,7 @@ http://localhost:8000/media/qrcodes/   QR code images
 ## Troubleshooting
 
 ### Server won't start
-```powershell
+```
 # Check if migrations are applied
 python manage.py showmigrations
 
@@ -194,7 +194,7 @@ DEBUG=True
 
 ## Formatting & Imports
 
-```powershell
+```
 # Sort imports per pyproject.toml
 isort .
 
@@ -204,7 +204,7 @@ black .
 
 ## Testing
 
-```powershell
+```
 # Run setup test
 python test_setup.py
 
