@@ -1,11 +1,9 @@
-from datetime import datetime
 import os
-from typing import Iterable, List, Tuple
+from typing import List, Tuple
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import path
@@ -21,7 +19,7 @@ class UserAdmin(DjangoUserAdmin):
     """Admin interface for User."""
 
     # Extend the default fieldsets with our custom fields.
-    fieldsets = DjangoUserAdmin.fieldsets + (
+    fieldsets = DjangoUserAdmin.fieldsets + (  # type: ignore
         (
             'Custom Fields',
             {
@@ -60,7 +58,7 @@ class TimeLimitedTokenAdmin(admin.ModelAdmin):
     list_filter = ['token_type', 'created_at', 'used_at']
     search_fields = ['user__email', 'user__username', 'token']
     readonly_fields = ['id', 'token', 'created_at', 'used_at', 'is_expired', 'is_used']
-    
+
     fieldsets = (
         (
             None,
@@ -85,11 +83,11 @@ class TimeLimitedTokenAdmin(admin.ModelAdmin):
             },
         ),
     )
-    
+
     @admin.display(description='Expired', boolean=True)
     def is_expired(self, obj: TimeLimitedToken) -> bool:
         return obj.is_expired
-    
+
     @admin.display(description='Used', boolean=True)
     def is_used(self, obj: TimeLimitedToken) -> bool:
         return obj.is_used
@@ -161,7 +159,9 @@ class CustomAdminSite(admin.AdminSite):
             # Show all environment variables
             try:
                 # Convert to a sorted list of (key, value) for deterministic display
-                raw_env: List[Tuple[str, str]] = sorted(os.environ.items(), key=lambda it: it[0].lower())
+                raw_env: List[Tuple[str, str]] = sorted(
+                    os.environ.items(), key=lambda it: it[0].lower()
+                )
 
                 # Exclude specific keys entirely
                 EXCLUDED_KEYS = {

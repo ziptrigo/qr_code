@@ -120,6 +120,7 @@ class TestLoginWithEmailConfirmation:
             name='Unconfirmed User',
             email_confirmed=False,
         )
+        print(f'User created: {user.email}')
 
         url = reverse('login')
         data = {'email': 'unconfirmed@example.com', 'password': 'password123'}
@@ -140,6 +141,7 @@ class TestLoginWithEmailConfirmation:
             email_confirmed=True,
             email_confirmed_at=datetime.now(UTC),
         )
+        print(f'User created: {user.email}')
 
         url = reverse('login')
         data = {'email': 'confirmed@example.com', 'password': 'password123'}
@@ -252,7 +254,7 @@ class TestConfirmEmailEndpoint:
     def test_confirm_email_missing_token(self, api_client):
         """Test confirming email without providing a token."""
         url = reverse('confirm-email')
-        data = {}
+        data: dict = {}
 
         response = api_client.post(url, data, format='json')
 
@@ -269,9 +271,7 @@ class TestConfirmEmailEndpoint:
             email_confirmed=False,
         )
         # Create a password reset token instead
-        token = TimeLimitedToken.create_for_user(
-            user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
-        )
+        token = TimeLimitedToken.create_for_user(user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET)
 
         url = reverse('confirm-email')
         data = {'token': token.token}
@@ -299,6 +299,7 @@ class TestResendConfirmationEndpoint:
             name='Unconfirmed User',
             email_confirmed=False,
         )
+        print(f'User created: {user.email}')
 
         url = reverse('resend-confirmation')
         data = {'email': 'unconfirmed@example.com'}
@@ -323,6 +324,7 @@ class TestResendConfirmationEndpoint:
             email_confirmed=True,
             email_confirmed_at=datetime.now(UTC),
         )
+        print(f'User created: {user.email}')
 
         url = reverse('resend-confirmation')
         data = {'email': 'confirmed@example.com'}
@@ -354,7 +356,7 @@ class TestResendConfirmationEndpoint:
     def test_resend_confirmation_missing_email(self, api_client):
         """Test that resend requires email field."""
         url = reverse('resend-confirmation')
-        data = {}
+        data: dict = {}
 
         response = api_client.post(url, data, format='json')
 
@@ -559,9 +561,7 @@ class TestTimeLimitedTokenExpiry:
             password='password123',
             name='Reset TTL User',
         )
-        token = TimeLimitedToken.create_for_user(
-            user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
-        )
+        token = TimeLimitedToken.create_for_user(user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET)
 
         # Token should not be expired immediately
         assert token.is_expired is False
