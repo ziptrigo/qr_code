@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 from typing import Annotated
 
-import django
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -14,8 +13,10 @@ from admin.utils import logger
 app = typer.Typer()
 
 
-def setup_django(db_file: Path) -> None:
+def setup_django(db_file: Path):
     """Configure Django settings to use the specified database file."""
+    import django
+
     sys.path.insert(0, str(PROJECT_ROOT.resolve()))
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 

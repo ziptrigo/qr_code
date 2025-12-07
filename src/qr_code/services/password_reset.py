@@ -16,7 +16,7 @@ class PasswordResetService:
 
     email_backend: EmailBackend
 
-    def request_reset(self, email: str) -> None:
+    def request_reset(self, email: str):
         """Create a reset token for the user with the given email and send email.
 
         If the user does not exist, this method does nothing. This keeps behavior
@@ -55,7 +55,7 @@ class PasswordResetService:
         return prt
 
     @staticmethod
-    def mark_used(prt: TimeLimitedToken) -> None:
+    def mark_used(prt: TimeLimitedToken):
         from datetime import UTC, datetime
 
         prt.used_at = datetime.now(UTC)

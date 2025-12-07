@@ -539,7 +539,7 @@ class TestPasswordResetFlow:
                 subject: str,
                 text_body: str,
                 html_body: str | None = None,
-            ) -> None:
+            ):
                 calls.append(
                     {
                         'to': to,
@@ -565,7 +565,7 @@ class TestPasswordResetFlow:
         api_client,
         user,
         monkeypatch,
-    ) -> None:
+    ):
         calls = self._setup_fake_backend(monkeypatch)
         url = reverse('forgot-password')
 
@@ -586,7 +586,7 @@ class TestPasswordResetFlow:
         self,
         api_client,
         monkeypatch,
-    ) -> None:
+    ):
         calls = self._setup_fake_backend(monkeypatch)
         url = reverse('forgot-password')
 
@@ -601,14 +601,14 @@ class TestPasswordResetFlow:
         assert TimeLimitedToken.objects.count() == 0  # type: ignore
         assert len(calls) == 0
 
-    def test_forgot_password_missing_email_returns_400(self, api_client) -> None:
+    def test_forgot_password_missing_email_returns_400(self, api_client):
         url = reverse('forgot-password')
         response = api_client.post(url, {}, format='json')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'email' in response.data
 
-    def test_reset_password_success(self, api_client, user) -> None:
+    def test_reset_password_success(self, api_client, user):
         token_obj = TimeLimitedToken.create_for_user(
             user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
         )
@@ -633,7 +633,7 @@ class TestPasswordResetFlow:
         )
         assert login_response.status_code == status.HTTP_200_OK
 
-    def test_reset_password_invalid_token(self, api_client) -> None:
+    def test_reset_password_invalid_token(self, api_client):
         url = reverse('reset-password')
         data = {
             'token': 'invalid-token',
@@ -646,7 +646,7 @@ class TestPasswordResetFlow:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'detail' in response.data
 
-    def test_reset_password_mismatched_passwords(self, api_client, user) -> None:
+    def test_reset_password_mismatched_passwords(self, api_client, user):
         token_obj = TimeLimitedToken.create_for_user(
             user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
         )
@@ -662,7 +662,7 @@ class TestPasswordResetFlow:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'password_confirm' in response.data
 
-    def test_reset_password_token_cannot_be_reused(self, api_client, user) -> None:
+    def test_reset_password_token_cannot_be_reused(self, api_client, user):
         token_obj = TimeLimitedToken.create_for_user(
             user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
         )
@@ -679,7 +679,7 @@ class TestPasswordResetFlow:
         second = api_client.post(url, data, format='json')
         assert second.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_password_reset_token_expiration_property(self, user, settings) -> None:
+    def test_password_reset_token_expiration_property(self, user, settings):
         settings.PASSWORD_RESET_TOKEN_TTL_HOURS = 1
         token_obj = TimeLimitedToken.create_for_user(
             user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET

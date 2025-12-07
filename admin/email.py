@@ -9,7 +9,6 @@ AWS credentials must be configured.
 import sys
 from typing import Annotated
 
-import boto3
 import typer
 from botocore.exceptions import ClientError, NoCredentialsError
 
@@ -33,7 +32,9 @@ def _send_email(
     text_body: str,
     html_body: str | None = None,
     profile: str | None = None,
-) -> None:
+):
+    import boto3
+
     if html_body is None:
         html_body = f'<pre>{text_body}</pre>'
 

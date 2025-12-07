@@ -5,6 +5,7 @@ jinja2
 # mysqlclient           # MySQL client, currently not used
 pillow
 # psycopg               # PostgreSQL client, currently not used
+python-dotenv
 requests
 segno
 typer

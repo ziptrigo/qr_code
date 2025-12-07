@@ -12,5 +12,4 @@ mypy
 pytest
 pytest-cov
 pytest-django
-python-dotenv
 typer-invoke
