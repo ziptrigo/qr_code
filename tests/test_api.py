@@ -22,7 +22,7 @@ class TestQRCodeAPI:
         url = reverse('qrcode-list')
         data = {
             'url': 'https://example.com',
-            'qr_type': 'url',
+            'qr_type': 'text',
             'qr_format': 'png',
             'size': 10,
             'error_correction': 'M',
@@ -33,7 +33,7 @@ class TestQRCodeAPI:
         assert response.status_code == status.HTTP_201_CREATED
         assert 'id' in response.data
         qr = QRCode.objects.get(id=response.data['id'])
-        assert qr.qr_type == QRCodeType.URL
+        assert qr.qr_type == QRCodeType.TEXT
 
     def test_create_qrcode_with_data(self, authenticated_client):
         """Test creating a QR code with custom data."""
@@ -69,7 +69,7 @@ class TestQRCodeAPI:
         url = reverse('qrcode-list')
         data = {
             'url': 'https://example.com/very/long/url',
-            'qr_type': 'url',
+            'qr_type': 'text',
             'use_url_shortening': True,
             'qr_format': 'png',
         }
@@ -78,7 +78,7 @@ class TestQRCodeAPI:
 
         assert response.status_code == status.HTTP_201_CREATED
         qr = QRCode.objects.get(id=response.data['id'])
-        assert qr.qr_type == QRCodeType.URL
+        assert qr.qr_type == QRCodeType.TEXT
         assert qr.use_url_shortening is True
         assert qr.short_code is not None
         assert qr.original_url == 'https://example.com/very/long/url'
@@ -105,7 +105,7 @@ class TestQRCodeAPI:
     def test_create_qrcode_both_url_and_data(self, authenticated_client):
         """Test creating QR code with both url and data fails."""
         url = reverse('qrcode-list')
-        data = {'url': 'https://example.com', 'data': 'Some data', 'qr_type': 'url'}
+        data = {'url': 'https://example.com', 'data': 'Some data', 'qr_type': 'text'}
 
         response = authenticated_client.post(url, data, format='json')
 
@@ -126,7 +126,7 @@ class TestQRCodeAPI:
         QRCode.objects.create(
             content='https://user1.com',
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='user1.png',
         )
 
@@ -140,7 +140,7 @@ class TestQRCodeAPI:
         QRCode.objects.create(
             content='https://user2.com',
             created_by=other_user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='user2.png',
         )
 
@@ -180,7 +180,7 @@ class TestQRCodeAPI:
         url = reverse('qrcode-list')
         data = {
             'url': 'https://example.com',
-            'qr_type': 'url',
+            'qr_type': 'text',
             'background_color': 'transparent',
             'foreground_color': '#0000FF',
             'qr_format': 'png',
@@ -199,7 +199,7 @@ class TestQRCodeAPI:
 
         for fmt in formats:
             url = reverse('qrcode-list')
-            data = {'url': f'https://example.com/{fmt}', 'qr_type': 'url', 'qr_format': fmt}
+            data = {'url': f'https://example.com/{fmt}', 'qr_type': 'text', 'qr_format': fmt}
 
             response = authenticated_client.post(url, data, format='json')
 
@@ -249,7 +249,7 @@ class TestQRCodeAPI:
         other_qr = QRCode.objects.create(
             content='https://other.com',
             created_by=other_user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='other.png',
         )
 
@@ -340,7 +340,7 @@ class TestQRCodeAPI:
         other_qr = QRCode.objects.create(
             content='https://other2.com',
             created_by=other_user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='other2.png',
         )
 
@@ -382,13 +382,13 @@ class TestQRCodeAPI:
     def test_create_qrcode_with_url_type(self, authenticated_client):
         """Test creating a QR code with URL type."""
         url = reverse('qrcode-list')
-        data = {'url': 'https://example.com', 'qr_type': 'url', 'qr_format': 'png'}
+        data = {'url': 'https://example.com', 'qr_type': 'text', 'qr_format': 'png'}
 
         response = authenticated_client.post(url, data, format='json')
 
         assert response.status_code == status.HTTP_201_CREATED
         qr = QRCode.objects.get(id=response.data['id'])
-        assert qr.qr_type == QRCodeType.URL
+        assert qr.qr_type == QRCodeType.TEXT
         assert 'example.com' in qr.content
 
     def test_retrieve_qrcode_includes_qr_type(self, authenticated_client, qr_code):
@@ -399,7 +399,7 @@ class TestQRCodeAPI:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'qr_type' in response.data
-        assert response.data['qr_type'] == QRCodeType.URL.value
+        assert response.data['qr_type'] == QRCodeType.TEXT.value
 
     def test_list_qrcodes_includes_qr_type(self, authenticated_client, qr_code):
         """Test that listing QR codes includes the qr_type field."""

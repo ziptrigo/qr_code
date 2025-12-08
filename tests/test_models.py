@@ -22,14 +22,14 @@ class TestQRCodeModel:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             qr_format=QRCodeFormat.PNG,
             image_file='test.png',
         )
 
         assert qr.content == 'https://example.com'
         assert qr.created_by == user
-        assert qr.qr_type == QRCodeType.URL
+        assert qr.qr_type == QRCodeType.TEXT
         assert qr.qr_format == QRCodeFormat.PNG
         assert qr.scan_count == 0
         assert qr.short_code is None
@@ -48,7 +48,7 @@ class TestQRCodeModel:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -67,7 +67,7 @@ class TestQRCodeModel:
             original_url='https://example.com',
             use_url_shortening=True,
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -82,7 +82,7 @@ class TestQRCodeModel:
             content='https://example1.com',
             use_url_shortening=True,
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test1.png',
         )
 
@@ -90,7 +90,7 @@ class TestQRCodeModel:
             content='https://example2.com',
             use_url_shortening=True,
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test2.png',
         )
 
@@ -102,7 +102,7 @@ class TestQRCodeModel:
             content='https://example.com',
             use_url_shortening=True,
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -118,7 +118,7 @@ class TestQRCodeModel:
             content='https://example.com',
             use_url_shortening=False,
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -131,7 +131,7 @@ class TestQRCodeModel:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -148,7 +148,7 @@ class TestQRCodeModel:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -166,7 +166,7 @@ class TestQRCodeModel:
                 content=f'https://example.com/{fmt.value}',
                 qr_format=fmt,
                 created_by=user,
-                qr_type=QRCodeType.URL,
+                qr_type=QRCodeType.TEXT,
                 image_file=f'test.{fmt.value}',
             )
             assert qr.qr_format == fmt
@@ -185,7 +185,7 @@ class TestQRCodeModel:
                 content=f'https://example.com/{level.value}',
                 error_correction=level,
                 created_by=user,
-                qr_type=QRCodeType.URL,
+                qr_type=QRCodeType.TEXT,
                 image_file=f'test_{level.value}.png',
             )
             assert qr.error_correction == level
@@ -220,12 +220,12 @@ class TestQRCodeModel:
         """Test creating a QR code with URL type."""
         qr = QRCode.objects.create(
             content='https://example.com',
-            qr_type=QRCodeType.URL,
+            qr_type=QRCodeType.TEXT,
             created_by=user,
             image_file='test_url.png',
         )
 
-        assert qr.qr_type == QRCodeType.URL
+        assert qr.qr_type == QRCodeType.TEXT
         assert qr.content == 'https://example.com'
 
 

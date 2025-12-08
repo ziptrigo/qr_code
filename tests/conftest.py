@@ -48,7 +48,7 @@ def qr_code(user):
     return QRCode.objects.create(
         content='https://example.com',
         created_by=user,
-        qr_type=QRCodeType.URL,
+        qr_type=QRCodeType.TEXT,
         qr_format=QRCodeFormat.PNG,
         size=10,
         error_correction=QRCodeErrorCorrection.MEDIUM,
@@ -67,7 +67,7 @@ def qr_code_with_shortening(user):
         original_url='https://example.com/long-url',
         use_url_shortening=True,
         created_by=user,
-        qr_type=QRCodeType.URL,
+        qr_type=QRCodeType.TEXT,
         qr_format=QRCodeFormat.PNG,
         image_file='test_short.png',
     )
