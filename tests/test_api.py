@@ -150,13 +150,15 @@ class TestQRCodeAPI:
         assert 'image_url' in response.data
 
     def test_delete_qrcode(self, authenticated_client, qr_code):
-        """Test deleting a QR code."""
+        """Test soft deleting a QR code."""
         url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
 
         response = authenticated_client.delete(url)
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
-        assert not QRCode.objects.filter(id=qr_code.id).exists()
+        # QR code should still exist in DB but be soft-deleted
+        qr_code.refresh_from_db()
+        assert qr_code.deleted_at is not None
 
     def test_create_with_custom_colors(self, authenticated_client):
         """Test creating QR code with custom colors."""
@@ -262,6 +264,87 @@ class TestQRCodeAPI:
         qr_code.refresh_from_db()
         assert qr_code.name == 'Patched Name'
 
+    def test_soft_deleted_qrcode_not_in_list(self, authenticated_client, qr_code):
+        """Test that soft-deleted QR codes don't appear in list endpoint."""
+        # Soft delete the QR code
+        qr_code.soft_delete()
+
+        url = reverse('qrcode-list')
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        # Should not include the soft-deleted QR code
+        qr_ids = [qr['id'] for qr in response.data]
+        assert str(qr_code.id) not in qr_ids
+
+    def test_soft_deleted_qrcode_returns_404_on_detail(self, authenticated_client, qr_code):
+        """Test that soft-deleted QR codes return 404 on GET detail."""
+        # Soft delete the QR code
+        qr_code.soft_delete()
+
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_soft_deleted_qrcode_returns_404_on_update(self, authenticated_client, qr_code):
+        """Test that soft-deleted QR codes return 404 on PUT update."""
+        # Soft delete the QR code
+        qr_code.soft_delete()
+
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        data = {'name': 'New Name'}
+        response = authenticated_client.put(url, data, format='json')
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_soft_deleted_qrcode_returns_404_on_patch(self, authenticated_client, qr_code):
+        """Test that soft-deleted QR codes return 404 on PATCH update."""
+        # Soft delete the QR code
+        qr_code.soft_delete()
+
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+        data = {'name': 'New Name'}
+        response = authenticated_client.patch(url, data, format='json')
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_cannot_delete_qrcode_not_owned(self, authenticated_client, user):
+        """Test that users cannot delete QR codes they don't own."""
+        # Create another user and their QR code
+        other_user = User.objects.create_user(
+            username='otheruser2@example.com',
+            email='otheruser2@example.com',
+            password='otherpass',
+            name='Other User',
+        )
+        other_qr = QRCode.objects.create(
+            content='https://other2.com', created_by=other_user, image_file='other2.png'
+        )
+
+        url = reverse('qrcode-detail', kwargs={'pk': other_qr.id})
+        response = authenticated_client.delete(url)
+
+        # Should return 404 (not found) because get_queryset filters by user
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        other_qr.refresh_from_db()
+        assert other_qr.deleted_at is None
+
+    def test_double_delete_is_idempotent(self, authenticated_client, qr_code):
+        """Test that deleting an already soft-deleted QR code is idempotent."""
+        url = reverse('qrcode-detail', kwargs={'pk': qr_code.id})
+
+        # First delete
+        response1 = authenticated_client.delete(url)
+        assert response1.status_code == status.HTTP_204_NO_CONTENT
+        qr_code.refresh_from_db()
+        first_deleted_at = qr_code.deleted_at
+        assert first_deleted_at is not None
+
+        # Second delete should return 404 since it's already soft-deleted
+        response2 = authenticated_client.delete(url)
+        assert response2.status_code == status.HTTP_404_NOT_FOUND
+
 
 @pytest.mark.django_db
 @pytest.mark.integration
@@ -304,3 +387,14 @@ class TestRedirectEndpoint:
         response = api_client.get(url, follow=False)
 
         assert response.status_code == status.HTTP_302_FOUND
+
+    def test_redirect_soft_deleted_qrcode_to_dashboard(self, api_client, qr_code_with_shortening):
+        """Test that redirect endpoint redirects to dashboard for soft-deleted QR codes."""
+        # Soft delete the QR code
+        qr_code_with_shortening.soft_delete()
+
+        url = reverse('qrcode-redirect', kwargs={'short_code': qr_code_with_shortening.short_code})
+        response = api_client.get(url, follow=False)
+
+        assert response.status_code == status.HTTP_302_FOUND
+        assert response.url == reverse('dashboard')

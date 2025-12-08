@@ -8,7 +8,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from ..models import QRCode
-from ..serializers import QRCodeCreateSerializer, QRCodeSerializer, QRCodeUpdateSerializer
+from ..serializers import (
+    QRCodeCreateSerializer,
+    QRCodeSerializer,
+    QRCodeUpdateSerializer,
+)
 from ..services import QRCodeGenerator
 
 
@@ -18,10 +22,10 @@ class QRCodeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter QR codes by the authenticated user."""
+        """Filter QR codes by the authenticated user, excluding soft-deleted items."""
         user = self.request.user
         if user.is_authenticated:
-            return QRCode.objects.filter(created_by=user)
+            return QRCode.objects.filter(created_by=user, deleted_at__isnull=True)
         return QRCode.objects.none()
 
     def get_serializer_class(self):
@@ -35,6 +39,12 @@ class QRCodeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Save with the current user."""
         serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        """Soft delete the QR code instead of hard deleting it."""
+        instance = self.get_object()
+        instance.soft_delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['POST'])
@@ -99,6 +109,10 @@ def redirect_view(request, short_code):
     except QRCode.DoesNotExist:
         msg = 'QR Code not found'
         raise Http404(msg)
+
+    # Redirect to dashboard if QR code is soft-deleted
+    if qr_code.deleted_at:
+        return redirect('dashboard')
 
     qr_code.increment_scan_count()
 

@@ -93,6 +93,12 @@
                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md">
                             <i class="fas fa-edit mr-2"></i>Edit
                         </a>
+                        <button type="button"
+                                class="qr-delete-btn w-full text-left block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md"
+                                data-qr-id="{{ qr.id }}"
+                                data-qr-name="{{ qr.name }}">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
                     </div>
                 </div>
             </li>
@@ -119,6 +125,31 @@
              src=""
              alt="QR code preview"
              class="max-h-[70vh] max-w-[70vw] object-contain bg-white rounded" />
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal-overlay"
+     class="fixed inset-0 z-50 hidden bg-black/50 dark:bg-black/70 flex items-center justify-center transition-opacity duration-150 ease-out">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-transform duration-150 ease-out scale-95">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Delete QR Code</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to delete <span id="delete-qr-name" class="font-medium text-gray-900 dark:text-gray-100"></span>?
+            </p>
+            <div class="flex justify-end gap-3">
+                <button type="button"
+                        id="delete-modal-cancel"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                    Cancel
+                </button>
+                <button type="button"
+                        id="delete-modal-confirm"
+                        class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                    Delete
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -289,6 +320,125 @@
       
       if (!isInsideDropdown && !isDropdownButton) {
         closeAllDropdowns();
+      }
+    });
+
+    // Delete modal functionality
+    const deleteOverlay = document.getElementById('delete-modal-overlay');
+    const deleteQrName = document.getElementById('delete-qr-name');
+    const deleteCancelBtn = document.getElementById('delete-modal-cancel');
+    const deleteConfirmBtn = document.getElementById('delete-modal-confirm');
+    let currentDeleteQrId = null;
+
+    function openDeleteModal(qrId, qrName) {
+      if (!deleteOverlay || !deleteQrName) return;
+      currentDeleteQrId = qrId;
+      deleteQrName.textContent = qrName;
+      deleteOverlay.classList.remove('hidden');
+      // trigger fade/scale in
+      requestAnimationFrame(function() {
+        deleteOverlay.classList.remove('opacity-0');
+        const panel = deleteOverlay.querySelector('div');
+        if (panel) {
+          panel.classList.remove('scale-95');
+        }
+      });
+    }
+
+    function closeDeleteModal() {
+      if (!deleteOverlay) return;
+      // fade/scale out then hide
+      deleteOverlay.classList.add('opacity-0');
+      const panel = deleteOverlay.querySelector('div');
+      if (panel) {
+        panel.classList.add('scale-95');
+      }
+      setTimeout(function() {
+        deleteOverlay.classList.add('hidden');
+        currentDeleteQrId = null;
+      }, 150);
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    async function deleteQrCode(qrId) {
+      try {
+        const response = await fetch(`/api/qrcodes/${qrId}/`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+        });
+        
+        if (response.ok) {
+          // Reload the page to reflect the deletion
+          window.location.reload();
+        } else {
+          console.error('Failed to delete QR code');
+          alert('Failed to delete QR code. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting QR code:', error);
+        alert('An error occurred. Please try again.');
+      }
+    }
+
+    // Handle delete button clicks
+    document.addEventListener('click', function(e) {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+
+      const deleteBtn = target.closest('.qr-delete-btn');
+      if (deleteBtn) {
+        e.stopPropagation();
+        const qrId = deleteBtn.getAttribute('data-qr-id');
+        const qrName = deleteBtn.getAttribute('data-qr-name');
+        if (qrId && qrName) {
+          closeAllDropdowns();
+          openDeleteModal(qrId, qrName);
+        }
+        return;
+      }
+
+      // Click outside modal closes it
+      if (target === deleteOverlay) {
+        closeDeleteModal();
+      }
+    });
+
+    if (deleteCancelBtn) {
+      deleteCancelBtn.addEventListener('click', function() {
+        closeDeleteModal();
+      });
+    }
+
+    if (deleteConfirmBtn) {
+      deleteConfirmBtn.addEventListener('click', function() {
+        if (currentDeleteQrId) {
+          deleteQrCode(currentDeleteQrId);
+        }
+      });
+    }
+
+    // Close delete modal on Escape
+    document.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') {
+        if (!deleteOverlay.classList.contains('hidden')) {
+          closeDeleteModal();
+        }
       }
     });
   })();
