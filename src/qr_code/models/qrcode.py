@@ -30,6 +30,13 @@ class QRCodeErrorCorrection(models.TextChoices):
     HIGH = 'H', 'High (~30%)'
 
 
+class QRCodeType(models.TextChoices):
+    """Enum for QR code types."""
+
+    URL = 'url', 'URL'
+    TEXT = 'text', 'Text'
+
+
 class QRCode(models.Model):
     """Model to store QR code data and settings."""
 
@@ -42,6 +49,9 @@ class QRCode(models.Model):
     # QR Code content and settings
     name = models.CharField(
         max_length=255, default='Untitled QR Code', help_text='Name of the QR code'
+    )
+    qr_type = models.CharField(
+        max_length=10, choices=QRCodeType.choices, help_text='Type of QR code content'
     )
     content = models.TextField(help_text='The actual content encoded in the QR code')
     original_url = models.URLField(
