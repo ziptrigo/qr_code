@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import UTC, datetime
+from http import HTTPStatus
 from pathlib import Path
 from typing import Annotated
 
@@ -82,7 +83,6 @@ def db_data(
 ):
     """Create or use existing user and generate QR codes via API."""
     import requests
-
     from faker import Faker
 
     if not file.exists():
@@ -118,7 +118,7 @@ def db_data(
         signup_data = {'name': email.split('@')[0], 'email': email, 'password': password}
         response = requests.post(f'{base_url}/api/signup', json=signup_data, timeout=10)
 
-        if response.status_code != 201:
+        if response.status_code != HTTPStatus.CREATED:
             logger.error(f'Failed to create user: {response.text}')
             raise typer.Exit(1)
 
@@ -144,7 +144,7 @@ def db_data(
     login_data = {'email': email, 'password': password}
     response = session.post(f'{base_url}/api/login', json=login_data, timeout=10)
 
-    if response.status_code != 200:
+    if response.status_code != HTTPStatus.OK:
         logger.error(f'Failed to login: {response.text}')
         raise typer.Exit(1)
 
@@ -178,7 +178,7 @@ def db_data(
 
         response = session.post(f'{base_url}/api/qrcodes/', json=qr_data, timeout=10)
 
-        if response.status_code == 201:
+        if response.status_code == HTTPStatus.CREATED:
             created_count += 1
             logger.info(f'Created QR code {created_count}/{qr_codes}: {name}')
         else:
