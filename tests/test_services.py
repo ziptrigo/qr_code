@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from django.conf import settings
 
-from src.qr_code.models import QRCode
+from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat
 from src.qr_code.services import QRCodeGenerator
 
 
@@ -18,7 +18,10 @@ class TestQRCodeGenerator:
     def test_generate_png_qrcode(self, user, tmp_path):
         """Test generating a PNG QR code."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, qr_format='png', image_file='temp.png'
+            content='https://example.com',
+            created_by=user,
+            qr_format=QRCodeFormat.PNG,
+            image_file='temp.png',
         )
 
         image_path = QRCodeGenerator.generate_qr_code(qr)
@@ -34,7 +37,10 @@ class TestQRCodeGenerator:
     def test_generate_svg_qrcode(self, user):
         """Test generating an SVG QR code."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, qr_format='svg', image_file='temp.svg'
+            content='https://example.com',
+            created_by=user,
+            qr_format=QRCodeFormat.SVG,
+            image_file='temp.svg',
         )
 
         image_path = QRCodeGenerator.generate_qr_code(qr)
@@ -49,7 +55,10 @@ class TestQRCodeGenerator:
     def test_generate_pdf_qrcode(self, user):
         """Test generating a PDF QR code."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, qr_format='pdf', image_file='temp.pdf'
+            content='https://example.com',
+            created_by=user,
+            qr_format=QRCodeFormat.PDF,
+            image_file='temp.pdf',
         )
 
         image_path = QRCodeGenerator.generate_qr_code(qr)
@@ -66,7 +75,7 @@ class TestQRCodeGenerator:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_format='png',
+            qr_format=QRCodeFormat.PNG,
             background_color='#FFFFFF',
             foreground_color='#000000',
             image_file='temp.png',
@@ -83,7 +92,7 @@ class TestQRCodeGenerator:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_format='png',
+            qr_format=QRCodeFormat.PNG,
             background_color='transparent',
             foreground_color='black',
             image_file='temp.png',
@@ -100,7 +109,7 @@ class TestQRCodeGenerator:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_format='png',
+            qr_format=QRCodeFormat.PNG,
             size=15,
             image_file='temp.png',
         )
@@ -116,7 +125,7 @@ class TestQRCodeGenerator:
         qr = QRCode.objects.create(
             content='https://example.com',
             created_by=user,
-            qr_format='png',
+            qr_format=QRCodeFormat.PNG,
             border=10,
             image_file='temp.png',
         )
@@ -129,15 +138,20 @@ class TestQRCodeGenerator:
 
     def test_generate_with_all_error_correction_levels(self, user):
         """Test generating QR codes with different error correction levels."""
-        levels = ['L', 'M', 'Q', 'H']
+        levels = [
+            QRCodeErrorCorrection.LOW,
+            QRCodeErrorCorrection.MEDIUM,
+            QRCodeErrorCorrection.QUARTILE,
+            QRCodeErrorCorrection.HIGH,
+        ]
 
         for level in levels:
             qr = QRCode.objects.create(
-                content=f'https://example.com/{level}',
+                content=f'https://example.com/{level.value}',
                 created_by=user,
-                qr_format='png',
+                qr_format=QRCodeFormat.PNG,
                 error_correction=level,
-                image_file=f'temp_{level}.png',
+                image_file=f'temp_{level.value}.png',
             )
 
             image_path = QRCodeGenerator.generate_qr_code(qr)

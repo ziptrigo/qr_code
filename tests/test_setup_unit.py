@@ -7,7 +7,7 @@ simple unit-style checks.
 import pytest
 from django.contrib.auth import get_user_model
 
-from src.qr_code.models import QRCode
+from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat
 from src.qr_code.services import QRCodeGenerator
 
 User = get_user_model()
@@ -38,7 +38,7 @@ def test_model_creation():
     qr = QRCode.objects.create(
         content='https://example.com',
         created_by=user_obj,
-        qr_format='png',
+        qr_format=QRCodeFormat.PNG,
         image_file='temp.png',
     )
 
@@ -52,9 +52,9 @@ def test_qr_generation(user):
     qr = QRCode.objects.create(
         content='https://example.com',
         created_by=user,
-        qr_format='png',
+        qr_format=QRCodeFormat.PNG,
         size=10,
-        error_correction='M',
+        error_correction=QRCodeErrorCorrection.MEDIUM,
         border=4,
         background_color='white',
         foreground_color='black',
@@ -77,7 +77,7 @@ def test_url_shortening(user):
         original_url='https://example.com/very-long-url',
         use_url_shortening=True,
         created_by=user,
-        qr_format='svg',
+        qr_format=QRCodeFormat.SVG,
         image_file='temp.svg',
     )
 

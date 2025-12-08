@@ -15,6 +15,11 @@
         hx-swap="none">
     {% csrf_token %}
 
+    <!-- Hidden qr_type field (always 'text') -->
+    {% if not qrcode %}
+    <input type="hidden" name="qr_type" value="text">
+    {% endif %}
+
     <!-- Name -->
     <div class="mb-4">
       <label class="block mb-1 text-sm font-medium">Name</label>
@@ -56,6 +61,7 @@
       <button type="button"
               id="qrcode-preview-btn"
               hx-post="/api/qrcodes/preview"
+              hx-include="#qrcode-form"
               hx-trigger="click"
               hx-swap="none"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-900 bg-brand-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">

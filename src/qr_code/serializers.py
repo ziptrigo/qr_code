@@ -24,6 +24,7 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
         fields = [
             'id',
             'name',
+            'qr_type',
             'qr_format',
             'size',
             'error_correction',
@@ -91,6 +92,7 @@ class QRCodeUpdateSerializer(serializers.ModelSerializer[QRCode]):
         fields = [
             'id',
             'name',
+            'qr_type',
             'content',
             'original_url',
             'qr_format',
@@ -100,6 +102,7 @@ class QRCodeUpdateSerializer(serializers.ModelSerializer[QRCode]):
         ]
         read_only_fields = [
             'id',
+            'qr_type',
             'content',
             'original_url',
             'qr_format',
@@ -125,6 +128,7 @@ class QRCodeSerializer(serializers.ModelSerializer):
         model = QRCode
         fields = [
             'id',
+            'qr_type',
             'content',
             'original_url',
             'use_url_shortening',

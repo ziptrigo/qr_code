@@ -4,7 +4,13 @@ Unit tests for QRCode model.
 
 import pytest
 
-from src.qr_code.models import QRCode, generate_short_code
+from src.qr_code.models import (
+    QRCode,
+    QRCodeErrorCorrection,
+    QRCodeFormat,
+    QRCodeType,
+    generate_short_code,
+)
 
 
 @pytest.mark.django_db
@@ -14,18 +20,25 @@ class TestQRCodeModel:
     def test_create_qrcode(self, user):
         """Test creating a basic QR code."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, qr_format='png', image_file='test.png'
+            content='https://example.com',
+            created_by=user,
+            qr_type=QRCodeType.TEXT,
+            qr_format=QRCodeFormat.PNG,
+            image_file='test.png',
         )
 
         assert qr.content == 'https://example.com'
         assert qr.created_by == user
-        assert qr.qr_format == 'png'
+        assert qr.qr_type == QRCodeType.TEXT
+        assert qr.qr_format == QRCodeFormat.PNG
         assert qr.scan_count == 0
         assert qr.short_code is None
 
     def test_qrcode_str_representation(self, user):
         """Test the string representation of QRCode."""
-        qr = QRCode.objects.create(content='Test Content', created_by=user, image_file='test.png')
+        qr = QRCode.objects.create(
+            content='Test Content', created_by=user, qr_type=QRCodeType.TEXT, image_file='test.png'
+        )
 
         assert 'QRCode' in str(qr)
         assert 'Test Content' in str(qr)
@@ -33,12 +46,15 @@ class TestQRCodeModel:
     def test_qrcode_default_values(self, user):
         """Test that default values are set correctly."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, image_file='test.png'
+            content='https://example.com',
+            created_by=user,
+            qr_type=QRCodeType.TEXT,
+            image_file='test.png',
         )
 
-        assert qr.qr_format == 'png'
+        assert qr.qr_format == QRCodeFormat.PNG
         assert qr.size == 10
-        assert qr.error_correction == 'M'
+        assert qr.error_correction == QRCodeErrorCorrection.MEDIUM
         assert qr.border == 4
         assert qr.background_color == 'white'
         assert qr.foreground_color == 'black'
@@ -51,6 +67,7 @@ class TestQRCodeModel:
             original_url='https://example.com',
             use_url_shortening=True,
             created_by=user,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -65,6 +82,7 @@ class TestQRCodeModel:
             content='https://example1.com',
             use_url_shortening=True,
             created_by=user,
+            qr_type=QRCodeType.TEXT,
             image_file='test1.png',
         )
 
@@ -72,6 +90,7 @@ class TestQRCodeModel:
             content='https://example2.com',
             use_url_shortening=True,
             created_by=user,
+            qr_type=QRCodeType.TEXT,
             image_file='test2.png',
         )
 
@@ -83,6 +102,7 @@ class TestQRCodeModel:
             content='https://example.com',
             use_url_shortening=True,
             created_by=user,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -98,6 +118,7 @@ class TestQRCodeModel:
             content='https://example.com',
             use_url_shortening=False,
             created_by=user,
+            qr_type=QRCodeType.TEXT,
             image_file='test.png',
         )
 
@@ -108,7 +129,10 @@ class TestQRCodeModel:
     def test_increment_scan_count(self, user):
         """Test incrementing the scan count."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, image_file='test.png'
+            content='https://example.com',
+            created_by=user,
+            qr_type=QRCodeType.TEXT,
+            image_file='test.png',
         )
 
         initial_count = qr.scan_count
@@ -122,7 +146,10 @@ class TestQRCodeModel:
     def test_multiple_scan_increments(self, user):
         """Test multiple scan count increments."""
         qr = QRCode.objects.create(
-            content='https://example.com', created_by=user, image_file='test.png'
+            content='https://example.com',
+            created_by=user,
+            qr_type=QRCodeType.TEXT,
+            image_file='test.png',
         )
 
         for i in range(5):
@@ -132,29 +159,74 @@ class TestQRCodeModel:
 
     def test_qrcode_format_choices(self, user):
         """Test that all format choices work."""
-        formats = ['png', 'svg', 'jpeg']
+        formats = [QRCodeFormat.PNG, QRCodeFormat.SVG, QRCodeFormat.PDF]
 
         for fmt in formats:
             qr = QRCode.objects.create(
-                content=f'https://example.com/{fmt}',
+                content=f'https://example.com/{fmt.value}',
                 qr_format=fmt,
                 created_by=user,
-                image_file=f'test.{fmt}',
+                qr_type=QRCodeType.TEXT,
+                image_file=f'test.{fmt.value}',
             )
             assert qr.qr_format == fmt
 
     def test_error_correction_choices(self, user):
         """Test that all error correction levels work."""
-        levels = ['L', 'M', 'Q', 'H']
+        levels = [
+            QRCodeErrorCorrection.LOW,
+            QRCodeErrorCorrection.MEDIUM,
+            QRCodeErrorCorrection.QUARTILE,
+            QRCodeErrorCorrection.HIGH,
+        ]
 
         for level in levels:
             qr = QRCode.objects.create(
-                content=f'https://example.com/{level}',
+                content=f'https://example.com/{level.value}',
                 error_correction=level,
                 created_by=user,
-                image_file=f'test_{level}.png',
+                qr_type=QRCodeType.TEXT,
+                image_file=f'test_{level.value}.png',
             )
             assert qr.error_correction == level
+
+    def test_qrcode_type_choices(self, user):
+        """Test that all QR code type choices work."""
+        types = [QRCodeType.URL, QRCodeType.TEXT]
+
+        for qr_type in types:
+            qr = QRCode.objects.create(
+                content=f'content_{qr_type.value}',
+                qr_type=qr_type,
+                created_by=user,
+                image_file=f'test_{qr_type.value}.png',
+            )
+            assert qr.qr_type == qr_type
+
+    def test_qrcode_text_type(self, user):
+        """Test creating a QR code with text type."""
+        qr = QRCode.objects.create(
+            content='Just some plain text',
+            qr_type=QRCodeType.TEXT,
+            created_by=user,
+            image_file='test_text.png',
+        )
+
+        assert qr.qr_type == QRCodeType.TEXT
+        assert qr.content == 'Just some plain text'
+        assert qr.original_url is None
+
+    def test_qrcode_url_type(self, user):
+        """Test creating a QR code with URL type."""
+        qr = QRCode.objects.create(
+            content='https://example.com',
+            qr_type=QRCodeType.TEXT,
+            created_by=user,
+            image_file='test_url.png',
+        )
+
+        assert qr.qr_type == QRCodeType.TEXT
+        assert qr.content == 'https://example.com'
 
 
 @pytest.mark.unit
