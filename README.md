@@ -65,6 +65,13 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 
 ## API Endpoints
 
+### API Documentation
+
+- `/api/schema/` - OpenAPI schema (supports `?format=json` or `?format=yaml`)
+- `/api/docs/` - Interactive Swagger UI documentation
+
+### Endpoints
+
 - `POST /api/signup` - Create user account and send confirmation email (email, name, password)
 - `POST /api/login` - Authenticate with email and password (requires confirmed email)
 - `POST /api/resend-confirmation` - Resend email confirmation link (email)
