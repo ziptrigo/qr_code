@@ -1,11 +1,12 @@
 boto3
 django
-djangorestframework
-jinja2
+djangorestframework     # Django Rest Framework (DRF)
+drf-spectacular         # OpenAPI docs, nicer than standard DRF
+jinja2                  # Templating
 # mysqlclient           # MySQL client, currently not used
 pillow
 # psycopg               # PostgreSQL client, currently not used
 python-dotenv
 requests
-segno
-typer
+segno                   # QR Code generation
+typer                   # CLI app
