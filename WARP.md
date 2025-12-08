@@ -32,12 +32,13 @@ Initial version done. Testing functionality and fixing bugs.
 - Forgot password flow implemented: `/forgot-password/` (initiation), `/reset-password/<token>/` (HTML),
   `POST /api/forgot-password` and `POST /api/reset-password` endpoints with time-limited tokens and email.
 - Dashboard `/dashboard/` lists the authenticated user's QR codes (search + sort).
-  - Each QR code row has a dropdown menu (three-dots icon) with Edit action.
+  - Each QR code row has a dropdown menu (three-dots icon) with Edit and Delete actions.
   - Clear search button (X icon) to reset filtering.
 - QR code creation/editing:
   - `/qrcodes/create/` page lets users preview and save new QR codes.
   - `/qrcodes/edit/<id>/` page lets users edit the name of existing QR codes (content is read-only).
   - Both pages use the same template (`qrcode_editor.html`) with conditional rendering.
+- Soft delete implemented: QR codes are marked as deleted (not physically removed) and hidden from all interfaces.
 
 ## Next Steps
 1. Test authentication endpoints including email confirmation.
@@ -145,17 +146,24 @@ Session-based authentication using Django sessions with email confirmation.
 - Time-limited tokens use the `TimeLimitedToken` model with token_type field ('password_reset' or 'email_confirmation').
 
 ### QR Code Management
-- GET /api/qrcodes/ - List user's QR codes (filtered by created_by)
+- GET /api/qrcodes/ - List user's QR codes (filtered by created_by, excludes soft-deleted)
 - POST /api/qrcodes/ - Create new QR code with full customization options
-- GET /api/qrcodes/<id>/ - Retrieve QR code details
-- PUT /api/qrcodes/<id>/ - Update QR code name only (uses QRCodeUpdateSerializer)
-- PATCH /api/qrcodes/<id>/ - Partial update of QR code name
-- DELETE /api/qrcodes/<id>/ - Delete QR code
+- GET /api/qrcodes/<id>/ - Retrieve QR code details (returns 404 if soft-deleted)
+- PUT /api/qrcodes/<id>/ - Update QR code name only (uses QRCodeUpdateSerializer, returns 404 if soft-deleted)
+- PATCH /api/qrcodes/<id>/ - Partial update of QR code name (returns 404 if soft-deleted)
+- DELETE /api/qrcodes/<id>/ - Soft delete QR code (sets deleted_at timestamp)
 - POST /api/qrcodes/preview - Generate preview without saving to DB
 - Ownership validation: Users can only access/modify their own QR codes via get_queryset filtering
+- Soft delete: QR codes have a `deleted_at` field (nullable DateTimeField). When deleted:
+  - `deleted_at` is set to current timestamp
+  - QR code remains in database but is filtered out from all querysets
+  - API endpoints return 404 for soft-deleted QR codes
+  - Redirect endpoint (`/go/{short_code}/`) redirects to dashboard for soft-deleted QR codes
 
 ### HTML Pages
 - `/dashboard/` - List QR codes with search (with clear button), sort, and dropdown actions per row
+  - Dropdown menu includes Edit and Delete (with confirmation modal) actions
+  - Delete confirmation modal displays QR code name and has Cancel/Delete buttons
 - `/qrcodes/create/` - Create new QR code (name 'qrcode-create')
 - `/qrcodes/edit/<uuid:qr_id>/` - Edit existing QR code name (name 'qrcode-edit')
 - Both create/edit use `qrcode_editor.html` template with conditional rendering based on `qrcode` context
@@ -166,5 +174,10 @@ Tests are located in `tests/` directory using pytest.
   - QR code creation with various options
   - QR code listing and retrieval
   - QR code updates (name only, ownership validation, empty name validation)
+  - Soft delete behavior (deleted_at field, 404 responses, list filtering)
+  - Soft-deleted QR codes not appearing in list endpoint
+  - Soft-deleted QR codes returning 404 on detail/update operations
+  - Double-delete idempotency
+  - Redirect endpoint behavior for soft-deleted QR codes
   - Authentication and authorization
   - URL shortening functionality

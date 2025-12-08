@@ -74,11 +74,17 @@ class QRCode(models.Model):
     scan_count = models.IntegerField(default=0, help_text='Number of times QR code was scanned')
     last_scanned_at = models.DateTimeField(null=True, blank=True)
 
+    # Soft delete
+    deleted_at = models.DateTimeField(
+        null=True, blank=True, help_text='Timestamp when QR code was soft-deleted'
+    )
+
     class Meta:
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['short_code']),
             models.Index(fields=['created_by', '-created_at']),
+            models.Index(fields=['deleted_at']),
         ]
 
     def __str__(self) -> str:
@@ -109,3 +115,11 @@ class QRCode(models.Model):
         self.scan_count += 1
         self.last_scanned_at = timezone.now()
         self.save(update_fields=['scan_count', 'last_scanned_at'])
+
+    def soft_delete(self):
+        """Mark this QR code as deleted without removing it from the database."""
+        from django.utils import timezone
+
+        if not self.deleted_at:
+            self.deleted_at = timezone.now()
+            self.save(update_fields=['deleted_at'])

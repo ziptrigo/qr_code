@@ -69,7 +69,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     query = request.GET.get('q', '')
     sort = request.GET.get('sort', '')
 
-    qrcodes = QRCode.objects.filter(created_by=user)
+    qrcodes = QRCode.objects.filter(created_by=user, deleted_at__isnull=True)
 
     if query:
         qrcodes = qrcodes.filter(name__icontains=query)

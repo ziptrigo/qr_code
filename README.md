@@ -73,12 +73,12 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 - `POST /api/reset-password` - Reset password using a valid token (`token`, `password`, `password_confirm`)
 - `POST /api/qrcodes/` - Create QR code (supports `name`, formats PNG/SVG/PDF, colors, and optional URL shortening)
 - `POST /api/qrcodes/preview` - Generate a QR code image for preview without saving it to the database
-- `GET /api/qrcodes/` - List QR codes
+- `GET /api/qrcodes/` - List QR codes (excludes soft-deleted)
 - `GET /api/qrcodes/{id}/` - Get QR code details
 - `PUT /api/qrcodes/{id}/` - Update QR code name (only the name field can be modified)
 - `PATCH /api/qrcodes/{id}/` - Partially update QR code name
-- `DELETE /api/qrcodes/{id}/` - Delete QR code
-- `GET /go/{short_code}/` - Redirect and track (public)
+- `DELETE /api/qrcodes/{id}/` - Soft delete QR code (marks as deleted without physical removal)
+- `GET /go/{short_code}/` - Redirect and track (public, redirects to dashboard if QR code is deleted)
 
 ## Web UI
 
@@ -94,6 +94,7 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 - `/dashboard/` - Authenticated dashboard listing the user's QR codes with search and sort options (requires confirmed email)
   - Each QR code row includes a dropdown menu (three-dots icon) with actions:
     - **Edit** - Opens the edit page for that QR code
+    - **Delete** - Opens a confirmation modal to soft delete the QR code
 - `/qrcodes/create/` - QR code creation page with:
   - Name field
   - Text/URL textarea (up to 1000 characters)
@@ -140,6 +141,14 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 2. Select **Edit** from the dropdown menu to open `/qrcodes/edit/{id}/`.
 3. Update the **Name** field as needed. The QR code content and format cannot be changed (displayed as read-only).
 4. Click **Save** to update the QR code name via the API. You'll be redirected back to `/dashboard/`.
+
+### How to delete a QR code
+
+1. From the `/dashboard/` page, click the three-dots menu icon on the right side of any QR code row.
+2. Select **Delete** from the dropdown menu.
+3. A confirmation modal will appear asking you to confirm the deletion.
+4. Click **Delete** to permanently remove the QR code, or **Cancel** to keep it.
+5. Deleted QR codes are soft-deleted (marked as deleted in the database) and will no longer appear in your dashboard or be accessible via the API.
 
 ## Development
 
