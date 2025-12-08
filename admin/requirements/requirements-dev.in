@@ -5,6 +5,7 @@ boto3-stubs[ses]
 django-stubs
 djangorestframework-stubs
 factory-boy
+faker
 flake8
 flake8-pyproject
 isort
