@@ -3,7 +3,7 @@ from pathlib import Path
 import segno
 from django.conf import settings
 
-from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat
+from src.qr_code.models import QRCode, QRCodeFormat
 
 
 class QRCodeGenerator:
@@ -13,20 +13,14 @@ class QRCodeGenerator:
     def generate_qr_code(qr_code_instance: QRCode) -> str:
         """Generate a QR code image file based on the QRCode model instance."""
         # Create QR code with segno
-        error_level_map = {
-            QRCodeErrorCorrection.LOW: 'L',
-            QRCodeErrorCorrection.MEDIUM: 'M',
-            QRCodeErrorCorrection.QUARTILE: 'Q',
-            QRCodeErrorCorrection.HIGH: 'H',
-        }
-
+        # The error_correction field stores the string value, which we pass directly to segno
         qr = segno.make(
             qr_code_instance.content,
-            error=error_level_map.get(qr_code_instance.error_correction, 'M'),
+            error=qr_code_instance.error_correction,
             micro=False,
         )
 
-        # Prepare file path
+        # Prepare the file path
         media_qrcodes = Path(settings.MEDIA_ROOT) / 'qrcodes'
         media_qrcodes.mkdir(parents=True, exist_ok=True)
 
