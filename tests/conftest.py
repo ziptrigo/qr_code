@@ -6,7 +6,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from src.qr_code.models import QRCode
+from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat
 
 User = get_user_model()
 
@@ -48,9 +48,9 @@ def qr_code(user):
     return QRCode.objects.create(
         content='https://example.com',
         created_by=user,
-        qr_format='png',
+        qr_format=QRCodeFormat.PNG,
         size=10,
-        error_correction='M',
+        error_correction=QRCodeErrorCorrection.MEDIUM,
         border=4,
         background_color='white',
         foreground_color='black',
@@ -66,6 +66,6 @@ def qr_code_with_shortening(user):
         original_url='https://example.com/long-url',
         use_url_shortening=True,
         created_by=user,
-        qr_format='png',
+        qr_format=QRCodeFormat.PNG,
         image_file='test_short.png',
     )

@@ -3,7 +3,7 @@ from pathlib import Path
 import segno
 from django.conf import settings
 
-from src.qr_code.models import QRCode
+from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat
 
 
 class QRCodeGenerator:
@@ -13,7 +13,12 @@ class QRCodeGenerator:
     def generate_qr_code(qr_code_instance: QRCode) -> str:
         """Generate a QR code image file based on the QRCode model instance."""
         # Create QR code with segno
-        error_level_map = {'L': 'L', 'M': 'M', 'Q': 'Q', 'H': 'H'}
+        error_level_map = {
+            QRCodeErrorCorrection.LOW: 'L',
+            QRCodeErrorCorrection.MEDIUM: 'M',
+            QRCodeErrorCorrection.QUARTILE: 'Q',
+            QRCodeErrorCorrection.HIGH: 'H',
+        }
 
         qr = segno.make(
             qr_code_instance.content,
@@ -33,7 +38,7 @@ class QRCodeGenerator:
         fg_color = QRCodeGenerator._parse_color(qr_code_instance.foreground_color)
 
         # Generate based on format
-        if qr_code_instance.qr_format == 'svg':
+        if qr_code_instance.qr_format == QRCodeFormat.SVG:
             qr.save(
                 str(file_path),
                 kind='svg',

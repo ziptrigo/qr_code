@@ -13,21 +13,25 @@ def generate_short_code(length: int = 8) -> str:
     return ''.join(random.choice(chars) for _ in range(length))
 
 
+class QRCodeFormat(models.TextChoices):
+    """Enum for QR code output formats."""
+
+    PNG = 'png', 'PNG'
+    SVG = 'svg', 'SVG'
+    PDF = 'pdf', 'PDF'
+
+
+class QRCodeErrorCorrection(models.TextChoices):
+    """Enum for QR code error correction levels."""
+
+    LOW = 'L', 'Low (~7%)'
+    MEDIUM = 'M', 'Medium (~15%)'
+    QUARTILE = 'Q', 'Quartile (~25%)'
+    HIGH = 'H', 'High (~30%)'
+
+
 class QRCode(models.Model):
     """Model to store QR code data and settings."""
-
-    FORMAT_CHOICES = [
-        ('png', 'PNG'),
-        ('svg', 'SVG'),
-        ('pdf', 'PDF'),
-    ]
-
-    ERROR_CORRECTION_CHOICES = [
-        ('L', 'Low (~7%)'),
-        ('M', 'Medium (~15%)'),
-        ('Q', 'Quartile (~25%)'),
-        ('H', 'High (~30%)'),
-    ]
 
     # Primary identification
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -54,9 +58,13 @@ class QRCode(models.Model):
     )
 
     # QR Code customization
-    qr_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, default='png')
+    qr_format = models.CharField(
+        max_length=10, choices=QRCodeFormat.choices, default=QRCodeFormat.PNG
+    )
     size = models.IntegerField(default=10, help_text='Scale factor for QR code size')
-    error_correction = models.CharField(max_length=1, choices=ERROR_CORRECTION_CHOICES, default='M')
+    error_correction = models.CharField(
+        max_length=1, choices=QRCodeErrorCorrection.choices, default=QRCodeErrorCorrection.MEDIUM
+    )
     border = models.IntegerField(default=4, help_text='Border size (quiet zone)')
 
     # Colors
