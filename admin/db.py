@@ -129,10 +129,11 @@ def db_data(
 
         logger.info('User created successfully')
 
-        # Get the user from DB
-        user = User.objects.get(email=email)
+    # Get the user from DB
+    user = User.objects.get(email=email)
 
-        # Mark email as confirmed directly in DB
+    # Make sure email is confirmed directly in DB
+    if not user.email_confirmed:
         user.email_confirmed = True
         user.email_confirmed_at = datetime.now(UTC)
         user.save(update_fields=['email_confirmed', 'email_confirmed_at'])
@@ -140,14 +141,25 @@ def db_data(
 
     # Login to get session
     session = requests.Session()
+    
+    # Get CSRF token from cookies by visiting the site first
+    session.get(f'{base_url}/', timeout=10)
+    csrf_token = session.cookies.get('csrftoken', '')
+    
     login_data = {'email': email, 'password': password}
-    response = session.post(f'{base_url}/api/login', json=login_data, timeout=10)
+    headers = {'X-CSRFToken': csrf_token} if csrf_token else {}
+    response = session.post(
+        f'{base_url}/api/login', json=login_data, headers=headers, timeout=10
+    )
 
     if response.status_code != HTTPStatus.OK:
         logger.error(f'Failed to login: {response.status_code}: {response.text}')
         raise typer.Exit(1)
 
     logger.info('Logged in successfully')
+    
+    # Update CSRF token after login
+    csrf_token = session.cookies.get('csrftoken', csrf_token)
 
     # Initialize faker
     fake = Faker()
@@ -175,7 +187,10 @@ def db_data(
             'use_url_shortening': False,
         }
 
-        response = session.post(f'{base_url}/api/qrcodes/', json=qr_data, timeout=10)
+        headers = {'X-CSRFToken': csrf_token} if csrf_token else {}
+        response = session.post(
+            f'{base_url}/api/qrcodes/', json=qr_data, headers=headers, timeout=10
+        )
 
         if response.status_code == HTTPStatus.CREATED:
             created_count += 1
