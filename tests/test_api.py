@@ -424,6 +424,40 @@ class TestQRCodeAPI:
         assert qr_code.qr_type == original_type  # Should remain unchanged
         assert qr_code.name == 'Updated Name'
 
+    def test_create_qrcode_with_url_type_validates_url_format(self, authenticated_client):
+        """Test that creating a QR code with URL type validates the URL format."""
+        url = reverse('qrcode-list')
+        data = {'url': 'not a valid url', 'qr_type': 'url', 'qr_format': 'png'}
+
+        response = authenticated_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'url' in response.data
+
+    def test_create_qrcode_with_url_type_accepts_valid_url(self, authenticated_client):
+        """Test that creating a QR code with URL type accepts valid URLs."""
+        url = reverse('qrcode-list')
+        data = {'url': 'https://example.com', 'qr_type': 'url', 'qr_format': 'png'}
+
+        response = authenticated_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        qr = QRCode.objects.get(id=response.data['id'])
+        assert qr.qr_type == QRCodeType.URL
+        assert 'example.com' in qr.content
+
+    def test_create_qrcode_with_text_type_allows_any_content(self, authenticated_client):
+        """Test that TEXT type allows any content, not just URLs."""
+        url = reverse('qrcode-list')
+        data = {'data': 'not a url at all', 'qr_type': 'text', 'qr_format': 'png'}
+
+        response = authenticated_client.post(url, data, format='json')
+
+        assert response.status_code == status.HTTP_201_CREATED
+        qr = QRCode.objects.get(id=response.data['id'])
+        assert qr.qr_type == QRCodeType.TEXT
+        assert qr.content == 'not a url at all'
+
 
 @pytest.mark.django_db
 @pytest.mark.integration

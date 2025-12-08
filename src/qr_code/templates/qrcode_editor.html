@@ -15,10 +15,6 @@
         hx-swap="none">
     {% csrf_token %}
 
-    <!-- Hidden qr_type field (always 'text') -->
-    {% if not qrcode %}
-    <input type="hidden" name="qr_type" value="text">
-    {% endif %}
 
     <!-- Name -->
     <div class="mb-4">
@@ -26,6 +22,16 @@
       <input type="text" name="name" maxlength="255" required value="{{ qrcode.name|default:'' }}"
              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
     </div>
+
+    <!-- Type (read-only in edit mode) -->
+    {% if qrcode %}
+    <div class="mb-4">
+      <label class="block mb-1 text-sm font-medium">Type</label>
+      <div class="w-full rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 px-3 py-2">
+        {{ qrcode.get_qr_type_display }}
+      </div>
+    </div>
+    {% endif %}
 
     <!-- Text / URL -->
     <div class="mb-4">
@@ -36,8 +42,17 @@
     </div>
 
     {% if not qrcode %}
-    <!-- Options row: format + short URL (only in create mode) -->
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <!-- Options row: type + format (only in create mode) -->
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-end gap-4">
+      <div>
+        <label class="block mb-1 text-sm font-medium">Type</label>
+        <select id="qr_type" name="qr_type"
+                class="w-40 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
+          <option value="text" selected>Text</option>
+          <option value="url">URL</option>
+        </select>
+      </div>
+
       <div>
         <label class="block mb-1 text-sm font-medium">Format</label>
         <select name="qr_format"
@@ -47,10 +62,15 @@
           <option value="pdf">PDF</option>
         </select>
       </div>
+    </div>
 
-      <label class="inline-flex items-center gap-2 mt-2 sm:mt-6">
-        <input type="checkbox" name="use_url_shortening" value="true" class="rounded">
-        <span class="text-sm">Generate short URL (for valid URLs only)</span>
+    <!-- Track QR Code checkbox (only in create mode) -->
+    <div class="mb-6">
+      <label class="inline-flex items-center gap-2">
+        <input id="use_url_shortening" type="checkbox" name="use_url_shortening" value="true" class="rounded" disabled>
+        <span class="text-sm">Track QR Code</span>
+        <i class="fas fa-question-circle text-gray-500 dark:text-gray-400 cursor-help" 
+           title="This tracks the QR Code usage and gives you analytical data about its usage."></i>
       </label>
     </div>
     {% endif %}
@@ -100,6 +120,29 @@
     const previewBtn = document.getElementById('qrcode-preview-btn');
     const previewImg = document.getElementById('qrcode-preview-img');
     const isEditMode = {{ qrcode|yesno:"true,false" }};
+    const qrTypeSelect = document.getElementById('qr_type');
+    const urlShorteningCheckbox = document.getElementById('use_url_shortening');
+
+    // Update checkbox state based on QR type selection
+    function updateCheckboxState() {
+      if (qrTypeSelect && urlShorteningCheckbox) {
+        const isUrl = qrTypeSelect.value === 'url';
+        urlShorteningCheckbox.disabled = !isUrl;
+        if (!isUrl) {
+          urlShorteningCheckbox.checked = false;
+        }
+      }
+    }
+
+    // Initialize checkbox state on page load
+    if (!isEditMode) {
+      updateCheckboxState();
+      
+      // Add event listener for type changes
+      if (qrTypeSelect) {
+        qrTypeSelect.addEventListener('change', updateCheckboxState);
+      }
+    }
 
     form.addEventListener('submit', function(ev){
       if (!form.checkValidity()) {
