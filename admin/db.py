@@ -44,9 +44,13 @@ def db_users(
 
     setup_django(file)
 
+    from django.db.models import Count, Q
+
     from src.qr_code.models import User
 
-    users = User.objects.all()
+    users = User.objects.annotate(
+        num_codes=Count('qrcodes', filter=Q(qrcodes__deleted_at__isnull=True))
+    ).all()
 
     if not users:
         logger.warning('No users found in the database.')
@@ -57,6 +61,7 @@ def db_users(
     table.add_column('Username', style='magenta')
     table.add_column('Email', style='green')
     table.add_column('Name')
+    table.add_column('Num Codes')
     table.add_column('Admin', justify='center')
 
     for user in users:
@@ -65,6 +70,7 @@ def db_users(
             user.username,
             user.email,
             user.name,
+            str(user.num_codes),  # noqa
             'x' if user.is_staff else '',
         )
 
@@ -141,23 +147,21 @@ def db_data(
 
     # Login to get session
     session = requests.Session()
-    
+
     # Get CSRF token from cookies by visiting the site first
     session.get(f'{base_url}/', timeout=10)
     csrf_token = session.cookies.get('csrftoken', '')
-    
+
     login_data = {'email': email, 'password': password}
     headers = {'X-CSRFToken': csrf_token} if csrf_token else {}
-    response = session.post(
-        f'{base_url}/api/login', json=login_data, headers=headers, timeout=10
-    )
+    response = session.post(f'{base_url}/api/login', json=login_data, headers=headers, timeout=10)
 
     if response.status_code != HTTPStatus.OK:
         logger.error(f'Failed to login: {response.status_code}: {response.text}')
         raise typer.Exit(1)
 
     logger.info('Logged in successfully')
-    
+
     # Update CSRF token after login
     csrf_token = session.cookies.get('csrftoken', csrf_token)
 
