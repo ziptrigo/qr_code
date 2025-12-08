@@ -3,7 +3,7 @@ from pathlib import Path
 import segno
 from django.conf import settings
 
-from src.qr_code.models import QRCode, QRCodeFormat
+from ..models import QRCode, QRCodeFormat
 
 
 class QRCodeGenerator:
