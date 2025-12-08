@@ -74,9 +74,9 @@ def db_users(
 
 @app.command(name='data')
 def db_data(
-    email: Annotated[str, typer.Argument(help='User email address')],
-    password: Annotated[str, typer.Argument(help='User password')],
-    qr_codes: Annotated[int, typer.Argument(help='Number of QR codes to generate')],
+    email: Annotated[str, typer.Argument(help='User email address.')],
+    password: Annotated[str, typer.Argument(help='User password.')],
+    qr_codes: Annotated[int, typer.Argument(help='Number of QR codes to generate for the user.')],
     file: Annotated[Path, typer.Option(help='Path to the SQLite database file')] = Path(
         'db.sqlite3'
     ),
@@ -112,7 +112,12 @@ def db_data(
     # Check if user exists
     user = User.objects.filter(email=email).first()
 
-    if not user:
+    if user:
+        logger.info(f'Using existing user: `{email}` (password not changed)')
+        # If we want to update password for existing user:
+        # user.set_password(password)
+        # user.save(update_fields=['password'])
+    else:
         # Create user via signup API
         logger.info(f'Creating new user: {email}')
         signup_data = {'name': email.split('@')[0], 'email': email, 'password': password}
@@ -132,12 +137,6 @@ def db_data(
         user.email_confirmed_at = datetime.now(UTC)
         user.save(update_fields=['email_confirmed', 'email_confirmed_at'])
         logger.info('Email marked as confirmed')
-    else:
-        logger.info(f'Using existing user: {email}')
-        # Update password for existing user
-        user.set_password(password)
-        user.save(update_fields=['password'])
-        logger.info('Password updated')
 
     # Login to get session
     session = requests.Session()
@@ -145,7 +144,7 @@ def db_data(
     response = session.post(f'{base_url}/api/login', json=login_data, timeout=10)
 
     if response.status_code != HTTPStatus.OK:
-        logger.error(f'Failed to login: {response.text}')
+        logger.error(f'Failed to login: {response.status_code}: {response.text}')
         raise typer.Exit(1)
 
     logger.info('Logged in successfully')
