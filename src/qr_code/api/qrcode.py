@@ -82,6 +82,7 @@ def qrcode_preview(request):
             if key
             in {
                 'name',
+                'qr_type',
                 'qr_format',
                 'size',
                 'error_correction',

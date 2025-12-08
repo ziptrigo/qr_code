@@ -7,6 +7,7 @@ A complete QR code generation and management service with Django REST API, sessi
 ## Features
 
 - 🎨 **Full Customization**: Colors, size, error correction, border, and multiple formats (PNG, SVG, PDF)
+- 🏷️ **QR Code Types**: Support for URL and TEXT types to categorize QR code content
 - 🔗 **URL Shortening**: Built-in URL shortener with redirect tracking
 - 📊 **Analytics**: Track scan counts and timestamps
 - 🔐 **Session Authentication**: Secure API access with session-based auth
@@ -78,11 +79,11 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 - `POST /api/confirm-email` - Confirm email using token (token)
 - `POST /api/forgot-password` - Request a password reset email (always returns 200)
 - `POST /api/reset-password` - Reset password using a valid token (`token`, `password`, `password_confirm`)
-- `POST /api/qrcodes/` - Create QR code (supports `name`, formats PNG/SVG/PDF, colors, and optional URL shortening)
+- `POST /api/qrcodes/` - Create QR code (supports `name`, `qr_type` (url/text), formats PNG/SVG/PDF, colors, and optional URL shortening)
 - `POST /api/qrcodes/preview` - Generate a QR code image for preview without saving it to the database
-- `GET /api/qrcodes/` - List QR codes (excludes soft-deleted)
-- `GET /api/qrcodes/{id}/` - Get QR code details
-- `PUT /api/qrcodes/{id}/` - Update QR code name (only the name field can be modified)
+- `GET /api/qrcodes/` - List QR codes (excludes soft-deleted, includes `qr_type` field)
+- `GET /api/qrcodes/{id}/` - Get QR code details (includes `qr_type` field)
+- `PUT /api/qrcodes/{id}/` - Update QR code name (only the name field can be modified; `qr_type` is read-only)
 - `PATCH /api/qrcodes/{id}/` - Partially update QR code name
 - `DELETE /api/qrcodes/{id}/` - Soft delete QR code (marks as deleted without physical removal)
 - `GET /go/{short_code}/` - Redirect and track (public, redirects to dashboard if QR code is deleted)
@@ -136,6 +137,7 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 2. Click the **Generate QR code** button on the right of the search bar to open `/qrcodes/create/`.
 3. Fill in:
    - **Name** – a label to identify this QR code in your dashboard.
+   - **Type** – select either **URL** (for web addresses) or **Text** (for plain text content).
    - **Text / URL to encode** – any text up to 1000 characters. This can be plain text or a URL.
    - **Format** – choose between PNG, SVG or PDF.
    - *(Optional)* **Generate short URL** – when enabled and the content is a valid URL, the service will store the original URL and encode a shortened redirect URL in the QR code. If the content is not a URL, this option has no effect.
@@ -146,7 +148,7 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 
 1. From the `/dashboard/` page, click the three-dots menu icon on the right side of any QR code row.
 2. Select **Edit** from the dropdown menu to open `/qrcodes/edit/{id}/`.
-3. Update the **Name** field as needed. The QR code content and format cannot be changed (displayed as read-only).
+3. Update the **Name** field as needed. The QR code type, content, and format cannot be changed (displayed as read-only).
 4. Click **Save** to update the QR code name via the API. You'll be redirected back to `/dashboard/`.
 
 ### How to delete a QR code

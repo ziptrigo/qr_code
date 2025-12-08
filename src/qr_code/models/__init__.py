@@ -1,4 +1,10 @@
-from .qrcode import QRCode, QRCodeErrorCorrection, QRCodeFormat, generate_short_code
+from .qrcode import (
+    QRCode,
+    QRCodeErrorCorrection,
+    QRCodeFormat,
+    QRCodeType,
+    generate_short_code,
+)
 from .user import User
 
 __all__ = [
@@ -6,5 +12,6 @@ __all__ = [
     'QRCode',
     'QRCodeFormat',
     'QRCodeErrorCorrection',
+    'QRCodeType',
     'generate_short_code',
 ]

@@ -405,6 +405,7 @@ class TestAuthenticationFlow:
         qrcode_url = reverse('qrcode-list')
         qrcode_data = {
             'url': 'https://example.com',
+            'qr_type': 'url',
             'qr_format': 'png',
         }
         qrcode_response = api_client.post(qrcode_url, qrcode_data, format='json')
@@ -427,6 +428,7 @@ class TestAuthenticationFlow:
         qrcode_url = reverse('qrcode-list')
         qrcode_data = {
             'url': 'https://example.com',
+            'qr_type': 'url',
             'qr_format': 'png',
         }
         qrcode_response = api_client.post(qrcode_url, qrcode_data, format='json')
@@ -476,6 +478,7 @@ class TestAuthenticationFlow:
         qrcode_url = reverse('qrcode-list')
         qrcode1_data = {
             'url': 'https://user1.com',
+            'qr_type': 'url',
             'qr_format': 'png',
         }
         qrcode_response1 = api_client.post(qrcode_url, qrcode1_data, format='json')
@@ -506,6 +509,7 @@ class TestAuthenticationFlow:
         # Create QR code for user2
         qrcode2_data = {
             'url': 'https://user2.com',
+            'qr_type': 'url',
             'qr_format': 'png',
         }
         qrcode_response2 = client2.post(qrcode_url, qrcode2_data, format='json')

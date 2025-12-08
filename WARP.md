@@ -91,6 +91,7 @@ Only README.md remains in the root directory, uppercased.
 ### Functionality
 1. Create QR code
 When creating a QR code, the user should be able to specify the following:
+- QR code type (URL or TEXT) - required field to categorize the content
 - QR code format
 - QR code content
 - QR code size
@@ -146,13 +147,14 @@ Session-based authentication using Django sessions with email confirmation.
 - Time-limited tokens use the `TimeLimitedToken` model with token_type field ('password_reset' or 'email_confirmation').
 
 ### QR Code Management
-- GET /api/qrcodes/ - List user's QR codes (filtered by created_by, excludes soft-deleted)
-- POST /api/qrcodes/ - Create new QR code with full customization options
-- GET /api/qrcodes/<id>/ - Retrieve QR code details (returns 404 if soft-deleted)
-- PUT /api/qrcodes/<id>/ - Update QR code name only (uses QRCodeUpdateSerializer, returns 404 if soft-deleted)
-- PATCH /api/qrcodes/<id>/ - Partial update of QR code name (returns 404 if soft-deleted)
+- GET /api/qrcodes/ - List user's QR codes (filtered by created_by, excludes soft-deleted, includes qr_type)
+- POST /api/qrcodes/ - Create new QR code with full customization options (qr_type is required: 'url' or 'text')
+- GET /api/qrcodes/<id>/ - Retrieve QR code details (returns 404 if soft-deleted, includes qr_type)
+- PUT /api/qrcodes/<id>/ - Update QR code name only (uses QRCodeUpdateSerializer, qr_type is read-only, returns 404 if soft-deleted)
+- PATCH /api/qrcodes/<id>/ - Partial update of QR code name (qr_type is read-only, returns 404 if soft-deleted)
 - DELETE /api/qrcodes/<id>/ - Soft delete QR code (sets deleted_at timestamp)
-- POST /api/qrcodes/preview - Generate preview without saving to DB
+- POST /api/qrcodes/preview - Generate preview without saving to DB (requires qr_type)
+- QR Code Types: Each QR code has a qr_type field (QRCodeType TextChoices: URL or TEXT) that categorizes the content
 - Ownership validation: Users can only access/modify their own QR codes via get_queryset filtering
 - Soft delete: QR codes have a `deleted_at` field (nullable DateTimeField). When deleted:
   - `deleted_at` is set to current timestamp
@@ -164,8 +166,8 @@ Session-based authentication using Django sessions with email confirmation.
 - `/dashboard/` - List QR codes with search (with clear button), sort, and dropdown actions per row
   - Dropdown menu includes Edit and Delete (with confirmation modal) actions
   - Delete confirmation modal displays QR code name and has Cancel/Delete buttons
-- `/qrcodes/create/` - Create new QR code (name 'qrcode-create')
-- `/qrcodes/edit/<uuid:qr_id>/` - Edit existing QR code name (name 'qrcode-edit')
+- `/qrcodes/create/` - Create new QR code with qr_type selection (name 'qrcode-create')
+- `/qrcodes/edit/<uuid:qr_id>/` - Edit existing QR code name; qr_type is read-only (name 'qrcode-edit')
 - Both create/edit use `qrcode_editor.html` template with conditional rendering based on `qrcode` context
 
 ### Testing
