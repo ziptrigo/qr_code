@@ -42,6 +42,7 @@ class UserAdmin(DjangoUserAdmin):
 class QRCodeAdmin(admin.ModelAdmin):
     list_display = [
         'id',
+        'name',
         'content_preview',
         'qr_format',
         'created_by',
