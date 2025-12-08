@@ -61,7 +61,7 @@ def db_users(
     table.add_column('Username', style='magenta')
     table.add_column('Email', style='green')
     table.add_column('Name')
-    table.add_column('Num Codes')
+    table.add_column('Codes')
     table.add_column('Admin', justify='center')
 
     for user in users:
