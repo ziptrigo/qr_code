@@ -51,6 +51,8 @@ class QRCodeViewSet(viewsets.ModelViewSet):
 @permission_classes([IsAuthenticated])
 def qrcode_preview(request):
     """Generate a QR code image for preview without saving to the database."""
+    from django.conf import settings
+    
     serializer = QRCodeCreateSerializer(
         data=request.data,
         context={'request': request},
@@ -60,6 +62,7 @@ def qrcode_preview(request):
 
     url = validated_data.pop('url', None)
     data = validated_data.pop('data', None)
+    use_url_shortening = validated_data.get('use_url_shortening', False)
 
     if url:
         content = url
@@ -71,6 +74,14 @@ def qrcode_preview(request):
             {'detail': "Either 'url' or 'data' must be provided."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    # If using URL shortening, get the short code from request and create short URL
+    if use_url_shortening:
+        short_code = request.data.get('short_code')
+        if short_code:
+            # Create the short URL for preview
+            base_url = request.build_absolute_uri('/')
+            content = f'{base_url}go/{short_code}/'
 
     qr_instance = QRCode(
         id=uuid.uuid4(),
