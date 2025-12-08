@@ -86,6 +86,8 @@ class QRCode(models.Model):
             models.Index(fields=['created_by', '-created_at']),
             models.Index(fields=['deleted_at']),
         ]
+        verbose_name = 'QR Code'
+        verbose_name_plural = 'QR Codes'
 
     def __str__(self) -> str:
         return f'QRCode {self.id} - {self.content[:50]}'
