@@ -116,6 +116,49 @@ def qrcode_editor(request: HttpRequest, qr_id: str | None = None) -> HttpRespons
     return render(request, 'qrcode_editor.html', context)
 
 
+@login_required
+def qrcode_duplicate(request: HttpRequest, qr_id: str) -> HttpResponse:
+    """Render the QR code editor in create mode, pre-filled from an existing QR code.
+
+    The resulting page behaves like create (POST to create endpoint), but inputs are
+    initialized with the values from the referenced QR code. The short URL is not
+    copied; if tracking is enabled, a new short code will be generated upon creation.
+    """
+    user = request.user
+
+    # Narrow type for static checkers; guarded by @login_required.
+    if isinstance(user, AnonymousUser):
+        raise RuntimeError('Authenticated user required')
+
+    try:
+        source = QRCode.objects.get(id=qr_id, created_by=user)
+    except QRCode.DoesNotExist:
+        from django.http import Http404
+
+        msg = 'QR Code not found'
+        raise Http404(msg)
+
+    # Prefer the original URL (if present) for URL-type QR codes; otherwise use content.
+    if source.qr_type == 'url' and source.original_url:
+        prefill_content = source.original_url
+    else:
+        prefill_content = source.content
+
+    prefill = {
+        'name': source.name,
+        'qr_type': source.qr_type,
+        'qr_format': source.qr_format,
+        'content': prefill_content,
+        'use_url_shortening': bool(source.use_url_shortening and source.qr_type == 'url'),
+    }
+
+    context = {
+        'qrcode': None,
+        'prefill': prefill,
+    }
+    return render(request, 'qrcode_editor.html', context)
+
+
 def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:
     """Validate email confirmation token and redirect accordingly."""
 

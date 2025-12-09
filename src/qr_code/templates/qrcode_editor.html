@@ -19,7 +19,7 @@
     <!-- Name -->
     <div class="mb-4">
       <label class="block mb-1 text-sm font-medium">Name</label>
-      <input type="text" name="name" maxlength="255" required value="{{ qrcode.name|default:'' }}"
+      <input type="text" name="name" maxlength="255" required value="{{ qrcode.name|default:prefill.name|default:'' }}"
              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
     </div>
 
@@ -37,7 +37,7 @@
     <div class="mb-4">
       <label class="block mb-1 text-sm font-medium">Text / URL{% if qrcode %} (read-only){% else %} to encode{% endif %}</label>
       <textarea name="url" maxlength="1000" rows="4" {% if qrcode %}disabled{% else %}required{% endif %}
-                class="w-full rounded border border-gray-300 dark:border-gray-600 {% if qrcode %}bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed{% else %}bg-white dark:bg-gray-800{% endif %} px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">{% if qrcode %}{{ qrcode.content }}{% endif %}</textarea>
+                class="w-full rounded border border-gray-300 dark:border-gray-600 {% if qrcode %}bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed{% else %}bg-white dark:bg-gray-800{% endif %} px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">{% if qrcode %}{{ qrcode.content }}{% else %}{{ prefill.content|default:'' }}{% endif %}</textarea>
       {% if not qrcode %}<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Up to 1000 characters. Can be any text; short URL is only meaningful when the content is a URL.</p>{% endif %}
     </div>
 
@@ -50,8 +50,8 @@
           <label class="block mb-1 text-sm font-medium">Type</label>
           <select id="qr_type" name="qr_type"
                   class="w-40 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
-            <option value="text" selected>Text</option>
-            <option value="url">URL</option>
+            <option value="text" {% if prefill.qr_type == 'text' or not prefill.qr_type %}selected{% endif %}>Text</option>
+            <option value="url" {% if prefill.qr_type == 'url' %}selected{% endif %}>URL</option>
           </select>
         </div>
 
@@ -59,15 +59,15 @@
           <label class="block mb-1 text-sm font-medium">Format</label>
           <select name="qr_format"
                   class="w-40 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
-            <option value="png" selected>PNG</option>
-            <option value="svg">SVG</option>
-            <option value="pdf">PDF</option>
+            <option value="png" {% if prefill.qr_format == 'png' or not prefill.qr_format %}selected{% endif %}>PNG</option>
+            <option value="svg" {% if prefill.qr_format == 'svg' %}selected{% endif %}>SVG</option>
+            <option value="pdf" {% if prefill.qr_format == 'pdf' %}selected{% endif %}>PDF</option>
           </select>
         </div>
 
         <div class="flex items-end">
           <label class="inline-flex items-center gap-2 pb-2">
-            <input id="use_url_shortening" type="checkbox" name="use_url_shortening" value="true" class="rounded" disabled>
+            <input id="use_url_shortening" type="checkbox" name="use_url_shortening" value="true" class="rounded" disabled {% if prefill.use_url_shortening %}checked{% endif %}>
             <span class="text-sm">Track QR Code</span>
             <i class="fas fa-question-circle text-gray-500 dark:text-gray-400 cursor-help" 
                title="This tracks the QR Code usage and gives you analytical data about its usage."></i>
@@ -134,6 +134,8 @@
     const urlShorteningCheckbox = document.getElementById('use_url_shortening');
     const shortUrlContainer = document.getElementById('short-url-container');
     const shortUrlDisplay = document.getElementById('short-url-display');
+    const hasPrefill = {{ prefill|yesno:"true,false" }};
+    const prefillUseShort = {{ prefill.use_url_shortening|yesno:"true,false" }};
     let generatedShortCode = null;
 
     // Generate a random short code (8 characters)
@@ -182,10 +184,22 @@
     // Initialize checkbox state on page load
     if (!isEditMode) {
       updateCheckboxState();
-      
+
+      // If arriving via Duplicate with tracking enabled and type URL, show short URL
+      if (hasPrefill && prefillUseShort && qrTypeSelect && qrTypeSelect.value === 'url' && urlShorteningCheckbox) {
+        urlShorteningCheckbox.checked = true;
+        updateShortUrlDisplay();
+      }
+
       // Add event listener for type changes
       if (qrTypeSelect) {
-        qrTypeSelect.addEventListener('change', updateCheckboxState);
+        qrTypeSelect.addEventListener('change', function(){
+          updateCheckboxState();
+          // Hide short URL when switching away from URL type
+          if (qrTypeSelect.value !== 'url' && shortUrlContainer) {
+            shortUrlContainer.classList.add('hidden');
+          }
+        });
       }
 
       // Add event listener for checkbox changes

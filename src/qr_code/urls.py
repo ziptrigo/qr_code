@@ -22,6 +22,7 @@ from .views import (
     login_page,
     logout_page,
     qrcode_editor,
+    qrcode_duplicate,
     register_page,
     reset_password_page,
 )
@@ -50,5 +51,6 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('qrcodes/create/', qrcode_editor, name='qrcode-create'),
     path('qrcodes/edit/<uuid:qr_id>/', qrcode_editor, name='qrcode-edit'),
+    path('qrcodes/duplicate/<uuid:qr_id>/', qrcode_duplicate, name='qrcode-duplicate'),
     path('go/<str:short_code>/', redirect_view, name='qrcode-redirect'),
 ]
