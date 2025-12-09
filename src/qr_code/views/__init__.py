@@ -8,6 +8,7 @@ from .pages import (
     login_page,
     logout_page,
     qrcode_editor,
+    qrcode_duplicate,
     register_page,
     reset_password_page,
 )
@@ -22,6 +23,7 @@ __all__ = [
     'login_page',
     'logout_page',
     'qrcode_editor',
+    'qrcode_duplicate',
     'register_page',
     'reset_password_page',
 ]
