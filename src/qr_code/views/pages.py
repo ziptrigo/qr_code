@@ -112,7 +112,7 @@ def qrcode_editor(request: HttpRequest, qr_id: str | None = None) -> HttpRespons
             msg = 'QR Code not found'
             raise Http404(msg)
 
-    context = {'qrcode': qrcode}
+    context = {'qrcode': qrcode, 'prefill': {}}
     return render(request, 'qrcode_editor.html', context)
 
 

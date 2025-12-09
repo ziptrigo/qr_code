@@ -19,7 +19,7 @@
     <!-- Name -->
     <div class="mb-4">
       <label class="block mb-1 text-sm font-medium">Name</label>
-      <input type="text" name="name" maxlength="255" required value="{{ qrcode.name|default:prefill.name|default:'' }}"
+      <input type="text" name="name" maxlength="255" required value="{% if qrcode %}{{ qrcode.name }}{% else %}{{ prefill.name|default:'' }}{% endif %}"
              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary">
     </div>
 
@@ -134,7 +134,7 @@
     const urlShorteningCheckbox = document.getElementById('use_url_shortening');
     const shortUrlContainer = document.getElementById('short-url-container');
     const shortUrlDisplay = document.getElementById('short-url-display');
-    const hasPrefill = {{ prefill|yesno:"true,false" }};
+    const hasPrefill = {% if prefill|length > 0 %}true{% else %}false{% endif %};
     const prefillUseShort = {{ prefill.use_url_shortening|yesno:"true,false" }};
     let generatedShortCode = null;
 
@@ -208,13 +208,15 @@
       }
     }
 
-    // Intercept htmx requests to add short_code if needed
-    document.body.addEventListener('htmx:configRequest', function(e) {
-      if (e.target === previewBtn && generatedShortCode && urlShorteningCheckbox && urlShorteningCheckbox.checked) {
-        // Add short_code to the request parameters
-        e.detail.parameters.short_code = generatedShortCode;
-      }
-    });
+    // Intercept htmx requests to add short_code if needed (only in create mode)
+    if (!isEditMode) {
+      document.body.addEventListener('htmx:configRequest', function(e) {
+        if ((e.target === previewBtn || e.target === form) && generatedShortCode && urlShorteningCheckbox && urlShorteningCheckbox.checked) {
+          // Add short_code to the request parameters
+          e.detail.parameters.short_code = generatedShortCode;
+        }
+      });
+    }
 
     form.addEventListener('submit', function(ev){
       if (!form.checkValidity()) {
