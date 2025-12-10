@@ -49,3 +49,56 @@ class LoginSerializer(serializers.Serializer):
 
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
+
+
+class AccountUpdateSerializer(serializers.Serializer):
+    """Serializer for updating user account information."""
+
+    name = serializers.CharField(max_length=255, required=False)
+    email = serializers.EmailField(required=False)
+    current_password = serializers.CharField(write_only=True, required=False)
+    new_password = serializers.CharField(write_only=True, required=False)
+    new_password_confirm = serializers.CharField(write_only=True, required=False)
+
+    def validate_email(self, value: str) -> str:
+        """Check if email is available (excluding current user)."""
+        user = self.context.get('user')
+        if user and User.objects.filter(email=value).exclude(id=user.id).exists():
+            raise serializers.ValidationError('User with that email already exists.')
+        return value
+
+    def validate_new_password(self, value: str) -> str:
+        """Validate password strength: minimum 6 chars and at least one digit."""
+        if len(value) < 6:
+            raise serializers.ValidationError('Password must be at least 6 characters long.')
+        if not re.search(r'\d', value):
+            raise serializers.ValidationError('Password must contain at least one digit.')
+        return value
+
+    def validate(self, data: dict) -> dict:
+        """Cross-field validation for password changes."""
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        new_password_confirm = data.get('new_password_confirm')
+
+        # If any password field is provided, all must be provided
+        password_fields = [current_password, new_password, new_password_confirm]
+        if any(password_fields) and not all(password_fields):
+            raise serializers.ValidationError(
+                'To change password, provide current_password, new_password, and '
+                'new_password_confirm.'
+            )
+
+        # Validate password confirmation matches
+        if new_password and new_password_confirm and new_password != new_password_confirm:
+            raise serializers.ValidationError({'new_password_confirm': 'Passwords do not match.'})
+
+        # Validate current password
+        if current_password:
+            user = self.context.get('user')
+            if not user or not user.check_password(current_password):
+                raise serializers.ValidationError(
+                    {'current_password': 'Current password is incorrect.'}
+                )
+
+        return data

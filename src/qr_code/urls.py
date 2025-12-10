@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .api import (
     QRCodeViewSet,
+    account_view,
     confirm_email,
     forgot_password,
     login_view,
@@ -14,6 +15,7 @@ from .api import (
 )
 from .views import (
     account_created_page,
+    account_page,
     confirm_email_page,
     dashboard,
     email_confirmation_success,
@@ -38,9 +40,11 @@ urlpatterns = [
     path('api/reset-password', reset_password, name='reset-password'),
     path('api/resend-confirmation', resend_confirmation, name='resend-confirmation'),
     path('api/confirm-email', confirm_email, name='confirm-email'),
+    path('api/account', account_view, name='account'),
     path('api/qrcodes/preview', qrcode_preview, name='qrcode-preview'),
     path('', home_page, name='home'),
     path('login/', login_page, name='login-page'),
+    path('account/', account_page, name='account-page'),
     path('account-created/', account_created_page, name='account-created'),
     path('forgot-password/', forgot_password_page, name='forgot-password-page'),
     path('reset-password/<str:token>/', reset_password_page, name='reset-password-page'),

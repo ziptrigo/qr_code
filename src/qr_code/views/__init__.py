@@ -1,5 +1,6 @@
 from .pages import (
     account_created_page,
+    account_page,
     confirm_email_page,
     dashboard,
     email_confirmation_success,
@@ -15,6 +16,7 @@ from .pages import (
 
 __all__ = [
     'account_created_page',
+    'account_page',
     'confirm_email_page',
     'dashboard',
     'email_confirmation_success',

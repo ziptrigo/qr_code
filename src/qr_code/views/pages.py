@@ -176,3 +176,9 @@ def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:
 def email_confirmation_success(request: HttpRequest) -> HttpResponse:
     """Render the email confirmation success page."""
     return render(request, 'email_confirmation_success.html')
+
+
+@login_required
+def account_page(request: HttpRequest) -> HttpResponse:
+    """Render the account settings page for the authenticated user."""
+    return render(request, 'account.html')

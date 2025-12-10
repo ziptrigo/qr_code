@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate, get_user_model, login
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from ..auth_serializers import LoginSerializer, SignupSerializer
+from ..auth_serializers import AccountUpdateSerializer, LoginSerializer, SignupSerializer
 from ..services.email_confirmation import get_email_confirmation_service
 from ..services.password_reset import PasswordResetService, get_password_reset_service
 
@@ -211,3 +211,69 @@ def confirm_email(request):
     service.confirm_email(token_obj)
 
     return Response({'detail': 'Email has been confirmed.'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def account_view(request):
+    """Get or update current user's account information."""
+    user = request.user
+
+    if request.method == 'GET':
+        return Response(
+            {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'name': getattr(user, 'name', ''),
+                'email_confirmed': getattr(user, 'email_confirmed', True),
+            }
+        )
+
+    # PUT - Update account
+    serializer = AccountUpdateSerializer(data=request.data, context={'user': user})
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    validated_data = serializer.validated_data
+    email_changed = False
+
+    # Update name
+    if 'name' in validated_data:
+        user.name = validated_data['name']
+
+    # Update email
+    if 'email' in validated_data and validated_data['email'] != user.email:
+        user.email = validated_data['email']
+        user.username = validated_data['email']  # Keep username in sync
+        user.email_confirmed = False
+        user.email_confirmed_at = None
+        email_changed = True
+
+    # Update password
+    if 'new_password' in validated_data:
+        user.set_password(validated_data['new_password'])
+
+    user.save()
+
+    # Send confirmation email if email changed
+    if email_changed:
+        confirmation_service = get_email_confirmation_service()
+        confirmation_service.send_confirmation_email(user)
+
+    response_data = {
+        'message': 'Account updated successfully.',
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'name': user.name,
+            'email_confirmed': user.email_confirmed,
+        },
+    }
+
+    if email_changed:
+        response_data['email_changed'] = True
+        response_data['message'] += ' Please check your email to confirm your new address.'
+
+    return Response(response_data)

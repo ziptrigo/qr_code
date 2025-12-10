@@ -1,4 +1,5 @@
 from .auth import (
+    account_view,
     confirm_email,
     forgot_password,
     login_view,
@@ -18,4 +19,5 @@ __all__ = [
     'reset_password',
     'resend_confirmation',
     'confirm_email',
+    'account_view',
 ]
