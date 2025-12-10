@@ -10,7 +10,7 @@ A Python project for generating and manipulating QR codes.
 
 ## Tech Stack
 - Python 3.13
-- Django 5.2 for API and web interface (session-based auth, htmx + Tailwind templates)
+- Django 6.0 for API and web interface (session-based auth, htmx + Tailwind templates)
 - typer for CLI interface
 - segno package for QR code generation
 - Email: SES in production, console backend in development
