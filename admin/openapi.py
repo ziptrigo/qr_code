@@ -12,7 +12,7 @@ from typing import Annotated
 import typer
 
 from admin import PROJECT_ROOT
-from admin.utils import DryAnnotation, logger
+from admin.utils import logger
 
 app = typer.Typer(
     help=__doc__,
@@ -25,18 +25,19 @@ app = typer.Typer(
 class Format(str, Enum):
     """Output format for OpenAPI specification."""
 
-    json = 'json'
-    yaml = 'yaml'
+    JSON = 'json'
+    YAML = 'yaml'
 
 
 def setup_django():
     """Configure Django settings."""
     import django
+    from django.apps import apps
 
     sys.path.insert(0, str(PROJECT_ROOT.resolve()))
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-    if not django.apps.apps.ready:
+    if not apps.ready:
         django.setup()
 
 
@@ -48,7 +49,7 @@ def generate_openapi(
             help='Output format for the OpenAPI specification.',
             case_sensitive=False,
         ),
-    ] = Format.yaml,
+    ] = Format.YAML,
     file: Annotated[
         Path | None,
         typer.Option(
@@ -56,7 +57,6 @@ def generate_openapi(
             show_default=False,
         ),
     ] = None,
-    dry: DryAnnotation = False,
 ):
     """
     Generate OpenAPI specification.
@@ -75,28 +75,13 @@ def generate_openapi(
         generator = SchemaGenerator()
         schema = generator.get_schema()
 
-        # Convert to desired format
-        if format == Format.json:
+        # Convert to the desired format
+        if format == Format.JSON:
             output = json.dumps(schema, indent=2)
         else:  # YAML
-            try:
-                import yaml
-            except ImportError:
-                logger.error(
-                    'PyYAML is required for YAML output. ' 'Install it with: pip install pyyaml'
-                )
-                raise typer.Exit(1)
+            import yaml
 
             output = yaml.dump(schema, default_flow_style=False, sort_keys=False)
-
-        if dry:
-            logger.info('DRY RUN: Schema generation successful')
-            logger.info(f'Output format: {format.value}')
-            if file:
-                logger.info(f'Would save to: {file}')
-            else:
-                logger.info('Would display on screen')
-            return
 
         # Save to file or display
         if file:
@@ -105,9 +90,7 @@ def generate_openapi(
             file_path.write_text(output)
             logger.info(f'OpenAPI schema saved to {file_path.resolve()}')
         else:
-            # Display on screen
             print(output)
-            logger.info('OpenAPI schema displayed on screen')
 
     except Exception as e:
         logger.error(f'Failed to generate OpenAPI schema: {e}')
