@@ -99,10 +99,16 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
   regardless of whether the email exists
 - `/reset-password/<token>/` - Enter a new password. Invalid or expired tokens show an expiry page with a link
   back to login
-- `/dashboard/` - Authenticated dashboard listing the user's QR codes with search and sort options (requires confirmed email)
+|- `/dashboard/` - Authenticated dashboard listing the user's QR codes with search and sort options (requires confirmed email)
   - Each QR code row includes a dropdown menu (three-dots icon) with actions:
     - **Edit** - Opens the edit page for that QR code
     - **Delete** - Opens a confirmation modal to soft delete the QR code
+  - Account settings link in the header
+|- `/account/` - Account settings page for authenticated users with:
+  - **Profile Information** section: editable name and email, read-only username; changing email requires confirmation
+  - **Change Password** section: current password verification with password strength validation (min 6 chars, 1 digit)
+  - Password visibility toggle buttons for all password fields
+  - Link back to dashboard
 - `/qrcodes/create/` - QR code creation page with:
   - Name field
   - Text/URL textarea (up to 1000 characters)

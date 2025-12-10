@@ -163,9 +163,15 @@ Session-based authentication using Django sessions with email confirmation.
   - Redirect endpoint (`/go/{short_code}/`) redirects to dashboard for soft-deleted QR codes
 
 ### HTML Pages
-- `/dashboard/` - List QR codes with search (with clear button), sort, and dropdown actions per row
+|- `/dashboard/` - List QR codes with search (with clear button), sort, and dropdown actions per row
   - Dropdown menu includes Edit and Delete (with confirmation modal) actions
   - Delete confirmation modal displays QR code name and has Cancel/Delete buttons
+  - Header includes account settings link
+|- `/account/` - Account settings page for authenticated users with:
+  - **Profile Information** section: editable name and email, read-only username; changing email requires confirmation
+  - **Change Password** section: current password verification with password strength validation (min 6 chars, 1 digit)
+  - Password visibility toggle buttons for all password fields
+  - Link back to dashboard
 - `/qrcodes/create/` - Create new QR code with qr_type selection (name 'qrcode-create')
 - `/qrcodes/edit/<uuid:qr_id>/` - Edit existing QR code name; qr_type is read-only (name 'qrcode-edit')
 - Both create/edit use `qrcode_editor.html` template with conditional rendering based on `qrcode` context
