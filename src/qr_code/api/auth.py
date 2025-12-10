@@ -277,7 +277,7 @@ def account_view(request):
     }
 
     if email_changed:
-        response_data['email_changed'] = True
-        response_data['message'] += ' Please check your email to confirm your new address.'
+        response_data['email_changed'] = True  # type: ignore
+        response_data['message'] += ' Please check your email to confirm your new address.'  # type: ignore
 
     return Response(response_data)
