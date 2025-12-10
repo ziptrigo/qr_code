@@ -106,13 +106,13 @@ def qrcode_editor(request: HttpRequest, qr_id: str | None = None) -> HttpRespons
         try:
             qrcode = QRCode.objects.get(id=qr_id, created_by=user)
         except QRCode.DoesNotExist:
-            # Return 404 if QR code doesn't exist or doesn't belong to user
+            # Return 404 if QR code doesn't exist or doesn't belong to the user
             from django.http import Http404
 
             msg = 'QR Code not found'
             raise Http404(msg)
 
-    context = {'qrcode': qrcode, 'prefill': {}}
+    context = {'qrcode': qrcode, 'prefill': {}}  # type: ignore
     return render(request, 'qrcode_editor.html', context)
 
 

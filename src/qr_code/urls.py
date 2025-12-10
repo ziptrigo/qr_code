@@ -23,8 +23,8 @@ from .views import (
     home_page,
     login_page,
     logout_page,
-    qrcode_editor,
     qrcode_duplicate,
+    qrcode_editor,
     register_page,
     reset_password_page,
 )

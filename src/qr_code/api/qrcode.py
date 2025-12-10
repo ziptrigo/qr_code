@@ -51,8 +51,6 @@ class QRCodeViewSet(viewsets.ModelViewSet):
 @permission_classes([IsAuthenticated])
 def qrcode_preview(request):
     """Generate a QR code image for preview without saving to the database."""
-    from django.conf import settings
-    
     serializer = QRCodeCreateSerializer(
         data=request.data,
         context={'request': request},
@@ -75,7 +73,7 @@ def qrcode_preview(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # If using URL shortening, get the short code from request and create short URL
+    # If using URL shortening, get the short code from the request and create short URL
     if use_url_shortening:
         short_code = request.data.get('short_code')
         if short_code:
@@ -122,7 +120,7 @@ def redirect_view(request, short_code):
         msg = 'QR Code not found'
         raise Http404(msg)
 
-    # Redirect to dashboard if QR code is soft-deleted
+    # Redirect to the dashboard if QR code is soft-deleted
     if qr_code.deleted_at:
         return redirect('dashboard')
 

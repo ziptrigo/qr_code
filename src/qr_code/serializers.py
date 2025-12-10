@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import URLValidator
 from rest_framework import serializers
 
 from .models import QRCode
@@ -46,11 +46,11 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
             raise serializers.ValidationError("Either 'url' or 'data' must be provided.")
         if data.get('url') and data.get('data'):
             raise serializers.ValidationError("Provide either 'url' or 'data', not both.")
-        
+
         # Validate URL format when qr_type is 'url'
         qr_type = data.get('qr_type')
         content = data.get('url') or data.get('data')
-        
+
         if qr_type == 'url' and content:
             url_validator = URLValidator()
             try:
@@ -59,7 +59,7 @@ class QRCodeCreateSerializer(serializers.ModelSerializer[QRCode]):
                 raise serializers.ValidationError(
                     {'url': 'Please provide a valid URL when type is URL.'}
                 )
-        
+
         return data
 
     def create(self, validated_data):

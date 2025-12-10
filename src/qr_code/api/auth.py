@@ -4,7 +4,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from ..auth_serializers import AccountUpdateSerializer, LoginSerializer, SignupSerializer
+from ..auth_serializers import (
+    AccountUpdateSerializer,
+    LoginSerializer,
+    SignupSerializer,
+)
 from ..services.email_confirmation import get_email_confirmation_service
 from ..services.password_reset import PasswordResetService, get_password_reset_service
 
@@ -273,7 +277,7 @@ def account_view(request):
     }
 
     if email_changed:
-        response_data['email_changed'] = True
-        response_data['message'] += ' Please check your email to confirm your new address.'
+        response_data['email_changed'] = True  # type: ignore
+        response_data['message'] += ' Please check your email to confirm your new address.'  # type: ignore
 
     return Response(response_data)
