@@ -1,9 +1,6 @@
 #!python
 """
 Generate OpenAPI specification.
-
-Generates the OpenAPI schema in JSON or YAML format and optionally saves it
-to a file or displays it on the screen.
 """
 import json
 import os
@@ -63,6 +60,9 @@ def generate_openapi(
 ):
     """
     Generate OpenAPI specification.
+
+    Generates the OpenAPI schema in JSON or YAML format and optionally saves it to a file or
+    displays it on the screen.
     """
     setup_django()
 
