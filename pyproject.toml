@@ -90,6 +90,7 @@ modules = [
     'admin.db',
     'admin.email',
     'admin.lint',
+    'admin.openapi',
     'admin.pip',
     'admin.qrcode',
     'admin.test',
