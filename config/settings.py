@@ -208,4 +208,5 @@ JAZZMIN_SETTINGS = {
             'icon': 'fas fa-tools',
         }],
     },
+    'custom_css': 'css/jazzmin_custom.css',
 }
