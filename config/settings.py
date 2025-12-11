@@ -187,6 +187,7 @@ JAZZMIN_SETTINGS = {
     'search_model': ['qr_code.User', 'qr_code.QRCode'],
     'user_avatar': None,
     'login_logo': 'images/logo_128x128.png',
+    'site_logo': 'images/logo_128x128.png',
     'show_sidebar': True,
     'navigation_expanded': True,
     'icons': {
