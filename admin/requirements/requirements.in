@@ -1,11 +1,12 @@
+# mysqlclient           # MySQL client, currently not used
+# psycopg               # PostgreSQL client, currently not used
 boto3
 django
+django-jazzmin          # Admin site theme
 djangorestframework     # Django Rest Framework (DRF)
 drf-spectacular         # OpenAPI docs, nicer than standard DRF
 jinja2                  # Templating
-# mysqlclient           # MySQL client, currently not used
 pillow
-# psycopg               # PostgreSQL client, currently not used
 python-dotenv
 requests
 segno                   # QR Code generation

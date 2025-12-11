@@ -15,39 +15,31 @@
     
     <div class="module">
         <h2>Email Testing</h2>
-        <div class="form-row">
-            <p>Send a test email to any address.</p>
-            <form method="post" action="{% url 'custom_admin:admin_tools' %}">
-                {% csrf_token %}
-                <fieldset class="module aligned">
-                    <div class="form-row">
-                        {{ form.recipient.errors }}
-                        <label for="id_recipient">{{ form.recipient.label }}:</label>
-                        {{ form.recipient }}
-                        {% if form.recipient.help_text %}
-                            <div class="help">{{ form.recipient.help_text }}</div>
-                        {% endif %}
-                    </div>
-                </fieldset>
-                <div>
-                    <input type="submit" name="send_test_email" value="Send test email" class="default">
+        <p>Send a test email to any address.</p>
+        <form method="post" action="{% url 'custom_admin:admin_tools' %}" style="margin-top: 15px;">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    {{ form.recipient.errors }}
+                    <label for="id_recipient" style="display: block; margin-bottom: 5px; font-weight: bold;">{{ form.recipient.label }}:</label>
+                    {{ form.recipient }}
+                    {% if form.recipient.help_text %}
+                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">{{ form.recipient.help_text }}</div>
+                    {% endif %}
                 </div>
-            </form>
-        </div>
+                <input type="submit" name="send_test_email" value="Send test email" class="button" style="padding: 8px 16px;">
+            </div>
+        </form>
     </div>
 
-    <div class="module">
+    <div class="module" style="margin-top: 40px;">
         <h2>Show Environment</h2>
-        <div class="form-row">
-            <p>Display all environment variables available to this server process.</p>
-            <form id="show-env-form" method="post" action="{% url 'custom_admin:admin_tools' %}">
-                {% csrf_token %}
-                <input type="hidden" name="show_environment" value="1">
-                <div>
-                    <input type="submit" id="show-env-btn" value="Show" class="default">
-                </div>
-            </form>
-        </div>
+        <p>Display all environment variables available to this server process.</p>
+        <form id="show-env-form" method="post" action="{% url 'custom_admin:admin_tools' %}" style="margin-top: 15px;">
+            {% csrf_token %}
+            <input type="hidden" name="show_environment" value="1">
+            <input type="submit" id="show-env-btn" value="Show" class="button" style="padding: 8px 16px;">
+        </form>
 
         <!-- Confirmation Modal -->
         <div id="confirm-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
