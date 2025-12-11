@@ -182,10 +182,11 @@ JAZZMIN_SETTINGS = {
     'site_title': 'QR Code Admin',
     'site_header': 'QR Code Administration',
     'site_brand': 'QR Code',
-    'welcome_sign': 'Welcome to QR Code Admin',
+    'welcome_sign': 'QR Code Admin',
     'copyright': 'QR Code Project',
     'search_model': ['qr_code.User', 'qr_code.QRCode'],
     'user_avatar': None,
+    'login_logo': 'images/logo_128x128.png',
     'show_sidebar': True,
     'navigation_expanded': True,
     'icons': {
