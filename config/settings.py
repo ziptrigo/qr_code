@@ -38,6 +38,7 @@ ALLOWED_HOSTS: list[str] = ['localhost', '127.0.0.1', 'joaonc.pythonanywhere.com
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -175,3 +176,35 @@ EMAIL_CONFIRMATION_TOKEN_TTL_HOURS = int(os.getenv('EMAIL_CONFIRMATION_TOKEN_TTL
 EMAIL_BACKEND_KIND = os.getenv('EMAIL_BACKEND_KIND', 'console')
 SES_REGION = os.getenv('SES_REGION', 'us-east-1')
 SES_SENDER = os.getenv('SES_SENDER', 'no-reply@example.com')
+
+# Jazzmin configuration
+JAZZMIN_SETTINGS = {
+    'site_title': 'QR Code Admin',
+    'site_header': 'QR Code Administration',
+    'site_brand': 'QR Code',
+    'welcome_sign': 'Welcome to QR Code Admin',
+    'copyright': 'QR Code Project',
+    'search_model': ['qr_code.User', 'qr_code.QRCode'],
+    'user_avatar': None,
+    'show_sidebar': True,
+    'navigation_expanded': True,
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'auth.user': 'fas fa-user',
+        'auth.Group': 'fas fa-users',
+        'qr_code.QRCode': 'fas fa-qrcode',
+        'qr_code.User': 'fas fa-user-circle',
+        'qr_code.TimeLimitedToken': 'fas fa-key',
+    },
+    'default_icon_parents': 'fas fa-chevron-right',
+    'default_icon_children': 'fas fa-arrow-right',
+    'related_modal_active': True,
+    'custom_links': {
+        'qr_code': [{
+            'name': 'Admin Tools',
+            'url': '/admin/tools/',
+            'permissions': ['auth.add_user'],
+            'icon': 'fas fa-tools',
+        }],
+    },
+}
