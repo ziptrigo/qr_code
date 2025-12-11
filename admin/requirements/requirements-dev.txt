@@ -7,18 +7,18 @@ attrs==25.4.0
     #   -r requirements.txt
     #   jsonschema
     #   referencing
-black==25.11.0
+black==25.12.0
     # via -r requirements-dev.in
-boto3==1.42.4
+boto3==1.42.7
     # via -r requirements.txt
-boto3-stubs[ses]==1.42.4
+boto3-stubs[ses]==1.42.7
     # via -r requirements-dev.in
-botocore==1.42.4
+botocore==1.42.7
     # via
     #   -r requirements.txt
     #   boto3
     #   s3transfer
-botocore-stubs==1.42.4
+botocore-stubs==1.42.7
     # via boto3-stubs
 certifi==2025.11.12
     # via
@@ -38,15 +38,18 @@ colorama==0.4.6
     #   -r requirements.txt
     #   click
     #   pytest
-coverage[toml]==7.12.0
+coverage[toml]==7.13.0
     # via pytest-cov
 django==6.0
     # via
     #   -r requirements.txt
+    #   django-jazzmin
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework
     #   drf-spectacular
+django-jazzmin==3.0.1
+    # via -r requirements.txt
 django-stubs==5.2.8
     # via
     #   -r requirements-dev.in
@@ -221,7 +224,7 @@ types-pyyaml==6.0.12.20250915
     #   djangorestframework-stubs
 types-requests==2.32.4.20250913
     # via djangorestframework-stubs
-types-s3transfer==0.15.0
+types-s3transfer==0.16.0
     # via boto3-stubs
 typing-extensions==4.15.0
     # via
@@ -240,7 +243,7 @@ uritemplate==4.2.0
     # via
     #   -r requirements.txt
     #   drf-spectacular
-urllib3==2.6.0
+urllib3==2.6.2
     # via
     #   -r requirements.txt
     #   botocore

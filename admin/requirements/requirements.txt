@@ -4,9 +4,9 @@ attrs==25.4.0
     # via
     #   jsonschema
     #   referencing
-boto3==1.42.4
+boto3==1.42.7
     # via -r requirements.in
-botocore==1.42.4
+botocore==1.42.7
     # via
     #   boto3
     #   s3transfer
@@ -21,8 +21,11 @@ colorama==0.4.6
 django==6.0
     # via
     #   -r requirements.in
+    #   django-jazzmin
     #   djangorestframework
     #   drf-spectacular
+django-jazzmin==3.0.1
+    # via -r requirements.in
 djangorestframework==3.16.1
     # via
     #   -r requirements.in
@@ -89,7 +92,7 @@ tzdata==2025.2
     # via django
 uritemplate==4.2.0
     # via drf-spectacular
-urllib3==2.6.0
+urllib3==2.6.2
     # via
     #   botocore
     #   requests
