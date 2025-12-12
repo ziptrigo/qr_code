@@ -131,6 +131,7 @@ class CustomAdminSite(admin.AdminSite):
     def tools_view(self, request: HttpRequest) -> HttpResponse:
         """Custom admin page for various tools."""
         environment_variables = None
+        environment = os.getenv('ENVIRONMENT')
 
         # Restrict access strictly to superusers
         if not request.user.is_superuser:
@@ -141,6 +142,7 @@ class CustomAdminSite(admin.AdminSite):
                 **self.each_context(request),
                 'title': 'Admin Tools',
                 'form': form,
+                'environment': environment,
                 'environment_variables': None,
             }
             return render(request, 'admin/tools.html', context, status=403)
@@ -229,6 +231,7 @@ class CustomAdminSite(admin.AdminSite):
             **self.each_context(request),
             'title': 'Admin Tools',
             'form': form,
+            'environment': environment,
             'environment_variables': environment_variables,
         }
         return render(request, 'admin/tools.html', context)

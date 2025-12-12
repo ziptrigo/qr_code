@@ -35,6 +35,9 @@
     <div class="module" style="margin-top: 40px;">
         <h2>Show Environment</h2>
         <p>Display all environment variables available to this server process.</p>
+        <p style="margin-top: 10px;">
+            Environment: <code>{{ environment|default:"unknown" }}</code>
+        </p>
         <form id="show-env-form" method="post" action="{% url 'custom_admin:admin_tools' %}" style="margin-top: 15px;">
             {% csrf_token %}
             <input type="hidden" name="show_environment" value="1">
