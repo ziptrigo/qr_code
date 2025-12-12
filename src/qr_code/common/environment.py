@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from django.core.checks import CheckMessage, Error, Info, Warning
+from django.core.checks import CheckMessage, Error, Warning
 
 from .. import PROJECT_ROOT
 
@@ -12,6 +12,8 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
     """
     Get the current environment from the ``ENVIRONMENT`` environment variable
     or try to deduce it from the ``.env`` file at the root of the project.
+
+    Note: Sets the ``ENVIRONMENT`` environment variable.
     """
     checks: list[CheckMessage] = []
 
@@ -75,8 +77,5 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
 
     if environment:
         os.environ['ENVIRONMENT'] = environment
-        checks.append(Info(f'ENVIRONMENT: {environment}'))
-    else:
-        environment = None  # type: ignore
 
-    return environment, checks
+    return environment or None, checks

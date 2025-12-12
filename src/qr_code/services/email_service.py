@@ -4,7 +4,7 @@ from typing import Protocol
 from botocore.exceptions import ClientError
 from django.conf import settings
 
-from ..common.aws import get_aws_params, boto3_client
+from ..common.aws import boto3_client, get_aws_params
 
 
 class EmailBackend(Protocol):
