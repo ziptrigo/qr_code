@@ -33,7 +33,6 @@ type EmailBackendClass = type[EmailBackend]
 class SesEmailBackend:
     """Email backend using AWS SES."""
 
-    region: str
     sender: str
 
     def send_email(
@@ -129,8 +128,7 @@ def get_email_backend() -> list[EmailBackendClass]:
 def build_email_backend(backend_cls: EmailBackendClass) -> EmailBackend:
     if backend_cls is SesEmailBackend:
         return SesEmailBackend(
-            region=getattr(settings, 'SES_REGION', 'us-east-1'),
-            sender=getattr(settings, 'SES_SENDER', 'no-reply@example.com'),
+            sender=getattr(settings, 'AWS_SES_SENDER', 'no-reply@example.com'),
         )
     return backend_cls()
 

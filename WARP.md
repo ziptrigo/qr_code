@@ -56,6 +56,10 @@ Examples:
 - Production: `EMAIL_BACKENDS=ses`
 - Mixed: `EMAIL_BACKENDS=ses,console`
 
+SES configuration (when using the `ses` backend):
+- `AWS_REGION`
+- `AWS_SES_SENDER`
+
 ### Coding guidelines
 - Use PEP8
 - Use docstrings
