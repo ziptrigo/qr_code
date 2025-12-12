@@ -8,7 +8,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import path
 from django.utils import timezone
-from typer.colors import WHITE
 
 from .models import QRCode, User
 from .models.time_limited_token import TimeLimitedToken

@@ -202,12 +202,14 @@ JAZZMIN_SETTINGS = {
     'default_icon_children': 'fas fa-arrow-right',
     'related_modal_active': True,
     'custom_links': {
-        'qr_code': [{
-            'name': 'Admin Tools',
-            'url': '/admin/tools/',
-            'permissions': ['auth.add_user'],
-            'icon': 'fas fa-tools',
-        }],
+        'qr_code': [
+            {
+                'name': 'Admin Tools',
+                'url': '/admin/tools/',
+                'permissions': ['auth.add_user'],
+                'icon': 'fas fa-tools',
+            }
+        ],
     },
     'custom_css': 'css/jazzmin_custom.css',
 }
