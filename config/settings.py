@@ -213,4 +213,3 @@ JAZZMIN_SETTINGS = {
     },
     'custom_css': 'css/jazzmin_custom.css',
 }
-
