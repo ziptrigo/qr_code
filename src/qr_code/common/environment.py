@@ -13,14 +13,14 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
     Get the current environment from the ``ENVIRONMENT`` environment variable
     or try to deduce it from the ``.env`` file at the root of the project.
     """
-    errors: list[CheckMessage] = []
+    checks: list[CheckMessage] = []
 
     environment = os.getenv('ENVIRONMENT', '').lower()
     ignored_environments = ['example']  # No extension (ex `.env`) is also ignored
 
     if environment:
         if environment not in (ENVIRONMENTS + ignored_environments):
-            errors.append(
+            checks.append(
                 Error(
                     f'ENVIRONMENT environment variable `{os.getenv("ENVIRONMENT")}` must be one '
                     f'of {ENVIRONMENTS} (case insensitive).',
@@ -45,7 +45,7 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
             env for env_file in env_files if (env := env_from_file(env_file)) not in ENVIRONMENTS
         }
         if unknown_files:
-            errors.append(
+            checks.append(
                 Warning(
                     f'Unknown environment file(s) found in `{PROJECT_ROOT}`: \n'
                     + '\n'.join(map(str, unknown_files)),
@@ -56,7 +56,7 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
         env_files -= unknown_files
 
         if not env_files:
-            errors.append(
+            checks.append(
                 Error(
                     f'No environment file found in `{PROJECT_ROOT}`.',
                     hint='Have one environment file or set the `ENVIRONMENT` variable.',
@@ -64,7 +64,7 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
                 )
             )
         elif len(env_files) > 1:
-            errors.append(
+            checks.append(
                 Error(
                     f'More than one environment file found in `{PROJECT_ROOT}`: \n'
                     + '\n'.join(map(str, env_files)),
@@ -75,8 +75,8 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
 
     if environment:
         os.environ['ENVIRONMENT'] = environment
-        errors.append(Info(f'ENVIRONMENT: {environment}'))
+        checks.append(Info(f'ENVIRONMENT: {environment}'))
     else:
         environment = None  # type: ignore
 
-    return environment, errors
+    return environment, checks

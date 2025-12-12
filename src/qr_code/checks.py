@@ -9,5 +9,5 @@ from .common.environment import get_environment
 
 @register()
 def check_environment(*args, **kwargs):
-    _, errors = get_environment()
-    return errors
+    _, checks = get_environment()
+    return checks

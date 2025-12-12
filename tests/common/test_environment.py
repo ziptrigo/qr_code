@@ -47,10 +47,7 @@ class TestGetEnvironment:
         with patch.dict(os.environ, {'ENVIRONMENT': 'invalid'}, clear=False):
             environment, errors = get_environment()
             assert environment == 'invalid'
-            assert any(
-                isinstance(e, Error) and e.id is not None and 'E001' in e.id
-                for e in errors
-            )
+            assert any(isinstance(e, Error) and e.id is not None and 'E001' in e.id for e in errors)
 
     def test_invalid_environment_preserves_case_in_error(self) -> None:
         """Error message shows original case of invalid ENVIRONMENT."""
