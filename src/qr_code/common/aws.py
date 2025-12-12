@@ -1,9 +1,22 @@
+import os
 import boto3
 from botocore.client import BaseClient
 
 
+def aws_params():
+    """Get AWS credentials from environment variables."""
+    region = os.environ.get('AWS_REGION')
+    access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    return region, access_key, secret_key
+
 def boto3_client(
-    service: str, access_key: str, secret_key: str, role_arn: str, session_name: str = 'S3Session'
+    service: str,
+    access_key: str | None,
+    secret_key: str | None,
+    role_arn: str | None,
+    region: str | None = None,
+    session_name: str = 'S3Session',
 ) -> BaseClient:
     """
     Create an S3 client by assuming a role.
@@ -12,12 +25,13 @@ def boto3_client(
     :param access_key: IAM user access key ID.
     :param secret_key: IAM user secret access key.
     :param role_arn: ARN of the role to assume.
+    :param region: AWS region.
     :param session_name: Name for the assumed role session.
 
     :returns: ``boto3`` client with assumed role credentials.
     """
     # Create STS client with user credentials
-    sts_client = boto3.client('sts', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    sts_client = boto3.client('sts', aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=region)
 
     # Assume the role
     response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName=session_name)
