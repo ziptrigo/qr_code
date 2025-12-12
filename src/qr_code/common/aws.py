@@ -1,4 +1,5 @@
 import os
+
 import boto3
 from botocore.client import BaseClient
 
@@ -9,6 +10,7 @@ def aws_params():
     access_key = os.environ.get('AWS_ACCESS_KEY_ID')
     secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
     return region, access_key, secret_key
+
 
 def boto3_client(
     service: str,
@@ -31,7 +33,9 @@ def boto3_client(
     :returns: ``boto3`` client with assumed role credentials.
     """
     # Create STS client with user credentials
-    sts_client = boto3.client('sts', aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=region)
+    sts_client = boto3.client(
+        'sts', aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=region
+    )
 
     # Assume the role
     response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName=session_name)
