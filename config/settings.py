@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -135,6 +136,9 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# WhiteNoise configuration for serving static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -202,12 +206,14 @@ JAZZMIN_SETTINGS = {
     'default_icon_children': 'fas fa-arrow-right',
     'related_modal_active': True,
     'custom_links': {
-        'qr_code': [{
-            'name': 'Admin Tools',
-            'url': '/admin/tools/',
-            'permissions': ['auth.add_user'],
-            'icon': 'fas fa-tools',
-        }],
+        'qr_code': [
+            {
+                'name': 'Admin Tools',
+                'url': '/admin/tools/',
+                'permissions': ['auth.add_user'],
+                'icon': 'fas fa-tools',
+            }
+        ],
     },
     'custom_css': 'css/jazzmin_custom.css',
 }

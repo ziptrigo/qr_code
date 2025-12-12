@@ -183,9 +183,14 @@ class CustomAdminSite(admin.AdminSite):
                 EXCLUDED_KEYS = {
                     'DJANGO_SECRET_KEY',
                 }
+                WHITE_LISTED_KEYS = {
+                    'AWS_REGION',
+                }
 
                 def is_sensitive(key: str) -> bool:
                     k = key.upper()
+                    if k in WHITE_LISTED_KEYS:
+                        return False
                     if any(s in k for s in ['SECRET', 'PASSWORD', 'TOKEN']):
                         return True
                     # Avoid over-masking: 'KEY' alone can be too broad; include if endswith _KEY
@@ -199,7 +204,8 @@ class CustomAdminSite(admin.AdminSite):
                     s = str(value)
                     if len(s) <= 4:
                         return '*' * len(s)
-                    return '*' * (len(s) - 4) + s[-4:]
+                    segment = max(int(len(s) / 5), 2)
+                    return f'{s[:segment]}{"*"*(len(s)-segment*2)}{s[-segment:]}'
 
                 # Build final list with masking
                 environment_variables = []

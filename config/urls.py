@@ -29,13 +29,11 @@ urlpatterns = [
     path('', include('src.qr_code.urls')),
 ]
 
-# Serve media and static files in development
+# Serve media files (WhiteNoise automatically handles static files)
 if settings.DEBUG:
     # mypy struggles with the return type of static(); this is fine at runtime.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore[arg-type]
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)  # type: ignore[arg-type]
 else:
-    # Serve static files even when DEBUG=False for local testing
-    # In production, use a proper web server (nginx, Apache, etc.)
+    # Serve media files even when DEBUG=False for local testing
+    # In production, use a proper web server (nginx, Apache, etc.) for media files
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore[arg-type]
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)  # type: ignore[arg-type]

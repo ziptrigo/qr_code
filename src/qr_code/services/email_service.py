@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Protocol
 
-import boto3
 from botocore.exceptions import ClientError
 from django.conf import settings
+from mypy_boto3_ses import SESClient
+
+from ..common.aws import boto3_client, get_aws_params
 
 
 class EmailBackend(Protocol):
@@ -36,7 +38,7 @@ class SesEmailBackend:
         if html_body is None:
             html_body = f'<pre>{text_body}</pre>'
 
-        client = boto3.client('ses', region_name=self.region)
+        client: SESClient = boto3_client('ses', *get_aws_params())  # type: ignore
 
         try:
             client.send_email(
