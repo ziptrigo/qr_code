@@ -6,14 +6,14 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
-from .email_service import EmailBackend, get_email_backend
+from .email_service import EmailBackendClass, get_email_backend, send_email
 
 
 @dataclass(slots=True)
 class PasswordResetService:
     """High-level operations for password reset flow."""
 
-    email_backend: EmailBackend
+    email_backend_classes: list[EmailBackendClass]
 
     def request_reset(self, email: str):
         """Create a reset token for the user with the given email and send email.
@@ -33,7 +33,13 @@ class PasswordResetService:
             user=user,
             reset_url=reset_url,
         )
-        self.email_backend.send_email(user.email, subject, text_body, html_body)
+        send_email(
+            to=user.email,
+            subject=subject,
+            text_body=text_body,
+            html_body=html_body,
+            backend_classes=self.email_backend_classes,
+        )
 
     def _build_reset_url(self, token: str) -> str:
         base = settings.BASE_URL.rstrip('/')
@@ -62,7 +68,7 @@ class PasswordResetService:
 
 
 def get_password_reset_service() -> PasswordResetService:
-    return PasswordResetService(email_backend=get_email_backend())
+    return PasswordResetService(email_backend_classes=get_email_backend())
 
 
 def render_password_reset_email(*, user: User, reset_url: str) -> tuple[str, str, str]:

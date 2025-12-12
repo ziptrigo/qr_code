@@ -126,7 +126,9 @@ See [setup.md](docs/setup.md) for complete installation, configuration, and usag
 
 - `EMAIL_CONFIRMATION_TOKEN_TTL_HOURS` (default: 48) controls email confirmation link validity
 - `PASSWORD_RESET_TOKEN_TTL_HOURS` (default: 4) controls password reset link validity
-- `EMAIL_BACKEND` can be `console` (dev) or `ses` (production)
+- `EMAIL_BACKENDS` is a comma-separated list of backend kinds (e.g. `console` for dev or `ses` for production)
+- You can specify multiple backends and the service will send the same email through all of them
+  (e.g. `EMAIL_BACKENDS=ses,console`)
 - For SES, set `SES_REGION` and `SES_SENDER` in your environment or settings
 
 ### Registration and login flow

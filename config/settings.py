@@ -177,7 +177,16 @@ PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_TTL_HOURS',
 EMAIL_CONFIRMATION_TOKEN_TTL_HOURS = int(os.getenv('EMAIL_CONFIRMATION_TOKEN_TTL_HOURS', '48'))
 
 # Email settings
-EMAIL_BACKEND_KIND = os.getenv('EMAIL_BACKEND_KIND', 'console')
+# Comma-separated list of email backends to use. Example: "console" or "ses,console".
+EMAIL_BACKENDS = os.getenv('EMAIL_BACKENDS', '')
+
+# Tests should not require external configuration.
+if not EMAIL_BACKENDS:
+    import sys
+
+    if 'pytest' in sys.modules:
+        EMAIL_BACKENDS = 'console'
+
 SES_REGION = os.getenv('SES_REGION', 'us-east-1')
 SES_SENDER = os.getenv('SES_SENDER', 'no-reply@example.com')
 

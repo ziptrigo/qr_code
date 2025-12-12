@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import logging
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -7,9 +10,11 @@ from mypy_boto3_ses import SESClient
 
 from ..common.aws import boto3_client, get_aws_params
 
+logger = logging.getLogger(__name__)
+
 
 class EmailBackend(Protocol):
-    """Simple protocol for sending emails."""
+    """Protocol for sending a single email."""
 
     def send_email(
         self,
@@ -17,8 +22,11 @@ class EmailBackend(Protocol):
         subject: str,
         text_body: str,
         html_body: str | None = None,
-    ):  # pragma: no cover - interface
-        ...
+    ):
+        """Send an email."""
+
+
+type EmailBackendClass = type[EmailBackend]
 
 
 @dataclass(slots=True)
@@ -69,7 +77,7 @@ class ConsoleEmailBackend:
         subject: str,
         text_body: str,
         html_body: str | None = None,
-    ):  # pragma: no cover - trivial
+    ):
         print('=== Email ===')
         print(f'To: {to}')
         print(f'Subject: {subject}')
@@ -80,10 +88,80 @@ class ConsoleEmailBackend:
             print(html_body)
 
 
-def get_email_backend() -> EmailBackend:
-    backend = getattr(settings, 'EMAIL_BACKEND_KIND', 'console').lower()
-    if backend == 'ses':
-        region = getattr(settings, 'SES_REGION', 'us-east-1')
-        sender = getattr(settings, 'SES_SENDER', 'no-reply@example.com')
-        return SesEmailBackend(region=region, sender=sender)
-    return ConsoleEmailBackend()
+EMAIL_BACKEND_KIND_TO_CLASS: dict[str, EmailBackendClass] = {
+    'console': ConsoleEmailBackend,
+    'ses': SesEmailBackend,
+}
+
+
+def parse_email_backend_kinds(raw: str) -> list[str]:
+    kinds: list[str] = []
+    for item in raw.split(','):
+        kind = item.strip().lower()
+        if not kind:
+            continue
+        if kind not in kinds:
+            kinds.append(kind)
+    return kinds
+
+
+def get_email_backend() -> list[EmailBackendClass]:
+    """Return the configured email backend classes.
+
+    Selection is controlled via the `EMAIL_BACKENDS` setting (comma-separated kinds).
+    Startup validation happens in `src/qr_code/checks.py`.
+    """
+
+    raw = getattr(settings, 'EMAIL_BACKENDS', '')
+    kinds = parse_email_backend_kinds(raw)
+
+    # Validation is expected to happen at startup; keep this defensive anyway.
+    if not kinds:
+        raise RuntimeError('EMAIL_BACKENDS is not configured.')
+
+    unknown = [k for k in kinds if k not in EMAIL_BACKEND_KIND_TO_CLASS]
+    if unknown:
+        raise RuntimeError(f'Unknown EMAIL_BACKENDS kind(s): {unknown}')
+
+    return [EMAIL_BACKEND_KIND_TO_CLASS[k] for k in kinds]
+
+
+def build_email_backend(backend_cls: EmailBackendClass) -> EmailBackend:
+    if backend_cls is SesEmailBackend:
+        return SesEmailBackend(
+            region=getattr(settings, 'SES_REGION', 'us-east-1'),
+            sender=getattr(settings, 'SES_SENDER', 'no-reply@example.com'),
+        )
+    return backend_cls()
+
+
+def send_email(
+    *,
+    to: str,
+    subject: str,
+    text_body: str,
+    html_body: str | None = None,
+    backend_classes: list[EmailBackendClass] | None = None,
+) -> tuple[int, int]:
+    """Send the same email using all configured backends.
+
+    Returns a tuple of (success_count, failure_count).
+    """
+
+    if backend_classes is None:
+        backend_classes = get_email_backend()
+
+    successes = 0
+    failures = 0
+
+    for backend_cls in backend_classes:
+        backend_name = getattr(backend_cls, '__name__', str(backend_cls))
+        try:
+            backend = build_email_backend(backend_cls)
+            backend.send_email(to=to, subject=subject, text_body=text_body, html_body=html_body)
+            successes += 1
+        except Exception:
+            failures += 1
+            logger.exception('Email backend %s failed to send email', backend_name)
+
+    return successes, failures

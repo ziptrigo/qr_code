@@ -13,7 +13,7 @@ A Python project for generating and manipulating QR codes.
 - Django 6.0 for API and web interface (session-based auth, htmx + Tailwind templates)
 - typer for CLI interface
 - segno package for QR code generation
-- Email: SES in production, console backend in development
+- Email: configurable via `EMAIL_BACKENDS` (comma-separated); SES and console backends supported
 - RDBMS for data storage
 
 ## App name and project structure
@@ -49,6 +49,13 @@ Initial version done. Testing functionality and fixing bugs.
 6. Fix issues as needed.
 
 ## Notes
+### Email configuration
+Email backends are configured via `EMAIL_BACKENDS` (comma-separated). The app will send the same email through all configured backends.
+Examples:
+- Development: `EMAIL_BACKENDS=console`
+- Production: `EMAIL_BACKENDS=ses`
+- Mixed: `EMAIL_BACKENDS=ses,console`
+
 ### Coding guidelines
 - Use PEP8
 - Use docstrings

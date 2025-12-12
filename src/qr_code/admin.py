@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from .models import QRCode, User
 from .models.time_limited_token import TimeLimitedToken
-from .services.email_service import get_email_backend
+from .services.email_service import send_email
 
 
 @admin.register(User)
@@ -161,13 +161,19 @@ class CustomAdminSite(admin.AdminSite):
                 )
 
                 try:
-                    email_backend = get_email_backend()
-                    email_backend.send_email(
+                    successes, failures = send_email(
                         to=recipient,
                         subject=subject,
                         text_body=text_body,
                     )
-                    messages.success(request, f'Test email sent to {recipient}')
+                    if successes:
+                        messages.success(
+                            request,
+                            f'Test email sent to {recipient} via {successes} backend(s) '
+                            f'({failures} failure(s)).',
+                        )
+                    else:
+                        messages.error(request, f'All email backends failed ({failures} failure(s)).')
                     form = TestEmailForm(initial={'recipient': recipient})
                 except Exception as e:
                     messages.error(request, f'Failed to send email: {str(e)}')

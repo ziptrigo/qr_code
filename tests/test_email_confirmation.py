@@ -23,11 +23,9 @@ User = get_user_model()
 class TestSignupWithEmailConfirmation:
     """Test cases for signup with email confirmation."""
 
-    @patch('src.qr_code.services.email_confirmation.get_email_backend')
-    def test_signup_sends_confirmation_email(self, mock_get_backend, api_client):
+    @patch('src.qr_code.services.email_confirmation.send_email')
+    def test_signup_sends_confirmation_email(self, mock_send_email, api_client):
         """Test that signup sends a confirmation email."""
-        mock_backend = MagicMock()
-        mock_get_backend.return_value = mock_backend
 
         url = reverse('signup')
         data = {
@@ -43,8 +41,8 @@ class TestSignupWithEmailConfirmation:
             'Account created! Please check your email to confirm your address.'
         )
         # Verify email was sent
-        mock_backend.send_email.assert_called_once()
-        assert mock_backend.send_email.call_args[0][0] == 'john@example.com'
+        mock_send_email.assert_called_once()
+        assert mock_send_email.call_args.kwargs['to'] == 'john@example.com'
 
     def test_signup_creates_unconfirmed_user(self, api_client):
         """Test that signup creates a user with email_confirmed=False."""
@@ -62,11 +60,9 @@ class TestSignupWithEmailConfirmation:
         assert user.email_confirmed is False
         assert user.email_confirmed_at is None
 
-    @patch('src.qr_code.services.email_confirmation.get_email_backend')
-    def test_signup_creates_confirmation_token(self, mock_get_backend, api_client):
+    @patch('src.qr_code.services.email_confirmation.send_email')
+    def test_signup_creates_confirmation_token(self, mock_send_email, api_client):
         """Test that signup creates an email confirmation token."""
-        mock_backend = MagicMock()
-        mock_get_backend.return_value = mock_backend
 
         url = reverse('signup')
         data = {
@@ -286,11 +282,9 @@ class TestConfirmEmailEndpoint:
 class TestResendConfirmationEndpoint:
     """Test cases for the resend confirmation API endpoint."""
 
-    @patch('src.qr_code.services.email_confirmation.get_email_backend')
-    def test_resend_confirmation_for_unconfirmed_user(self, mock_get_backend, api_client):
+    @patch('src.qr_code.services.email_confirmation.send_email')
+    def test_resend_confirmation_for_unconfirmed_user(self, mock_send_email, api_client):
         """Test resending confirmation email for an unconfirmed user."""
-        mock_backend = MagicMock()
-        mock_get_backend.return_value = mock_backend
 
         user = User.objects.create_user(
             username='unconfirmed@example.com',
@@ -308,13 +302,11 @@ class TestResendConfirmationEndpoint:
 
         assert response.status_code == status.HTTP_200_OK
         assert 'confirmation email will be sent' in response.data['detail'].lower()
-        mock_backend.send_email.assert_called_once()
+        mock_send_email.assert_called_once()
 
-    @patch('src.qr_code.services.email_confirmation.get_email_backend')
-    def test_resend_confirmation_for_confirmed_user(self, mock_get_backend, api_client):
+    @patch('src.qr_code.services.email_confirmation.send_email')
+    def test_resend_confirmation_for_confirmed_user(self, mock_send_email, api_client):
         """Test that resend does not send email for already confirmed users."""
-        mock_backend = MagicMock()
-        mock_get_backend.return_value = mock_backend
 
         user = User.objects.create_user(
             username='confirmed@example.com',
@@ -335,13 +327,11 @@ class TestResendConfirmationEndpoint:
         # Generic message to avoid leaking user existence
         assert 'confirmation email will be sent' in response.data['detail'].lower()
         # But email should not actually be sent
-        mock_backend.send_email.assert_not_called()
+        mock_send_email.assert_not_called()
 
-    @patch('src.qr_code.services.email_confirmation.get_email_backend')
-    def test_resend_confirmation_for_nonexistent_user(self, mock_get_backend, api_client):
+    @patch('src.qr_code.services.email_confirmation.send_email')
+    def test_resend_confirmation_for_nonexistent_user(self, mock_send_email, api_client):
         """Test that resend gives generic response for nonexistent users."""
-        mock_backend = MagicMock()
-        mock_get_backend.return_value = mock_backend
 
         url = reverse('resend-confirmation')
         data = {'email': 'nonexistent@example.com'}
@@ -351,7 +341,7 @@ class TestResendConfirmationEndpoint:
         assert response.status_code == status.HTTP_200_OK
         # Generic message to avoid leaking user existence
         assert 'confirmation email will be sent' in response.data['detail'].lower()
-        mock_backend.send_email.assert_not_called()
+        mock_send_email.assert_not_called()
 
     def test_resend_confirmation_missing_email(self, api_client):
         """Test that resend requires email field."""
@@ -436,11 +426,9 @@ class TestConfirmEmailPage:
 class TestEmailConfirmationService:
     """Test cases for the EmailConfirmationService."""
 
-    @patch('src.qr_code.services.email_confirmation.get_email_backend')
-    def test_send_confirmation_email(self, mock_get_backend):
+    @patch('src.qr_code.services.email_confirmation.send_email')
+    def test_send_confirmation_email(self, mock_send_email):
         """Test sending a confirmation email."""
-        mock_backend = MagicMock()
-        mock_get_backend.return_value = mock_backend
 
         user = User.objects.create_user(
             username='service@example.com',
@@ -453,10 +441,9 @@ class TestEmailConfirmationService:
         service.send_confirmation_email(user)
 
         # Verify email was sent
-        mock_backend.send_email.assert_called_once()
-        call_args = mock_backend.send_email.call_args[0]
-        assert call_args[0] == 'service@example.com'
-        assert 'confirm' in call_args[1].lower()  # Subject contains 'confirm'
+        mock_send_email.assert_called_once()
+        assert mock_send_email.call_args.kwargs['to'] == 'service@example.com'
+        assert 'confirm' in mock_send_email.call_args.kwargs['subject'].lower()
 
         # Verify token was created
         token = TimeLimitedToken.objects.get(
@@ -476,7 +463,7 @@ class TestEmailConfirmationService:
             user, TimeLimitedToken.TOKEN_TYPE_EMAIL_CONFIRMATION
         )
 
-        service = EmailConfirmationService(email_backend=MagicMock())
+        service = EmailConfirmationService(email_backend_classes=[])
         result = service.validate_token(token.token)
 
         assert result is not None
@@ -498,7 +485,7 @@ class TestEmailConfirmationService:
         token.created_at = datetime.now(UTC) - timedelta(hours=49)
         token.save()
 
-        service = EmailConfirmationService(email_backend=MagicMock())
+        service = EmailConfirmationService(email_backend_classes=[])
         result = service.validate_token(token.token)
 
         assert result is None
@@ -516,7 +503,7 @@ class TestEmailConfirmationService:
             user, TimeLimitedToken.TOKEN_TYPE_EMAIL_CONFIRMATION
         )
 
-        service = EmailConfirmationService(email_backend=MagicMock())
+        service = EmailConfirmationService(email_backend_classes=[])
         service.confirm_email(token)
 
         # Verify user is confirmed
