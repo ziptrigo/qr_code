@@ -173,7 +173,9 @@ class CustomAdminSite(admin.AdminSite):
                             f'({failures} failure(s)).',
                         )
                     else:
-                        messages.error(request, f'All email backends failed ({failures} failure(s)).')
+                        messages.error(
+                            request, f'All email backends failed ({failures} failure(s)).'
+                        )
                     form = TestEmailForm(initial={'recipient': recipient})
                 except Exception as e:
                     messages.error(request, f'Failed to send email: {str(e)}')

@@ -94,14 +94,7 @@ EMAIL_BACKEND_KIND_TO_CLASS: dict[str, EmailBackendClass] = {
 
 
 def parse_email_backend_kinds(raw: str) -> list[str]:
-    kinds: list[str] = []
-    for item in raw.split(','):
-        kind = item.strip().lower()
-        if not kind:
-            continue
-        if kind not in kinds:
-            kinds.append(kind)
-    return kinds
+    return list({kind.strip().lower() for kind in raw.split(',') if kind.strip()})
 
 
 def get_email_backend() -> list[EmailBackendClass]:
@@ -111,8 +104,8 @@ def get_email_backend() -> list[EmailBackendClass]:
     Startup validation happens in `src/qr_code/checks.py`.
     """
 
-    raw = getattr(settings, 'EMAIL_BACKENDS', '')
-    kinds = parse_email_backend_kinds(raw)
+    raw_backends = getattr(settings, 'EMAIL_BACKENDS', '')
+    kinds = parse_email_backend_kinds(raw_backends)
 
     # Validation is expected to happen at startup; keep this defensive anyway.
     if not kinds:

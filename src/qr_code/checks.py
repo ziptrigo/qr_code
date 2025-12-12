@@ -6,7 +6,10 @@ from django.conf import settings
 from django.core.checks import Error, register
 
 from .common.environment import get_environment
-from .services.email_service import EMAIL_BACKEND_KIND_TO_CLASS, parse_email_backend_kinds
+from .services.email_service import (
+    EMAIL_BACKEND_KIND_TO_CLASS,
+    parse_email_backend_kinds,
+)
 
 
 @register()
