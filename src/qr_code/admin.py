@@ -118,32 +118,21 @@ class TestEmailForm(forms.Form):
     )
 
 
-class CustomAdminSite(admin.AdminSite):
-    """Custom admin site with additional tools."""
+def tools_view(request: HttpRequest) -> HttpResponse:
+    """Custom admin page for various tools."""
+    environment_variables = None
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('tools/', self.admin_view(self.tools_view), name='admin_tools'),
-        ]
-        return custom_urls + urls
-
-    def tools_view(self, request: HttpRequest) -> HttpResponse:
-        """Custom admin page for various tools."""
-        environment_variables = None
-
-        # Restrict access strictly to superusers
-        if not request.user.is_superuser:
-            messages.error(request, 'You do not have permission to access this page.')
-            initial_email = getattr(request.user, 'email', '') or ''
-            form = TestEmailForm(initial={'recipient': initial_email})
-            context = {
-                **self.each_context(request),
-                'title': 'Admin Tools',
-                'form': form,
-                'environment_variables': None,
-            }
-            return render(request, 'admin/tools.html', context, status=403)
+    # Restrict access strictly to superusers
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        initial_email = getattr(request.user, 'email', '') or ''
+        form = TestEmailForm(initial={'recipient': initial_email})
+        context = {
+            'title': 'Admin Tools',
+            'form': form,
+            'environment_variables': None,
+        }
+        return render(request, 'admin/tools.html', context, status=403)
 
         if request.method == 'POST' and 'send_test_email' in request.POST:
             form = TestEmailForm(request.POST)
@@ -226,18 +215,8 @@ class CustomAdminSite(admin.AdminSite):
             form = TestEmailForm(initial={'recipient': initial_email})
 
         context = {
-            **self.each_context(request),
             'title': 'Admin Tools',
             'form': form,
             'environment_variables': environment_variables,
         }
         return render(request, 'admin/tools.html', context)
-
-
-# Create custom admin site instance
-custom_admin_site = CustomAdminSite(name='custom_admin')
-
-# Register models with custom admin site
-custom_admin_site.register(User, UserAdmin)
-custom_admin_site.register(QRCode, QRCodeAdmin)
-custom_admin_site.register(TimeLimitedToken, TimeLimitedTokenAdmin)
