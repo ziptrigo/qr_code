@@ -8,6 +8,14 @@ from .. import PROJECT_ROOT
 ENVIRONMENTS = ['dev', 'prod']
 
 
+def env_file(environment: str) -> Path:
+    return PROJECT_ROOT / (f'env.{environment.lower()}' if environment else '.env')
+
+
+def env_from_file(file: Path) -> str | None:
+    return file.suffix.lower() if file.stem.lower() == '.env' else None
+
+
 def get_environment() -> tuple[str | None, list[CheckMessage]]:
     """
     Get the current environment from the ``ENVIRONMENT`` environment variable
@@ -32,15 +40,12 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
             )
     else:
 
-        def env_from_file(file: Path) -> str | None:
-            return file.suffix.lower() if file.stem.lower() == '.env' else None
-
         # Environment not set, try to deduct
         env_files = set(PROJECT_ROOT.glob('env*'))
         ignored_files = {
             env
-            for env_file in env_files
-            if (env := env_from_file(env_file)) is None and env in ignored_environments
+            for file in env_files
+            if (env := env_from_file(file)) is None and env in ignored_environments
         }
         env_files -= ignored_files
         unknown_files = {
