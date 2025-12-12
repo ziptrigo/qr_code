@@ -93,5 +93,6 @@ modules = [
     'admin.openapi',
     'admin.pip',
     'admin.qrcode',
+    'admin.server',
     'admin.test',
 ]
