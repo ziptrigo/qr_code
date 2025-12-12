@@ -14,6 +14,7 @@ def get_aws_params():
     if not access_key and secret_key and role and region:
         raise RuntimeError('AWS credentials not found in environment variables.')
 
+    # Order is the same as in `boto3_client(...)`
     return access_key, secret_key, role, region
 
 

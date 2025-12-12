@@ -38,7 +38,7 @@ class SesEmailBackend:
         if html_body is None:
             html_body = f'<pre>{text_body}</pre>'
 
-        client: SESClient = boto3_client('ses', **get_aws_params())  # type: ignore
+        client: SESClient = boto3_client('ses', *get_aws_params())  # type: ignore
 
         try:
             client.send_email(
