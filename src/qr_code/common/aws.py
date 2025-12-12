@@ -4,19 +4,24 @@ import boto3
 from botocore.client import BaseClient
 
 
-def aws_params():
+def get_aws_params():
     """Get AWS credentials from environment variables."""
-    region = os.environ.get('AWS_REGION')
-    access_key = os.environ.get('AWS_ACCESS_KEY_ID')
-    secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    return region, access_key, secret_key
+    access_key = os.getenv('AWS_ACCESS_KEY_ID')
+    secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+    role = os.getenv('AWS_ROLE')
+    region = os.getenv('AWS_REGION')
+
+    if not access_key and secret_key and role and region:
+        raise RuntimeError('AWS credentials not found in environment variables.')
+
+    return access_key, secret_key, role, region
 
 
 def boto3_client(
     service: str,
     access_key: str | None,
     secret_key: str | None,
-    role_arn: str | None,
+    role: str | None,
     region: str | None = None,
     session_name: str = 'S3Session',
 ) -> BaseClient:
@@ -26,7 +31,7 @@ def boto3_client(
     :param service: Service name, e.g. ``s3`` or ``ses``.
     :param access_key: IAM user access key ID.
     :param secret_key: IAM user secret access key.
-    :param role_arn: ARN of the role to assume.
+    :param role: ARN of the role to assume.
     :param region: AWS region.
     :param session_name: Name for the assumed role session.
 
@@ -38,7 +43,7 @@ def boto3_client(
     )
 
     # Assume the role
-    response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName=session_name)
+    response = sts_client.assume_role(RoleArn=role, RoleSessionName=session_name)
 
     # Extract temporary credentials
     credentials = response['Credentials']
