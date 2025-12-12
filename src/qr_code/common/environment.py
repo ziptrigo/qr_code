@@ -9,6 +9,10 @@ ENVIRONMENTS = ['dev', 'prod']
 
 
 def get_environment() -> tuple[str | None, list[CheckMessage]]:
+    """
+    Get the current environment from the ``ENVIRONMENT`` environment variable
+    or try to deduce it from the ``.env`` file at the root of the project.
+    """
     errors: list[CheckMessage] = []
 
     environment = os.getenv('ENVIRONMENT', '').lower()
