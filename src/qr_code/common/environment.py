@@ -72,15 +72,6 @@ def get_environment() -> tuple[str | None, list[CheckMessage]]:
                     id='E003',
                 )
             )
-        errors.append(Error('ENVIRONMENT environment variable is not set.'))
-
-        errors.append(
-            Warning(
-                'Your warning message',
-                hint='Keep only one environment file at the root of the project.',
-                id='W001',
-            )
-        )
 
     if environment:
         os.environ['ENVIRONMENT'] = environment
