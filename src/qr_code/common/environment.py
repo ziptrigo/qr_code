@@ -15,6 +15,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+from .. import PROJECT_ROOT
+
 SUPPORTED_ENVIRONMENTS = ['dev', 'prod']
 IGNORED_ENV_FILE_SUFFIXES = {'example'}
 
@@ -27,7 +29,7 @@ class EnvSelection:
     warnings: list[str]
 
 
-def _parse_env_from_filename(file: Path) -> str | None:
+def env_from_file(file: Path) -> str | None:
     name = file.name
     if not name.startswith('.env.'):
         return None
@@ -36,26 +38,27 @@ def _parse_env_from_filename(file: Path) -> str | None:
     return suffix.lower() if suffix else None
 
 
-def select_env(project_root: Path, environment_var: str | None = None) -> EnvSelection:
+def file_from_env(project_root: Path, env: str) -> Path:
+    return project_root / f'.env.{env}'
+
+
+def select_env(project_root: Path = PROJECT_ROOT, environment: str | None = None) -> EnvSelection:
     errors: list[str] = []
     warnings: list[str] = []
 
-    raw_env = (
-        environment_var if environment_var is not None else os.getenv('ENVIRONMENT', '')
-    ).strip()
-    environment = raw_env.lower() if raw_env else None
+    environment: str = (environment or os.getenv('ENVIRONMENT', '')).lower().strip()  # type: ignore
 
     if environment:
         if environment not in SUPPORTED_ENVIRONMENTS:
             errors.append(
-                f'ENVIRONMENT environment variable `{raw_env}` must be one of '
+                f'Environment `{environment}` must be one of '
                 f'{SUPPORTED_ENVIRONMENTS} (case insensitive).'
             )
             return EnvSelection(
-                environment=raw_env, env_path=None, errors=errors, warnings=warnings
+                environment=environment, env_path=None, errors=errors, warnings=warnings
             )
 
-        env_path = project_root / f'.env.{environment}'
+        env_path = file_from_env(project_root, environment)
         if not env_path.exists():
             errors.append(f'Environment file `{env_path}` not found.')
             return EnvSelection(
@@ -75,7 +78,7 @@ def select_env(project_root: Path, environment_var: str | None = None) -> EnvSel
     unknown_files: list[Path] = []
 
     for file in files:
-        env = _parse_env_from_filename(file)
+        env = env_from_file(file)
         if not env:
             continue
 
@@ -105,7 +108,7 @@ def select_env(project_root: Path, environment_var: str | None = None) -> EnvSel
         return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)
 
     file = valid_files[0]
-    env = _parse_env_from_filename(file)
+    env = env_from_file(file)
     if not env:
         errors.append(f'Could not parse environment from file `{file}`.')
         return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)

@@ -77,7 +77,7 @@ def render_password_reset_email(*, user: User, reset_url: str) -> tuple[str, str
     Template: ``src/qr_code/static/emails/password_reset.j2``.
     """
 
-    template_path = settings.BASE_DIR / 'src' / 'qr_code' / 'static' / 'emails'
+    template_path = settings.PROJECT_ROOT / 'src' / 'qr_code' / 'static' / 'emails'
 
     env = Environment(
         loader=FileSystemLoader(str(template_path)),

@@ -7,18 +7,10 @@ multiple environment files exist (which should be the case in development machin
 """
 import os
 import sys
-from enum import Enum
-from typing import Annotated
 
 import typer
 
-from admin.utils import DryAnnotation, logger, run
-
-
-class Environment(Enum):
-    DEV = 'dev'
-    PROD = 'prod'
-
+from admin.utils import DryAnnotation, Environment, EnvironmentAnnotation, run
 
 app = typer.Typer(
     help=__doc__,
@@ -30,9 +22,7 @@ app = typer.Typer(
 
 @app.command(name='run')
 def server_run(
-    environment: Annotated[
-        Environment, typer.Argument(help='Environment to start the server in.', show_default=True)
-    ] = Environment.DEV,
+    environment: EnvironmentAnnotation = Environment.DEV,
     dry: DryAnnotation = False,
 ):
     """
@@ -44,15 +34,6 @@ def server_run(
     To use more options from ``manage.py``, use ``python manage.py runserver`` directly.
     Set the ``ENVIRONMENT`` environment variable to the desired environment.
     """
-    from src.qr_code.common.environment import SUPPORTED_ENVIRONMENTS
-
-    # Make sure the environment is valid (didn't change in the code)
-    if environment.value not in SUPPORTED_ENVIRONMENTS:
-        logger.error(
-            f'Invalid environment: {environment.value}. Not defined in code: {SUPPORTED_ENVIRONMENTS}.'
-        )
-        raise typer.Exit(1)
-
     python_exe = sys.executable
     run(
         python_exe,

@@ -79,8 +79,8 @@ def render_email_confirmation_email(*, user: User, confirmation_url: str) -> tup
     Template: ``src/qr_code/static/emails/email_validation.j2``.
     """
 
-    base_dir = Path(settings.BASE_DIR)
-    template_path = base_dir / 'src' / 'qr_code' / 'static' / 'emails'
+    PROJECT_ROOT = Path(settings.PROJECT_ROOT)
+    template_path = PROJECT_ROOT / 'src' / 'qr_code' / 'static' / 'emails'
 
     env = Environment(
         loader=FileSystemLoader(str(template_path)),
