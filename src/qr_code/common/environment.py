@@ -1,67 +1,115 @@
+"""
+Environment file selection.
+
+This module is intentionally Django-free so it can be imported from ``config/settings.py``.
+
+Naming convention:
+- ``.env.<ENVIRONMENT>`` files at the project root (e.g. ``.env.dev``, ``.env.prod``)
+
+Selection rules:
+- If ``ENVIRONMENT`` env var is set, use that and load ``.env.<ENVIRONMENT>``.
+- Otherwise, detect a single ``.env.*`` file (excluding ``.env.example``). Fail if none or more than one.
+"""
+
+from __future__ import annotations
+
 import os
+from dataclasses import dataclass
+from pathlib import Path
 
-from django.core.checks import CheckMessage, Error, Info, Warning
-
-from .env_selection import SUPPORTED_ENVIRONMENTS, select_env
-from .. import PROJECT_ROOT
+SUPPORTED_ENVIRONMENTS = ['dev', 'prod']
+IGNORED_ENV_FILE_SUFFIXES = {'example'}
 
 
-def get_environment() -> tuple[str | None, list[CheckMessage]]:
-    """
-    Get the current environment from the ``ENVIRONMENT`` environment variable
-    or try to deduce it from the ``.env`` file at the root of the project.
+@dataclass(frozen=True, slots=True)
+class EnvSelection:
+    environment: str | None
+    env_path: Path | None
+    errors: list[str]
+    warnings: list[str]
 
-    Note: Sets the ``ENVIRONMENT`` environment variable.
-    """
-    selection = select_env(PROJECT_ROOT)
 
-    checks: list[CheckMessage] = []
+def _parse_env_from_filename(file: Path) -> str | None:
+    name = file.name
+    if not name.startswith('.env.'):
+        return None
 
-    if selection.environment in SUPPORTED_ENVIRONMENTS:
-        checks.append(
-            Info(
-                f'ENVIRONMENT set to `{selection.environment}`.',
-                id='I001',
+    suffix = name.removeprefix('.env.')
+    return suffix.lower() if suffix else None
+
+
+def select_env(project_root: Path, environment_var: str | None = None) -> EnvSelection:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    raw_env = (
+        environment_var if environment_var is not None else os.getenv('ENVIRONMENT', '')
+    ).strip()
+    environment = raw_env.lower() if raw_env else None
+
+    if environment:
+        if environment not in SUPPORTED_ENVIRONMENTS:
+            errors.append(
+                f'ENVIRONMENT environment variable `{raw_env}` must be one of {SUPPORTED_ENVIRONMENTS} '
+                '(case insensitive).'
             )
+            return EnvSelection(
+                environment=raw_env, env_path=None, errors=errors, warnings=warnings
+            )
+
+        env_path = project_root / f'.env.{environment}'
+        if not env_path.exists():
+            errors.append(f'Environment file `{env_path}` not found.')
+            return EnvSelection(
+                environment=environment, env_path=None, errors=errors, warnings=warnings
+            )
+
+        return EnvSelection(
+            environment=environment,
+            env_path=env_path,
+            errors=errors,
+            warnings=warnings,
         )
 
-    if selection.warnings:
-        checks.append(
-            Warning(
-                '\n\n'.join(selection.warnings),
-                hint='Either rename/remove the file(s), or add support for the environment.',
-                id='W001',
-            )
-        )
+    files = sorted(project_root.glob('.env.*'))
 
-    if selection.errors:
-        # Preserve old error IDs for compatibility with existing expectations.
-        if any('ENVIRONMENT environment variable' in e for e in selection.errors):
-            checks.append(
-                Error(
-                    '\n'.join(selection.errors),
-                    hint=f'Valid environments: {SUPPORTED_ENVIRONMENTS}',
-                    id='E001',
-                )
-            )
-        elif any('More than one environment file' in e for e in selection.errors):
-            checks.append(
-                Error(
-                    '\n'.join(selection.errors),
-                    hint='Have only one `.env.<env>` file or set the `ENVIRONMENT` variable.',
-                    id='E003',
-                )
-            )
+    valid_files: list[Path] = []
+    unknown_files: list[Path] = []
+
+    for file in files:
+        env = _parse_env_from_filename(file)
+        if not env:
+            continue
+
+        if env in IGNORED_ENV_FILE_SUFFIXES:
+            continue
+
+        if env in SUPPORTED_ENVIRONMENTS:
+            valid_files.append(file)
         else:
-            checks.append(
-                Error(
-                    '\n'.join(selection.errors),
-                    hint='Create one `.env.<env>` file or set the `ENVIRONMENT` variable.',
-                    id='E002',
-                )
-            )
+            unknown_files.append(file)
 
-    if selection.environment:
-        os.environ['ENVIRONMENT'] = str(selection.environment).lower()
+    if unknown_files:
+        warnings.append(
+            'Unknown environment file(s) found in project root:\n'
+            + '\n'.join(map(str, unknown_files))
+        )
 
-    return selection.environment, checks
+    if not valid_files:
+        errors.append(f'No environment file found in `{project_root}` matching `.env.<env>`.')
+        return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)
+
+    if len(valid_files) > 1:
+        errors.append(
+            'More than one environment file found in project root:\n'
+            + '\n'.join(map(str, valid_files))
+        )
+        return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)
+
+    file = valid_files[0]
+    env = _parse_env_from_filename(file)
+    if not env:
+        errors.append(f'Could not parse environment from file `{file}`.')
+        return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)
+
+    return EnvSelection(environment=env, env_path=file, errors=errors, warnings=warnings)

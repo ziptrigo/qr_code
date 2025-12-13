@@ -16,7 +16,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 # Load environment variables from the selected `.env.<ENVIRONMENT>` file.
 # This must happen before reading any `os.getenv(...)` values.
@@ -27,7 +27,7 @@ try:
     if 'pytest' in sys.modules:
         os.environ.setdefault('ENVIRONMENT', 'dev')
 
-    from src.qr_code.common.env_selection import select_env
+    from src.qr_code.common.environment import select_env
 
     _selection = select_env(BASE_DIR)
     if _selection.errors:
