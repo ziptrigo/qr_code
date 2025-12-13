@@ -5,7 +5,7 @@ Checks done at startup.
 import os
 
 from django.conf import settings
-from django.core.checks import Error, Info, Warning, register
+from django.core.checks import Error, Warning, register
 
 from . import PROJECT_ROOT
 from .common.environment import SUPPORTED_ENVIRONMENTS, select_env
@@ -17,17 +17,9 @@ from .services.email_service import (
 
 @register()
 def check_environment(*args, **kwargs):
-    checks: list[Info | Warning | Error] = []
+    checks: list[Warning | Error] = []
 
     selection = select_env(PROJECT_ROOT)
-
-    if selection.environment in SUPPORTED_ENVIRONMENTS:
-        checks.append(
-            Info(
-                f'ENVIRONMENT set to `{selection.environment}`.',
-                id='I001',
-            )
-        )
 
     if selection.warnings:
         checks.append(
@@ -52,7 +44,7 @@ def check_environment(*args, **kwargs):
                 Error(
                     '\n'.join(selection.errors),
                     hint='Have only one `.env.<env>` file or set the `ENVIRONMENT` variable.',
-                    id='E003',
+                    id='E002',
                 )
             )
         else:
@@ -60,12 +52,14 @@ def check_environment(*args, **kwargs):
                 Error(
                     '\n'.join(selection.errors),
                     hint='Create one `.env.<env>` file or set the `ENVIRONMENT` variable.',
-                    id='E002',
+                    id='E003',
                 )
             )
 
     if selection.environment:
         os.environ['ENVIRONMENT'] = str(selection.environment).lower()
+
+    return checks
 
 
 @register()
