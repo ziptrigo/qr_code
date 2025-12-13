@@ -24,9 +24,7 @@ class CreditTransaction(models.Model):
         on_delete=models.CASCADE,
         related_name='credit_transactions',
     )
-    amount = models.IntegerField(
-        help_text='Credits added (positive) or spent (negative).'
-    )
+    amount = models.IntegerField(help_text='Credits added (positive) or spent (negative).')
     type = models.CharField(max_length=32, choices=CreditTransactionType.choices)
     description = models.CharField(
         max_length=255,

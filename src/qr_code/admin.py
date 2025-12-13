@@ -293,9 +293,13 @@ class CustomAdminSite(admin.AdminSite):
 
                     try:
                         if direction == 'add':
-                            target.add_credits(amount, tx_type='adjustment', description=description)
+                            target.add_credits(
+                                amount, tx_type='adjustment', description=description
+                            )
                         else:
-                            target.spend_credits(amount, tx_type='adjustment', description=description)
+                            target.spend_credits(
+                                amount, tx_type='adjustment', description=description
+                            )
                         messages.success(
                             request,
                             f'Adjusted credits for {target.email}. New balance: {target.credits}.',

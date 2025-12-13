@@ -23,9 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='credits',
-            field=models.PositiveBigIntegerField(
-                default=0, help_text='Current credits balance.'
-            ),
+            field=models.PositiveBigIntegerField(default=0, help_text='Current credits balance.'),
         ),
         migrations.CreateModel(
             name='CreditTransaction',
@@ -38,9 +36,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     'amount',
-                    models.IntegerField(
-                        help_text='Credits added (positive) or spent (negative).'
-                    ),
+                    models.IntegerField(help_text='Credits added (positive) or spent (negative).'),
                 ),
                 (
                     'type',
