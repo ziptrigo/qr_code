@@ -15,10 +15,30 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from the selected `.env.<ENVIRONMENT>` file.
+# This must happen before reading any `os.getenv(...)` values.
+try:
+    import sys
+
+    # Test runs may have multiple env files in the repo; default to dev if not specified.
+    if 'pytest' in sys.modules:
+        os.environ.setdefault('ENVIRONMENT', 'dev')
+
+    from src.qr_code.common.env_selection import select_env
+
+    _selection = select_env(BASE_DIR)
+    if _selection.errors:
+        raise RuntimeError('\n'.join(_selection.errors))
+    if _selection.environment:
+        os.environ.setdefault('ENVIRONMENT', _selection.environment)
+    if _selection.env_path is not None:
+        load_dotenv(dotenv_path=_selection.env_path)
+except Exception:
+    # Fail fast if env selection is broken; otherwise we'd silently read wrong defaults.
+    raise
 
 
 # Quick-start development settings - unsuitable for production

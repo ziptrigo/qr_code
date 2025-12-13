@@ -11,36 +11,45 @@ from unittest.mock import patch
 from django.core.checks import Error, Info, Warning
 
 from src.qr_code.common.environment import get_environment
+from src.qr_code.common.env_selection import SUPPORTED_ENVIRONMENTS
 
 
 class TestGetEnvironment:
     """Test suite for the get_environment function."""
 
-    def test_environment_from_env_var_dev(self) -> None:
+    def test_environment_from_env_var_dev(self, tmp_path) -> None:
         """Environment 'dev' from ENVIRONMENT variable is returned."""
-        with patch.dict(os.environ, {'ENVIRONMENT': 'dev'}, clear=False):
-            environment, errors = get_environment()
-            assert environment == 'dev'
-            assert any(isinstance(e, Info) for e in errors)
+        (tmp_path / '.env.dev').touch()
+        with patch.dict(os.environ, {'ENVIRONMENT': 'dev'}, clear=True):
+            with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
+                environment, errors = get_environment()
+                assert environment == 'dev'
+                assert any(isinstance(e, Info) for e in errors)
 
-    def test_environment_from_env_var_prod(self) -> None:
+    def test_environment_from_env_var_prod(self, tmp_path) -> None:
         """Environment 'prod' from ENVIRONMENT variable is returned."""
-        with patch.dict(os.environ, {'ENVIRONMENT': 'prod'}, clear=False):
-            environment, errors = get_environment()
-            assert environment == 'prod'
-            assert any(isinstance(e, Info) for e in errors)
+        (tmp_path / '.env.prod').touch()
+        with patch.dict(os.environ, {'ENVIRONMENT': 'prod'}, clear=True):
+            with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
+                environment, errors = get_environment()
+                assert environment == 'prod'
+                assert any(isinstance(e, Info) for e in errors)
 
-    def test_environment_from_env_var_case_insensitive(self) -> None:
+    def test_environment_from_env_var_case_insensitive(self, tmp_path) -> None:
         """ENVIRONMENT variable is case-insensitive."""
-        with patch.dict(os.environ, {'ENVIRONMENT': 'DEV'}, clear=False):
-            environment, errors = get_environment()
-            assert environment == 'dev'
+        (tmp_path / '.env.dev').touch()
+        with patch.dict(os.environ, {'ENVIRONMENT': 'DEV'}, clear=True):
+            with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
+                environment, errors = get_environment()
+                assert environment == 'dev'
 
-    def test_environment_from_env_var_mixed_case(self) -> None:
+    def test_environment_from_env_var_mixed_case(self, tmp_path) -> None:
         """ENVIRONMENT variable with mixed case is normalized."""
-        with patch.dict(os.environ, {'ENVIRONMENT': 'PrOd'}, clear=False):
-            environment, errors = get_environment()
-            assert environment == 'prod'
+        (tmp_path / '.env.prod').touch()
+        with patch.dict(os.environ, {'ENVIRONMENT': 'PrOd'}, clear=True):
+            with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
+                environment, errors = get_environment()
+                assert environment == 'prod'
 
     def test_invalid_environment_variable(self) -> None:
         """Invalid ENVIRONMENT variable value produces an Error."""
@@ -66,39 +75,37 @@ class TestGetEnvironment:
                 assert 'E002' in error_ids
 
     def test_environment_not_set_single_env_file_dev(self, tmp_path) -> None:
-        """Single env*dev file is detected but environment is still None."""
-        env_file = tmp_path / 'envdev'
+        """Single .env.dev file is detected and environment is set to 'dev'."""
+        env_file = tmp_path / '.env.dev'
         env_file.touch()
 
         with patch.dict(os.environ, {}, clear=True):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
                 environment, errors = get_environment()
-                # Function doesn't extract environment from file, only validates it
-                assert environment is None
-                # No errors expected - valid env file found
+                assert environment == 'dev'
+                assert any(isinstance(e, Info) for e in errors)
                 error_ids = [e.id for e in errors if isinstance(e, Error)]
                 assert 'E002' not in error_ids
                 assert 'E003' not in error_ids
 
     def test_environment_not_set_single_env_file_prod(self, tmp_path) -> None:
-        """Single env*prod file is detected but environment is still None."""
-        env_file = tmp_path / 'envprod'
+        """Single .env.prod file is detected and environment is set to 'prod'."""
+        env_file = tmp_path / '.env.prod'
         env_file.touch()
 
         with patch.dict(os.environ, {}, clear=True):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
                 environment, errors = get_environment()
-                # Function doesn't extract environment from file, only validates it
-                assert environment is None
-                # No errors expected - valid env file found
+                assert environment == 'prod'
+                assert any(isinstance(e, Info) for e in errors)
                 error_ids = [e.id for e in errors if isinstance(e, Error)]
                 assert 'E002' not in error_ids
                 assert 'E003' not in error_ids
 
     def test_environment_not_set_multiple_env_files(self, tmp_path) -> None:
         """Multiple environment files produce Error E003."""
-        (tmp_path / 'envdev').touch()
-        (tmp_path / 'envprod').touch()
+        (tmp_path / '.env.dev').touch()
+        (tmp_path / '.env.prod').touch()
 
         with patch.dict(os.environ, {}, clear=True):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
@@ -108,32 +115,35 @@ class TestGetEnvironment:
                 assert 'E003' in error_ids
 
     def test_unknown_environment_file(self, tmp_path) -> None:
-        """Unknown environment file produces Warning W001."""
-        (tmp_path / 'envunknown').touch()
+        """Unknown environment file produces Warning W001 and env selection error."""
+        (tmp_path / '.env.unknown').touch()
 
         with patch.dict(os.environ, {}, clear=True):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
                 environment, errors = get_environment()
+                assert environment is None
                 warning_ids = [w.id for w in errors if isinstance(w, Warning)]
                 assert 'W001' in warning_ids
+                error_ids = [e.id for e in errors if isinstance(e, Error)]
+                assert 'E002' in error_ids
 
     def test_ignored_environment_file_example(self, tmp_path) -> None:
-        """Environment file with 'example' suffix is ignored."""
-        (tmp_path / 'envexample').touch()
+        """`.env.example` is ignored for selection and does not trigger W001."""
+        (tmp_path / '.env.example').touch()
 
         with patch.dict(os.environ, {}, clear=True):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
                 environment, errors = get_environment()
-                # Logic flaw in code: ignored_files computation always results
-                # in empty set due to condition: env is None and env in ignored
-                # So the file won't be ignored. It will be unknown and trigger W001
+                assert environment is None
                 warning_ids = [w.id for w in errors if isinstance(w, Warning)]
-                assert 'W001' in warning_ids
+                assert 'W001' not in warning_ids
+                error_ids = [e.id for e in errors if isinstance(e, Error)]
+                assert 'E002' in error_ids
 
     def test_environment_var_set_env_files_ignored(self, tmp_path) -> None:
         """When ENVIRONMENT is set, env files are ignored."""
-        (tmp_path / 'envdev').touch()
-        (tmp_path / 'envprod').touch()
+        (tmp_path / '.env.dev').touch()
+        (tmp_path / '.env.prod').touch()
 
         with patch.dict(os.environ, {'ENVIRONMENT': 'dev'}, clear=False):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
@@ -174,8 +184,8 @@ class TestGetEnvironment:
 
     def test_multiple_unknown_files_all_included(self, tmp_path) -> None:
         """Unknown environment files are included in warning."""
-        (tmp_path / 'envunknown1').touch()
-        (tmp_path / 'envunknown2').touch()
+        (tmp_path / '.env.unknown1').touch()
+        (tmp_path / '.env.unknown2').touch()
 
         with patch.dict(os.environ, {}, clear=True):
             with patch('src.qr_code.common.environment.PROJECT_ROOT', tmp_path):
@@ -217,21 +227,17 @@ class TestGetEnvironment:
             with patch('src.qr_code.common.environment.PROJECT_ROOT') as mock_root:
                 mock_root.glob.return_value = []
                 get_environment()
-                mock_root.glob.assert_called_once_with('env*')
+                mock_root.glob.assert_called_once_with('.env.*')
 
 
 class TestEnvironmentConstants:
     """Test suite for environment module constants."""
 
     def test_environments_constant_contains_dev_and_prod(self) -> None:
-        """ENVIRONMENTS constant contains 'dev' and 'prod'."""
-        from src.qr_code.common.environment import ENVIRONMENTS
-
-        assert 'dev' in ENVIRONMENTS
-        assert 'prod' in ENVIRONMENTS
+        """SUPPORTED_ENVIRONMENTS constant contains 'dev' and 'prod'."""
+        assert 'dev' in SUPPORTED_ENVIRONMENTS
+        assert 'prod' in SUPPORTED_ENVIRONMENTS
 
     def test_environments_constant_is_list(self) -> None:
-        """ENVIRONMENTS constant is a list."""
-        from src.qr_code.common.environment import ENVIRONMENTS
-
-        assert isinstance(ENVIRONMENTS, list)
+        """SUPPORTED_ENVIRONMENTS is a list."""
+        assert isinstance(SUPPORTED_ENVIRONMENTS, list)
