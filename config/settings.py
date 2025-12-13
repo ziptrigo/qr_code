@@ -15,10 +15,30 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+# Load environment variables from the selected `.env.<ENVIRONMENT>` file.
+# This must happen before reading any `os.getenv(...)` values.
+try:
+    import sys
+
+    # Test runs and static analysis may have multiple env files in the repo; default to dev.
+    if 'pytest' in sys.modules or 'mypy' in sys.modules:
+        os.environ.setdefault('ENVIRONMENT', 'dev')
+
+    from src.qr_code.common.environment import select_env
+
+    _selection = select_env(BASE_DIR)
+    if _selection.errors:
+        raise RuntimeError('\n'.join(_selection.errors))
+    if _selection.environment:
+        os.environ.setdefault('ENVIRONMENT', _selection.environment)
+    if _selection.env_path is not None:
+        load_dotenv(dotenv_path=_selection.env_path)
+except Exception:
+    # Fail fast if env selection is broken; otherwise we'd silently read wrong defaults.
+    raise
 
 
 # Quick-start development settings - unsuitable for production
@@ -177,9 +197,17 @@ PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_TTL_HOURS',
 EMAIL_CONFIRMATION_TOKEN_TTL_HOURS = int(os.getenv('EMAIL_CONFIRMATION_TOKEN_TTL_HOURS', '48'))
 
 # Email settings
-EMAIL_BACKEND_KIND = os.getenv('EMAIL_BACKEND_KIND', 'console')
-SES_REGION = os.getenv('SES_REGION', 'us-east-1')
-SES_SENDER = os.getenv('SES_SENDER', 'no-reply@example.com')
+# Comma-separated list of email backends to use. Example: "console" or "ses,console".
+EMAIL_BACKENDS = os.getenv('EMAIL_BACKENDS', '')
+
+# Tests should not require external configuration.
+if not EMAIL_BACKENDS:
+    import sys
+
+    if 'pytest' in sys.modules:
+        EMAIL_BACKENDS = 'console'
+
+AWS_SES_SENDER = os.getenv('AWS_SES_SENDER', 'no-reply@example.com')
 
 # Jazzmin configuration
 JAZZMIN_SETTINGS = {

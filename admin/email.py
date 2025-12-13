@@ -6,6 +6,7 @@ AWS credentials must be configured.
 """
 
 
+import os
 import sys
 from typing import Annotated
 
@@ -22,8 +23,8 @@ app = typer.Typer(
 )
 
 
-SES_REGION = 'us-east-1'  # change if you created SES in another region
-SENDER = 'no-reply@joao-coelho.com'
+AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
+AWS_SES_SENDER = os.getenv('AWS_SES_SENDER', 'no-reply@joao-coelho.com')
 
 
 def _send_email(
@@ -39,11 +40,11 @@ def _send_email(
         html_body = f'<pre>{text_body}</pre>'
 
     session = boto3.Session(profile_name=profile)
-    client = session.client('ses', region_name=SES_REGION)
+    client = session.client('ses', region_name=AWS_REGION)
 
     try:
         response = client.send_email(
-            Source=SENDER,
+            Source=AWS_SES_SENDER,
             Destination={'ToAddresses': [recipient]},
             Message={
                 'Subject': {'Data': subject, 'Charset': 'UTF-8'},

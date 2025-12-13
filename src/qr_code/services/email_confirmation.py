@@ -8,14 +8,14 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
-from .email_service import EmailBackend, get_email_backend
+from .email_service import EmailBackendClass, get_email_backend, send_email
 
 
 @dataclass(slots=True)
 class EmailConfirmationService:
     """High-level operations for email confirmation flow."""
 
-    email_backend: EmailBackend
+    email_backend_classes: list[EmailBackendClass]
 
     def send_confirmation_email(self, user: User):
         """Create a confirmation token for the user and send confirmation email."""
@@ -28,7 +28,13 @@ class EmailConfirmationService:
             user=user,
             confirmation_url=confirmation_url,
         )
-        self.email_backend.send_email(user.email, subject, text_body, html_body)
+        send_email(
+            to=user.email,
+            subject=subject,
+            text_body=text_body,
+            html_body=html_body,
+            backend_classes=self.email_backend_classes,
+        )
 
     def _build_confirmation_url(self, token: str) -> str:
         base = settings.BASE_URL.rstrip('/')
@@ -64,7 +70,7 @@ class EmailConfirmationService:
 
 
 def get_email_confirmation_service() -> EmailConfirmationService:
-    return EmailConfirmationService(email_backend=get_email_backend())
+    return EmailConfirmationService(email_backend_classes=get_email_backend())
 
 
 def render_email_confirmation_email(*, user: User, confirmation_url: str) -> tuple[str, str, str]:

@@ -554,7 +554,7 @@ class TestPasswordResetFlow:
                 )
 
         def _get_service() -> PasswordResetService:
-            return PasswordResetService(email_backend=FakeBackend())
+            return PasswordResetService(email_backend_classes=[FakeBackend])
 
         # Patch the helper used by the API module so SES is never touched.
         monkeypatch.setattr(

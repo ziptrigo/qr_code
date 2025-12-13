@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from .models import QRCode, User
 from .models.time_limited_token import TimeLimitedToken
-from .services.email_service import get_email_backend
+from .services.email_service import send_email
 
 
 @admin.register(User)
@@ -131,6 +131,7 @@ class CustomAdminSite(admin.AdminSite):
     def tools_view(self, request: HttpRequest) -> HttpResponse:
         """Custom admin page for various tools."""
         environment_variables = None
+        environment = os.getenv('ENVIRONMENT')
 
         # Restrict access strictly to superusers
         if not request.user.is_superuser:
@@ -141,6 +142,7 @@ class CustomAdminSite(admin.AdminSite):
                 **self.each_context(request),
                 'title': 'Admin Tools',
                 'form': form,
+                'environment': environment,
                 'environment_variables': None,
             }
             return render(request, 'admin/tools.html', context, status=403)
@@ -159,13 +161,21 @@ class CustomAdminSite(admin.AdminSite):
                 )
 
                 try:
-                    email_backend = get_email_backend()
-                    email_backend.send_email(
+                    successes, failures = send_email(
                         to=recipient,
                         subject=subject,
                         text_body=text_body,
                     )
-                    messages.success(request, f'Test email sent to {recipient}')
+                    if successes:
+                        messages.success(
+                            request,
+                            f'Test email sent to {recipient} via {successes} backend(s) '
+                            f'({failures} failure(s)).',
+                        )
+                    else:
+                        messages.error(
+                            request, f'All email backends failed ({failures} failure(s)).'
+                        )
                     form = TestEmailForm(initial={'recipient': recipient})
                 except Exception as e:
                     messages.error(request, f'Failed to send email: {str(e)}')
@@ -180,12 +190,8 @@ class CustomAdminSite(admin.AdminSite):
                 )
 
                 # Exclude specific keys entirely
-                EXCLUDED_KEYS = {
-                    'DJANGO_SECRET_KEY',
-                }
-                WHITE_LISTED_KEYS = {
-                    'AWS_REGION',
-                }
+                EXCLUDED_KEYS = {'DJANGO_SECRET_KEY'}
+                WHITE_LISTED_KEYS = {'AWS_REGION', 'AWS_SES_SENDER', 'AWS_S3_URI'}
 
                 def is_sensitive(key: str) -> bool:
                     k = key.upper()
@@ -229,6 +235,7 @@ class CustomAdminSite(admin.AdminSite):
             **self.each_context(request),
             'title': 'Admin Tools',
             'form': form,
+            'environment': environment,
             'environment_variables': environment_variables,
         }
         return render(request, 'admin/tools.html', context)

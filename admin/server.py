@@ -44,12 +44,12 @@ def server_run(
     To use more options from ``manage.py``, use ``python manage.py runserver`` directly.
     Set the ``ENVIRONMENT`` environment variable to the desired environment.
     """
-    from src.qr_code.common.environment import ENVIRONMENTS
+    from src.qr_code.common.environment import SUPPORTED_ENVIRONMENTS
 
     # Make sure the environment is valid (didn't change in the code)
-    if environment.value not in ENVIRONMENTS:
+    if environment.value not in SUPPORTED_ENVIRONMENTS:
         logger.error(
-            f'Invalid environment: {environment.value}. Not defined in code: {ENVIRONMENTS}.'
+            f'Invalid environment: {environment.value}. Not defined in code: {SUPPORTED_ENVIRONMENTS}.'
         )
         raise typer.Exit(1)
 

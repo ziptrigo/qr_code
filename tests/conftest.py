@@ -2,11 +2,17 @@
 Pytest configuration and fixtures for the QR code project.
 """
 
+import os
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat, QRCodeType
+
+# Ensure settings that require env vars have sane defaults during tests.
+os.environ.setdefault('EMAIL_BACKENDS', 'console')
+
 
 User = get_user_model()
 
