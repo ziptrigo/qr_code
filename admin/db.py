@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from admin import PROJECT_ROOT
-from admin.utils import logger
+from admin.utils import EnvironmentAnnotation, logger, set_environment
 
 app = typer.Typer()
 
@@ -33,11 +33,14 @@ def setup_django(db_file: Path):
 
 @app.command(name='users')
 def db_users(
+    environment: EnvironmentAnnotation,
     file: Annotated[Path, typer.Option(help='Path to the SQLite database file')] = Path(
         'db.sqlite3'
     ),
 ):
     """List all users from the database in a table format."""
+    set_environment(environment.value)
+
     if not file.exists():
         logger.info(f'Database file not found: {file}')
         raise typer.Exit(1)
