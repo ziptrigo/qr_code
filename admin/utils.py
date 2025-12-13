@@ -10,6 +10,16 @@ from rich.logging import RichHandler
 
 from admin import PROJECT_ROOT
 
+
+class Environment(Enum):
+    DEV = 'dev'
+    PROD = 'prod'
+
+
+EnvironmentAnnotation = Annotated[
+    Environment, typer.Argument(help='Environment to start the server in.', show_default=True)
+]
+
 DryAnnotation = Annotated[
     bool,
     typer.Option(
