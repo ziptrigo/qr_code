@@ -50,8 +50,8 @@ def select_env(project_root: Path, environment_var: str | None = None) -> EnvSel
     if environment:
         if environment not in SUPPORTED_ENVIRONMENTS:
             errors.append(
-                f'ENVIRONMENT environment variable `{raw_env}` must be one of {SUPPORTED_ENVIRONMENTS} '
-                '(case insensitive).'
+                f'ENVIRONMENT environment variable `{raw_env}` must be one of '
+                f'{SUPPORTED_ENVIRONMENTS} (case insensitive).'
             )
             return EnvSelection(
                 environment=raw_env, env_path=None, errors=errors, warnings=warnings

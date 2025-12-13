@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 try:
     import sys
 
-    # Test runs may have multiple env files in the repo; default to dev if not specified.
-    if 'pytest' in sys.modules:
+    # Test runs and static analysis may have multiple env files in the repo; default to dev.
+    if 'pytest' in sys.modules or 'mypy' in sys.modules:
         os.environ.setdefault('ENVIRONMENT', 'dev')
 
     from src.qr_code.common.environment import select_env

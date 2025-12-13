@@ -9,12 +9,15 @@ from django.core.checks import Error, Info, Warning, register
 
 from . import PROJECT_ROOT
 from .common.environment import SUPPORTED_ENVIRONMENTS, select_env
-from .services.email_service import EMAIL_BACKEND_KIND_TO_CLASS, parse_email_backend_kinds
+from .services.email_service import (
+    EMAIL_BACKEND_KIND_TO_CLASS,
+    parse_email_backend_kinds,
+)
 
 
 @register()
 def check_environment(*args, **kwargs):
-    checks = []
+    checks: list[Info | Warning | Error] = []
 
     selection = select_env(PROJECT_ROOT)
 
@@ -49,7 +52,7 @@ def check_environment(*args, **kwargs):
                 Error(
                     '\n'.join(selection.errors),
                     hint='Have only one `.env.<env>` file or set the `ENVIRONMENT` variable.',
-                    id='E002',
+                    id='E003',
                 )
             )
         else:
@@ -57,7 +60,7 @@ def check_environment(*args, **kwargs):
                 Error(
                     '\n'.join(selection.errors),
                     hint='Create one `.env.<env>` file or set the `ENVIRONMENT` variable.',
-                    id='E003',
+                    id='E002',
                 )
             )
 
@@ -67,7 +70,7 @@ def check_environment(*args, **kwargs):
 
 @register()
 def check_email_backends(*args, **kwargs):
-    checks = []
+    checks: list[Error] = []
 
     raw_backends = getattr(settings, 'EMAIL_BACKENDS', '')
     kinds = parse_email_backend_kinds(raw_backends)
