@@ -190,12 +190,8 @@ class CustomAdminSite(admin.AdminSite):
                 )
 
                 # Exclude specific keys entirely
-                EXCLUDED_KEYS = {
-                    'DJANGO_SECRET_KEY',
-                }
-                WHITE_LISTED_KEYS = {
-                    'AWS_REGION',
-                }
+                EXCLUDED_KEYS = {'DJANGO_SECRET_KEY'}
+                WHITE_LISTED_KEYS = {'AWS_REGION', 'AWS_SES_SENDER', 'AWS_S3_URI'}
 
                 def is_sensitive(key: str) -> bool:
                     k = key.upper()
