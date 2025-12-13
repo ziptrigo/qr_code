@@ -13,6 +13,9 @@ from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat, QRCo
 # Ensure settings that require env vars have sane defaults during tests.
 os.environ.setdefault('EMAIL_BACKENDS', 'console')
 
+# Keep tests independent from host machine configuration.
+os.environ.pop('ENVIRONMENT', None)
+
 
 User = get_user_model()
 
