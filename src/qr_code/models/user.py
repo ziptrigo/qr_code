@@ -20,12 +20,11 @@ class User(AbstractUser):
     )
 
     # Credits system
-    # - 1 credit = $0.01.
     # - ``credits`` stores the current balance.
     # - ``CreditTransaction`` stores the immutable history (ledger).
     credits = models.PositiveBigIntegerField(
         default=0,
-        help_text='Current credits balance (1 credit = $0.01).',
+        help_text='Current credits balance.',
     )
 
     class Meta:

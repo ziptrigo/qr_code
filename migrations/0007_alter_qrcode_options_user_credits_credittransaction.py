@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
             model_name='user',
             name='credits',
             field=models.PositiveBigIntegerField(
-                default=0, help_text='Current credits balance (1 credit = $0.01).'
+                default=0, help_text='Current credits balance.'
             ),
         ),
         migrations.CreateModel(
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 (
                     'amount',
                     models.IntegerField(
-                        help_text='Credits added (positive) or spent (negative). 1 credit = $0.01.'
+                        help_text='Credits added (positive) or spent (negative).'
                     ),
                 ),
                 (

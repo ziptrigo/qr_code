@@ -15,7 +15,6 @@ class CreditTransaction(models.Model):
     """Ledger of credit changes for a user.
 
     Notes:
-        - 1 credit = $0.01.
         - ``User.credits`` stores the current balance.
         - ``CreditTransaction`` stores the immutable history of changes.
     """
@@ -26,7 +25,7 @@ class CreditTransaction(models.Model):
         related_name='credit_transactions',
     )
     amount = models.IntegerField(
-        help_text='Credits added (positive) or spent (negative). 1 credit = $0.01.'
+        help_text='Credits added (positive) or spent (negative).'
     )
     type = models.CharField(max_length=32, choices=CreditTransactionType.choices)
     description = models.CharField(
