@@ -11,8 +11,6 @@ Selection rules:
 - Otherwise, detect a single ``.env.*`` file (excluding ``.env.example``). Fail if none or more than one.
 """
 
-from __future__ import annotations
-
 import os
 from dataclasses import dataclass
 from pathlib import Path
