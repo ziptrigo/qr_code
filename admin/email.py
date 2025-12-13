@@ -12,7 +12,7 @@ from typing import Annotated
 import typer
 from botocore.exceptions import ClientError, NoCredentialsError
 
-from admin.utils import EnvironmentAnnotation, logger
+from admin.utils import EnvironmentAnnotation, logger, set_environment
 
 app = typer.Typer(
     help=__doc__,
@@ -32,6 +32,7 @@ def _send_email(
     html_body: str | None = None,
 ):
     from mypy_boto3_ses import SESClient
+
     from src.qr_code.common.aws import boto3_client, get_aws_params
 
     # session = boto3.Session(profile_name=profile)
@@ -87,8 +88,7 @@ def email_send(
 
     Requires AWS credentials. Use the ``aws`` CLI to configure them.
     """
-    os.environ['ENVIRONMENT'] = environment.value
-
+    set_environment(environment.value)
 
     try:
         _send_email(

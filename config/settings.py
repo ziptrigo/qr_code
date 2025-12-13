@@ -35,8 +35,9 @@ try:
         raise RuntimeError('\n'.join(_selection.errors))
     if _selection.environment:
         os.environ.setdefault('ENVIRONMENT', _selection.environment)
-    if _selection.env_path is not None:
         load_dotenv(dotenv_path=_selection.env_path)
+    else:
+        raise RuntimeError('Environment not set.')
 except Exception:
     # Fail fast if env selection is broken; otherwise we'd silently read wrong defaults.
     raise

@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 import sys
 from enum import Enum
@@ -35,6 +36,21 @@ class OS(str, Enum):
     Linux = 'linux'
     MacOS = 'mac'
     Windows = 'win'
+
+
+def set_environment(environment: str):
+    from dotenv import load_dotenv
+
+    from src.qr_code.common.environment import select_env
+
+    selection = select_env(PROJECT_ROOT, environment)
+    if selection.errors:
+        raise ValueError('\n'.join(selection.errors))
+    if not selection.environment:
+        raise ValueError('Environment not set.')
+
+    os.environ['ENVIRONMENT'] = selection.environment
+    load_dotenv(dotenv_path=selection.env_path)
 
 
 def get_os() -> OS:

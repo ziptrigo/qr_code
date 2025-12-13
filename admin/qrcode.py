@@ -12,13 +12,10 @@ from typing import Optional
 
 import requests
 import typer
-from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
 
-from admin.utils import logger
-
-load_dotenv()
+from admin.utils import EnvironmentAnnotation, logger, set_environment
 
 app = typer.Typer(
     help=__doc__,
@@ -56,13 +53,15 @@ def get_headers() -> dict:
 
 
 @app.command(name='login')
-def qrcode_login(username: str, password: str):
+def qrcode_login(environment: EnvironmentAnnotation, username: str, password: str):
     """
     Authenticate with the API and store the token.
 
     Example:
         qrcode login myuser mypassword
     """
+    set_environment(environment.value)
+
     try:
         response = requests.post(
             f'{API_BASE_URL}/api/token/', json={'username': username, 'password': password}
@@ -78,6 +77,7 @@ def qrcode_login(username: str, password: str):
 
 @app.command(name='create')
 def qrcode_create(
+    environment: EnvironmentAnnotation,
     url: Optional[str] = typer.Option(None, '--url', '-u', help='URL to encode'),
     data: Optional[str] = typer.Option(None, '--data', '-d', help='Data to encode'),
     format: str = typer.Option('png', '--format', '-f', help='Output format (png, svg, jpeg)'),
@@ -97,6 +97,7 @@ def qrcode_create(
         qrcode create --url https://example.com --shorten
         qrcode create --data "Hello World" --format svg
     """
+    set_environment(environment.value)
     if not url and not data:
         logger.error('Error: Either --url or --data must be provided')
         raise typer.Exit(1)
@@ -136,13 +137,17 @@ def qrcode_create(
 
 
 @app.command(name='list')
-def qrcode_list():
+def qrcode_list(
+    environment: EnvironmentAnnotation,
+):
     """
     List all QR codes for the authenticated user.
 
     Example:
         qrcode list
     """
+    set_environment(environment.value)
+
     try:
         response = requests.get(f'{API_BASE_URL}/api/qrcodes/', headers=get_headers())
         response.raise_for_status()
@@ -178,13 +183,15 @@ def qrcode_list():
 
 
 @app.command(name='get')
-def qrcode_get(qr_id: str):
+def qrcode_get(environment: EnvironmentAnnotation, qr_id: str):
     """
     Get details of a specific QR code.
 
     Example:
         qrcode get abc123...
     """
+    set_environment(environment.value)
+
     try:
         response = requests.get(f'{API_BASE_URL}/api/qrcodes/{qr_id}/', headers=get_headers())
         response.raise_for_status()
@@ -207,13 +214,15 @@ def qrcode_get(qr_id: str):
 
 
 @app.command(name='delete')
-def qrcode_delete(qr_id: str):
+def qrcode_delete(environment: EnvironmentAnnotation, qr_id: str):
     """
     Delete a QR code.
 
     Example:
         qrcode delete abc123...
     """
+    set_environment(environment.value)
+
     try:
         response = requests.delete(f'{API_BASE_URL}/api/qrcodes/{qr_id}/', headers=get_headers())
         response.raise_for_status()

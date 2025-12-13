@@ -29,7 +29,7 @@ class EnvSelection:
     warnings: list[str]
 
 
-def _env_from_file(file: Path) -> str | None:
+def env_from_file(file: Path) -> str | None:
     name = file.name
     if not name.startswith('.env.'):
         return None
@@ -38,14 +38,15 @@ def _env_from_file(file: Path) -> str | None:
     return suffix.lower() if suffix else None
 
 
-def _file_from_env(project_root: Path, env: str) -> Path:
+def file_from_env(project_root: Path, env: str) -> Path:
     return project_root / f'.env.{env}'
 
-def select_env(project_root: Path=PROJECT_ROOT, environment: str | None = None) -> EnvSelection:
+
+def select_env(project_root: Path = PROJECT_ROOT, environment: str | None = None) -> EnvSelection:
     errors: list[str] = []
     warnings: list[str] = []
 
-    environment = (environment or os.getenv('ENVIRONMENT', '')).lower().strip()
+    environment: str = (environment or os.getenv('ENVIRONMENT', '')).lower().strip()  # type: ignore
 
     if environment:
         if environment not in SUPPORTED_ENVIRONMENTS:
@@ -57,7 +58,7 @@ def select_env(project_root: Path=PROJECT_ROOT, environment: str | None = None) 
                 environment=environment, env_path=None, errors=errors, warnings=warnings
             )
 
-        env_path = _file_from_env(project_root, environment)
+        env_path = file_from_env(project_root, environment)
         if not env_path.exists():
             errors.append(f'Environment file `{env_path}` not found.')
             return EnvSelection(
@@ -77,7 +78,7 @@ def select_env(project_root: Path=PROJECT_ROOT, environment: str | None = None) 
     unknown_files: list[Path] = []
 
     for file in files:
-        env = _env_from_file(file)
+        env = env_from_file(file)
         if not env:
             continue
 
@@ -107,7 +108,7 @@ def select_env(project_root: Path=PROJECT_ROOT, environment: str | None = None) 
         return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)
 
     file = valid_files[0]
-    env = _env_from_file(file)
+    env = env_from_file(file)
     if not env:
         errors.append(f'Could not parse environment from file `{file}`.')
         return EnvSelection(environment=None, env_path=None, errors=errors, warnings=warnings)
