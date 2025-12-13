@@ -1,10 +1,11 @@
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AnonymousUser
+from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
-from ..models import QRCode
+from ..models import CreditTransaction, QRCode
 from ..services.email_confirmation import get_email_confirmation_service
 from ..services.password_reset import PasswordResetService, get_password_reset_service
 
@@ -182,3 +183,24 @@ def email_confirmation_success(request: HttpRequest) -> HttpResponse:
 def account_page(request: HttpRequest) -> HttpResponse:
     """Render the account settings page for the authenticated user."""
     return render(request, 'account.html')
+
+
+@login_required
+def credits_history_page(request: HttpRequest) -> HttpResponse:
+    """Render the credits usage history page for the authenticated user."""
+    user = request.user
+
+    if isinstance(user, AnonymousUser):
+        raise RuntimeError('Authenticated user required')
+
+    queryset = CreditTransaction.objects.filter(user=user).order_by('-created_at', '-id')
+    paginator = Paginator(queryset, per_page=25)
+
+    page_number = request.GET.get('page', '1')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'credits_balance': getattr(user, 'credits', 0),
+    }
+    return render(request, 'credits_history.html', context)

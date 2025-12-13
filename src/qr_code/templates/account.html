@@ -69,6 +69,22 @@
       </form>
     </section>
 
+    <!-- Credits Section -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Credits</h2>
+
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <div class="text-sm text-gray-600 dark:text-gray-300">Current balance</div>
+          <div class="text-2xl font-semibold">{{ request.user.credits }} credits</div>
+        </div>
+        <a href="{% url 'credits-history-page' %}"
+           class="inline-flex justify-center items-center rounded bg-brand-primary text-gray-900 font-medium px-4 py-2 hover:opacity-90">
+          Usage History
+        </a>
+      </div>
+    </section>
+
     <!-- Password Change Section -->
     <section class="mb-8">
       <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Change Password</h2>

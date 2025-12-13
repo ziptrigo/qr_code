@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.urls import path
 from django.utils import timezone
 
-from .models import QRCode, User
+from .models import CreditTransaction, InsufficientCreditsError, QRCode, User
 from .models.time_limited_token import TimeLimitedToken
 from .services.email_service import send_email
 
@@ -27,13 +27,21 @@ class UserAdmin(DjangoUserAdmin):
                     'name',
                     'email_confirmed',
                     'email_confirmed_at',
+                    'credits',
                 )
             },
         ),
     )  # type: ignore[assignment,operator]
 
-    # Add email confirmation status to list display
-    list_display = ['username', 'email', 'name', 'email_confirmed', 'is_staff', 'is_active']
+    list_display = [
+        'username',
+        'email',
+        'name',
+        'credits',
+        'email_confirmed',
+        'is_staff',
+        'is_active',
+    ]
     list_filter = ['email_confirmed', 'is_staff', 'is_active', 'is_superuser']
     readonly_fields = ['email_confirmed_at']
 
@@ -64,6 +72,16 @@ class QRCodeAdmin(admin.ModelAdmin):
     @admin.display(description='Content')
     def content_preview(self, obj: QRCode) -> str:
         return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
+
+
+@admin.register(CreditTransaction)
+class CreditTransactionAdmin(admin.ModelAdmin):
+    """Admin interface for CreditTransaction."""
+
+    list_display = ['id', 'user', 'amount', 'type', 'description', 'created_at']
+    list_filter = ['type', 'created_at']
+    search_fields = ['user__email', 'user__username', 'description']
+    readonly_fields = ['id', 'created_at']
 
 
 @admin.register(TimeLimitedToken)
@@ -118,6 +136,34 @@ class TestEmailForm(forms.Form):
     )
 
 
+class CreditAdjustmentForm(forms.Form):
+    user_email: forms.EmailField = forms.EmailField(
+        label='User email',
+        required=True,
+        help_text='Email address of the user to adjust.',
+        widget=forms.EmailInput(attrs={'size': '60'}),
+    )
+    direction: forms.ChoiceField = forms.ChoiceField(
+        label='Direction',
+        required=True,
+        choices=[('add', 'Add'), ('spend', 'Spend')],
+        initial='add',
+    )
+    amount: forms.IntegerField = forms.IntegerField(
+        label='Amount',
+        required=True,
+        min_value=1,
+        help_text='Number of credits to add/spend. Must be > 0.',
+    )
+    description: forms.CharField = forms.CharField(
+        label='Description',
+        required=False,
+        max_length=255,
+        help_text='Optional description for the ledger entry.',
+        widget=forms.TextInput(attrs={'size': '60'}),
+    )
+
+
 class CustomAdminSite(admin.AdminSite):
     """Custom admin site with additional tools."""
 
@@ -133,24 +179,30 @@ class CustomAdminSite(admin.AdminSite):
         environment_variables = None
         environment = os.getenv('ENVIRONMENT')
 
+        initial_email = getattr(request.user, 'email', '') or ''
+
         # Restrict access strictly to superusers
         if not request.user.is_superuser:
             messages.error(request, 'You do not have permission to access this page.')
-            initial_email = getattr(request.user, 'email', '') or ''
-            form = TestEmailForm(initial={'recipient': initial_email})
+            email_form = TestEmailForm(initial={'recipient': initial_email})
+            credit_form = CreditAdjustmentForm()
             context = {
                 **self.each_context(request),
                 'title': 'Admin Tools',
-                'form': form,
+                'email_form': email_form,
+                'credit_form': credit_form,
                 'environment': environment,
                 'environment_variables': None,
             }
             return render(request, 'admin/tools.html', context, status=403)
 
+        email_form = TestEmailForm(initial={'recipient': initial_email})
+        credit_form = CreditAdjustmentForm()
+
         if request.method == 'POST' and 'send_test_email' in request.POST:
-            form = TestEmailForm(request.POST)
-            if form.is_valid():
-                recipient = form.cleaned_data['recipient']
+            email_form = TestEmailForm(request.POST)
+            if email_form.is_valid():
+                recipient = email_form.cleaned_data['recipient']
                 current_datetime = timezone.now().strftime('%Y-%m-%d %H:%M:%S %Z')
 
                 subject = 'Test email from the admin panel'
@@ -176,7 +228,7 @@ class CustomAdminSite(admin.AdminSite):
                         messages.error(
                             request, f'All email backends failed ({failures} failure(s)).'
                         )
-                    form = TestEmailForm(initial={'recipient': recipient})
+                    email_form = TestEmailForm(initial={'recipient': recipient})
                 except Exception as e:
                     messages.error(request, f'Failed to send email: {str(e)}')
             else:
@@ -223,18 +275,48 @@ class CustomAdminSite(admin.AdminSite):
                 messages.success(request, 'Environment variables loaded.')
             except Exception as e:
                 messages.error(request, f'Failed to load environment variables: {str(e)}')
-            # Keep the email form initialized for rendering alongside
-            initial_email = getattr(request.user, 'email', '') or ''
-            form = TestEmailForm(initial={'recipient': initial_email})
-        else:
-            # Prefill with the logged-in user's email for convenience
-            initial_email = getattr(request.user, 'email', '') or ''
-            form = TestEmailForm(initial={'recipient': initial_email})
+        elif request.method == 'POST' and 'adjust_credits' in request.POST:
+            credit_form = CreditAdjustmentForm(request.POST)
+            if credit_form.is_valid():
+                user_email = credit_form.cleaned_data['user_email']
+                direction = credit_form.cleaned_data['direction']
+                amount = int(credit_form.cleaned_data['amount'])
+                description = str(credit_form.cleaned_data.get('description') or '').strip()
+
+                try:
+                    target = User.objects.get(email=user_email)
+                except User.DoesNotExist:
+                    messages.error(request, f'No user found with email: {user_email}')
+                else:
+                    if not description:
+                        description = 'Admin adjustment'
+
+                    try:
+                        if direction == 'add':
+                            target.add_credits(
+                                amount, tx_type='adjustment', description=description
+                            )
+                        else:
+                            target.spend_credits(
+                                amount, tx_type='adjustment', description=description
+                            )
+                        messages.success(
+                            request,
+                            f'Adjusted credits for {target.email}. New balance: {target.credits}.',
+                        )
+                        credit_form = CreditAdjustmentForm()
+                    except InsufficientCreditsError:
+                        messages.error(request, 'Insufficient credits for this spend adjustment.')
+                    except Exception as e:
+                        messages.error(request, f'Failed to adjust credits: {str(e)}')
+            else:
+                messages.error(request, 'Please correct the errors below.')
 
         context = {
             **self.each_context(request),
             'title': 'Admin Tools',
-            'form': form,
+            'email_form': email_form,
+            'credit_form': credit_form,
             'environment': environment,
             'environment_variables': environment_variables,
         }
@@ -247,4 +329,5 @@ custom_admin_site = CustomAdminSite(name='custom_admin')
 # Register models with custom admin site
 custom_admin_site.register(User, UserAdmin)
 custom_admin_site.register(QRCode, QRCodeAdmin)
+custom_admin_site.register(CreditTransaction, CreditTransactionAdmin)
 custom_admin_site.register(TimeLimitedToken, TimeLimitedTokenAdmin)

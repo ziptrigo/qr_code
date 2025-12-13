@@ -231,6 +231,7 @@ def account_view(request):
                 'email': user.email,
                 'name': getattr(user, 'name', ''),
                 'email_confirmed': getattr(user, 'email_confirmed', True),
+                'credits': getattr(user, 'credits', 0),
             }
         )
 
@@ -273,6 +274,7 @@ def account_view(request):
             'email': user.email,
             'name': user.name,
             'email_confirmed': user.email_confirmed,
+            'credits': getattr(user, 'credits', 0),
         },
     }
 
