@@ -1,4 +1,4 @@
-[![Project License - MIT](https://img.shields.io/pypi/l/hd_active.svg)](https://github.com/joaonc/qr_code/blob/main/LICENSE.txt)
+[![Project License - MIT](https://img.shields.io/pypi/l/hd_active.svg)](https://github.com/ziptrigo/qr_code/blob/main/LICENSE.txt)
 
 # QR Code Generator Service
 
