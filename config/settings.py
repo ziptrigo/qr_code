@@ -224,6 +224,8 @@ JAZZMIN_SETTINGS = {
     'site_logo': 'images/logo_128x128.png',
     'show_sidebar': True,
     'navigation_expanded': True,
+    'theme': 'default',
+    'dark_mode_theme': 'darkly',
     'icons': {
         'auth': 'fas fa-users-cog',
         'auth.user': 'fas fa-user',
@@ -246,4 +248,5 @@ JAZZMIN_SETTINGS = {
         ],
     },
     'custom_css': 'css/jazzmin_custom.css',
+    'custom_js': 'js/admin_theme_toggle.js',
 }
