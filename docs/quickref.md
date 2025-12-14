@@ -94,7 +94,7 @@ GET /go/{short_code}/       Redirect and track
 
 ### Get Token
 ```powershell
-$response = Invoke-RestMethod -Uri "http://localhost:8000/api/token/" `
+$response = Invoke-RestMethod -Uri "http://localhost:8010/api/token/" `
   -Method Post `
   -Body (@{username="admin"; password="password"} | ConvertTo-Json) `
   -ContentType "application/json"
@@ -103,7 +103,7 @@ $token = $response.access
 
 ### Create QR Code
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
+Invoke-RestMethod -Uri "http://localhost:8010/api/qrcodes/" `
   -Method Post `
   -Headers @{Authorization="Bearer $token"} `
   -Body (@{
@@ -117,7 +117,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
 
 ### List QR Codes
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" `
+Invoke-RestMethod -Uri "http://localhost:8010/api/qrcodes/" `
   -Method Get `
   -Headers @{Authorization="Bearer $token"}
 ```
@@ -148,10 +148,10 @@ db.sqlite3               Database file
 ## URLs
 
 ```
-http://localhost:8000/admin/           Django admin interface
-http://localhost:8000/api/qrcodes/     API endpoint
-http://localhost:8000/go/{code}/       Short URL redirect
-http://localhost:8000/media/qrcodes/   QR code images
+http://localhost:8010/admin/           Django admin interface
+http://localhost:8010/api/qrcodes/     API endpoint
+http://localhost:8010/go/{code}/       Short URL redirect
+http://localhost:8010/media/qrcodes/   QR code images
 ```
 
 ## Troubleshooting
@@ -168,7 +168,7 @@ python manage.py migrate
 ### CLI login fails
 ```powershell
 # Check server is running
-curl http://localhost:8000/api/token/
+curl http://localhost:8010/api/token/
 
 # Delete old token
 Remove-Item ~\.qrcode_token
@@ -187,8 +187,8 @@ Get-Acl media\qrcodes
 
 Edit `.env` file:
 ```env
-BASE_URL=http://localhost:8000
-API_BASE_URL=http://localhost:8000
+BASE_URL=http://localhost:8010
+API_BASE_URL=http://localhost:8010
 DEBUG=True
 ```
 

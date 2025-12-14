@@ -189,7 +189,7 @@ MIGRATION_MODULES = {
 }
 
 # QR Code settings
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8010')
 QR_CODE_REDIRECT_PATH = '/go/'
 
 # Password reset settings
