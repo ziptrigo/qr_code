@@ -11,3 +11,4 @@ python-dotenv
 requests
 segno                   # QR Code generation
 typer                   # CLI app
+whitenoise              # Static file serving

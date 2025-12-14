@@ -10,7 +10,6 @@ import os
 from typing import Annotated
 
 import typer
-from botocore.exceptions import ClientError, NoCredentialsError
 
 from admin.utils import EnvironmentAnnotation, logger, set_environment
 
@@ -88,6 +87,8 @@ def email_send(
 
     Requires AWS credentials. Use the ``aws`` CLI to configure them.
     """
+    from botocore.exceptions import ClientError, NoCredentialsError
+
     set_environment(environment.value)
 
     try:

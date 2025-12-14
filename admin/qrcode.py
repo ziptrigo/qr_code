@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-import requests
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -60,6 +59,8 @@ def qrcode_login(environment: EnvironmentAnnotation, username: str, password: st
     Example:
         qrcode login myuser mypassword
     """
+    import requests
+
     set_environment(environment.value)
 
     try:
@@ -97,7 +98,10 @@ def qrcode_create(
         qrcode create --url https://example.com --shorten
         qrcode create --data "Hello World" --format svg
     """
+    import requests
+
     set_environment(environment.value)
+
     if not url and not data:
         logger.error('Error: Either --url or --data must be provided')
         raise typer.Exit(1)
@@ -146,6 +150,8 @@ def qrcode_list(
     Example:
         qrcode list
     """
+    import requests
+
     set_environment(environment.value)
 
     try:
@@ -190,6 +196,8 @@ def qrcode_get(environment: EnvironmentAnnotation, qr_id: str):
     Example:
         qrcode get abc123...
     """
+    import requests
+
     set_environment(environment.value)
 
     try:
@@ -221,6 +229,8 @@ def qrcode_delete(environment: EnvironmentAnnotation, qr_id: str):
     Example:
         qrcode delete abc123...
     """
+    import requests
+
     set_environment(environment.value)
 
     try:
