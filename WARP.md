@@ -10,11 +10,14 @@ A Python project for generating and manipulating QR codes.
 
 ## Tech Stack
 - Python 3.13
-- Django 6.0 for API and web interface (session-based auth, htmx + Tailwind templates)
+- Django 6.0 + Django Ninja for async API (JWT auth, htmx + Tailwind templates)
+- Django Ninja JWT for Bearer token authentication (access + refresh tokens)
+- Pydantic v2 for request/response validation and serialization
+- Async/await throughout the API layer
 - typer for CLI interface
 - segno package for QR code generation
 - Email: configurable via `EMAIL_BACKENDS` (comma-separated); SES and console backends supported
-- RDBMS for data storage
+- RDBMS for data storage (SQLite dev, PostgreSQL production-ready)
 
 ## App name and project structure
 The app name is `qr_code`.
@@ -25,28 +28,43 @@ Models are stored under `src/qr_code/models`, each model in its own file.
 API views live under `src/qr_code/api`, services under `src/qr_code/services`, and HTML templates under `src/qr_code/templates`.
 
 ## Current Status
-Initial version done. Testing functionality and fixing bugs.
-- Authentication flow implemented with `/login/`, `/register/`, and `/logout/`.
-- Email confirmation flow implemented: users must confirm email before login, 48-hour token validity,
-  `/confirm-email/<token>/` for confirmation, resend functionality on expired links.
-- Forgot password flow implemented: `/forgot-password/` (initiation), `/reset-password/<token>/` (HTML),
-  `POST /api/forgot-password` and `POST /api/reset-password` endpoints with time-limited tokens and email.
-- Dashboard `/dashboard/` lists the authenticated user's QR codes (search + sort).
-  - Each QR code row has a dropdown menu (three-dots icon) with Edit and Delete actions.
-  - Clear search button (X icon) to reset filtering.
-- QR code creation/editing:
-  - `/qrcodes/create/` page lets users preview and save new QR codes.
-  - `/qrcodes/edit/<id>/` page lets users edit the name of existing QR codes (content is read-only).
-  - Both pages use the same template (`qrcode_editor.html`) with conditional rendering.
-- Soft delete implemented: QR codes are marked as deleted (not physically removed) and hidden from all interfaces.
+**Django Ninja Migration Complete!** Migrated from Django REST Framework to Django Ninja with full async support.
+
+### Migration Highlights
+- ✅ Replaced DRF with Django Ninja async API
+- ✅ Migrated from session auth to JWT Bearer tokens (django-ninja-jwt)
+- ✅ All API endpoints converted to async with Pydantic v2 schemas
+- ✅ JWT tokens for email confirmation and password reset (stateless)
+- ✅ Frontend updated to use JWT with localStorage and automatic token refresh
+- ✅ Services converted to async (email, password reset, QR generation)
+- ✅ Fresh database migrations (old TimeLimitedToken model removed)
+- ✅ Test infrastructure updated for Django Ninja async client
+
+### Features
+- **Authentication**: JWT-based with `/api/auth/*` endpoints
+  - Login returns access + refresh tokens (60min / 7 days)
+  - Automatic token refresh on 401 errors
+  - Email confirmation and password reset use JWT tokens
+- **Frontend**: `auth.js` handles JWT storage in localStorage
+  - htmx requests automatically include Authorization header
+  - Login/register forms use Auth.login() and Auth.signup()
+  - Logout clears tokens and redirects
+- **API Layer**: Full async/await with Django Ninja
+  - All endpoints use async def
+  - Pydantic v2 schemas for validation
+  - Auto-generated OpenAPI docs at `/api/docs`
+- **Dashboard**: `/dashboard/` lists QR codes with search, sort, and actions
+- **QR Management**: Create, edit (name only), preview, soft delete
+- **URL Shortening**: Built-in with `/api/go/{short_code}` redirect
 
 ## Next Steps
-1. Test authentication endpoints including email confirmation.
-2. Test QRCode endpoints with session auth.
-3. Test forgot password and reset flows (token validity, expiry, single-use).
-4. Test email confirmation flow (signup, confirmation, expiry, resend).
-5. Test edit functionality (PUT endpoint, ownership validation, UI behavior).
-6. Fix issues as needed.
+1. Update existing tests to use Django Ninja async test client
+2. Test JWT authentication flow (login, token refresh, protected endpoints)
+3. Test email confirmation with JWT tokens
+4. Test password reset with JWT tokens
+5. Test async QR code CRUD operations
+6. Manual testing of web UI with JWT auth
+7. Remove old DRF files (auth.py, qrcode.py, serializers.py)
 
 ## Notes
 ### Email configuration
@@ -147,31 +165,51 @@ similar interface to the API.
 - Tokens are single-use and time-limited by `PASSWORD_RESET_TOKEN_TTL_HOURS` (default 4)
 
 ### Authentication
-Session-based authentication using Django sessions with email confirmation.
-- POST /api/signup (name, email, password) creates user and sends confirmation email (no auto-login).
-- POST /api/resend-confirmation (email) resends confirmation email if account exists and unconfirmed.
-- POST /api/confirm-email (token) confirms email address using valid token.
-- POST /api/login (email, password) logs in and returns session id in JSON (requires confirmed email).
-- POST /api/forgot-password (email) initiates password reset and returns 200 regardless of existence.
-- POST /api/reset-password (token, password, password_confirm) resets password when token is valid.
-- API calls require SessionAuthentication; ensure CSRF tokens are provided where applicable.
-- Time-limited tokens use the `TimeLimitedToken` model with token_type field ('password_reset' or 'email_confirmation').
+JWT Bearer token authentication using django-ninja-jwt with email confirmation.
+
+**Token Management**:
+- POST /api/token/pair - Get access + refresh tokens (60min / 7 days)
+- POST /api/token/refresh - Refresh access token
+- POST /api/token/verify - Verify token validity
+
+**Auth Endpoints**:
+- POST /api/auth/signup (name, email, password) - Creates user and sends JWT confirmation email
+- POST /api/auth/login (email, password) - Returns JWT tokens (requires confirmed email)
+- GET /api/auth/me - Get current user (requires JWT)
+- POST /api/auth/confirm-email (token) - Confirms email using JWT token
+- POST /api/auth/resend-confirmation (email) - Resends JWT confirmation email
+- POST /api/auth/forgot-password (email) - Sends JWT password reset email
+- POST /api/auth/reset-password (token, password, password_confirm) - Resets password using JWT
+- PUT /api/auth/account - Update user profile (requires JWT)
+- POST /api/auth/change-password - Change password (requires JWT)
+
+**Implementation Details**:
+- JWT tokens stored in localStorage (frontend)
+- Authorization header: `Bearer <access_token>`
+- Automatic token refresh on 401 errors
+- Email confirmation tokens: Custom `EmailConfirmationToken` class (48h lifetime)
+- Password reset tokens: Custom `PasswordResetToken` class (4h lifetime)
+- No database storage for tokens (stateless JWT)
 
 ### QR Code Management
-- GET /api/qrcodes/ - List user's QR codes (filtered by created_by, excludes soft-deleted, includes qr_type)
-- POST /api/qrcodes/ - Create new QR code with full customization options (qr_type is required: 'url' or 'text')
-- GET /api/qrcodes/<id>/ - Retrieve QR code details (returns 404 if soft-deleted, includes qr_type)
-- PUT /api/qrcodes/<id>/ - Update QR code name only (uses QRCodeUpdateSerializer, qr_type is read-only, returns 404 if soft-deleted)
-- PATCH /api/qrcodes/<id>/ - Partial update of QR code name (qr_type is read-only, returns 404 if soft-deleted)
-- DELETE /api/qrcodes/<id>/ - Soft delete QR code (sets deleted_at timestamp)
-- POST /api/qrcodes/preview - Generate preview without saving to DB (requires qr_type)
-- QR Code Types: Each QR code has a qr_type field (QRCodeType TextChoices: URL or TEXT) that categorizes the content
-- Ownership validation: Users can only access/modify their own QR codes via get_queryset filtering
-- Soft delete: QR codes have a `deleted_at` field (nullable DateTimeField). When deleted:
-  - `deleted_at` is set to current timestamp
-  - QR code remains in database but is filtered out from all querysets
-  - API endpoints return 404 for soft-deleted QR codes
-  - Redirect endpoint (`/go/{short_code}/`) redirects to dashboard for soft-deleted QR codes
+**All endpoints require JWT Bearer token in Authorization header**
+
+- GET /api/qrcodes/ - List user's QR codes (async, Pydantic response)
+- POST /api/qrcodes/ - Create QR code (async QR generation)
+- GET /api/qrcodes/{id} - Get QR code details
+- PUT /api/qrcodes/{id} - Update QR code name
+- PATCH /api/qrcodes/{id} - Partial update
+- DELETE /api/qrcodes/{id} - Soft delete (204 response)
+- POST /api/qrcodes/preview - Generate preview (async)
+- GET /api/go/{short_code} - Public redirect endpoint
+
+**Implementation**:
+- All endpoints use async def
+- Pydantic schemas for validation (QRCodeCreateSchema, QRCodeUpdateSchema, QRCodeSchema)
+- Ownership validation via JWT user context
+- Async QR generation with sync_to_async
+- Soft delete with deleted_at timestamp
+- QR Code Types: url or text (QRCodeType TextChoices)
 
 ### HTML Pages
 |- `/dashboard/` - List QR codes with search (with clear button), sort, and dropdown actions per row
