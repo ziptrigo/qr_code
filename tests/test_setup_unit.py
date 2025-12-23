@@ -47,7 +47,8 @@ def test_model_creation():
 
 
 @pytest.mark.django_db
-def test_qr_generation(user):
+@pytest.mark.asyncio
+async def test_qr_generation(user):
     """QR code image can be generated without errors."""
     qr = QRCode.objects.create(
         content='https://example.com',
@@ -61,7 +62,7 @@ def test_qr_generation(user):
         image_file='temp.png',
     )
 
-    image_path = QRCodeGenerator.generate_qr_code(qr)
+    image_path = await QRCodeGenerator.generate_qr_code(qr)
     qr.image_file = image_path
     qr.save()
 
