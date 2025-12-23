@@ -1,14 +1,11 @@
 """Pydantic schemas for QR code endpoints."""
 
-from datetime import datetime
-from uuid import UUID
-
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import URLValidator
 from ninja import ModelSchema, Schema
 from pydantic import field_validator
 
-from src.qr_code.models import QRCode, QRCodeErrorCorrection, QRCodeFormat, QRCodeType
+from src.qr_code.models import QRCode, QRCodeType
 
 
 class QRCodeCreateSchema(ModelSchema):

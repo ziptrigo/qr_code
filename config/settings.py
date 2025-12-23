@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -187,8 +188,6 @@ PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_TTL_HOURS',
 EMAIL_CONFIRMATION_TOKEN_TTL_HOURS = int(os.getenv('EMAIL_CONFIRMATION_TOKEN_TTL_HOURS', '48'))
 
 # Django Ninja JWT Settings
-from datetime import timedelta
-
 NINJA_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),

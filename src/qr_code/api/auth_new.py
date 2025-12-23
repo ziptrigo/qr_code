@@ -6,10 +6,7 @@ from ninja import Router
 from ninja_jwt.authentication import AsyncJWTAuth
 
 from src.qr_code.schemas import (
-    EmailConfirmSchema,
     LoginSchema,
-    PasswordResetRequestSchema,
-    PasswordResetSchema,
     SignupSchema,
     TokenResponseSchema,
     UserResponseSchema,
@@ -28,7 +25,7 @@ async def signup(request, payload: SignupSchema):
         return 400, {'detail': 'User with that email already exists.'}
 
     # Create user
-    user = await sync_to_async(User.objects.create_user)(
+    await sync_to_async(User.objects.create_user)(
         username=payload.email,
         email=payload.email,
         password=payload.password,
@@ -37,9 +34,7 @@ async def signup(request, payload: SignupSchema):
 
     # TODO: Send confirmation email using JWT token
 
-    return 201, {
-        'message': 'Account created! Please check your email to confirm your address.'
-    }
+    return 201, {'message': 'Account created! Please check your email to confirm your address.'}
 
 
 @router.post('/login', response=TokenResponseSchema, auth=None)
