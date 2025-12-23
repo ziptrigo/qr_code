@@ -30,12 +30,11 @@ def forgot_password_page(request: HttpRequest) -> HttpResponse:
     return render(request, 'forgot_password.html')
 
 
-def reset_password_page(request: HttpRequest, token: str) -> HttpResponse:
+async def reset_password_page(request: HttpRequest, token: str) -> HttpResponse:
     """Render the reset password page or expired page based on token."""
-
     service: PasswordResetService = get_password_reset_service()
-    token_obj = service.validate_token(token)
-    if token_obj is None:
+    user = await service.validate_token(token)
+    if user is None:
         return render(request, 'reset_password_expired.html')
 
     return render(request, 'reset_password.html', {'token': token})
@@ -160,17 +159,16 @@ def qrcode_duplicate(request: HttpRequest, qr_id: str) -> HttpResponse:
     return render(request, 'qrcode_editor.html', context)
 
 
-def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:
+async def confirm_email_page(request: HttpRequest, token: str) -> HttpResponse:
     """Validate email confirmation token and redirect accordingly."""
-
     service = get_email_confirmation_service()
-    token_obj = service.validate_token(token)
+    user = await service.validate_token(token)
 
-    if token_obj is None:
+    if user is None:
         return render(request, 'email_confirmation_expired.html')
 
     # Confirm the email
-    service.confirm_email(token_obj)
+    await service.confirm_email(user)
     return redirect('email-confirmation-success')
 
 

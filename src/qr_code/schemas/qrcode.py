@@ -28,32 +28,6 @@ class QRCodeCreateSchema(ModelSchema):
             'use_url_shortening',
         ]
 
-    @field_validator('qr_type')
-    @classmethod
-    def validate_qr_type_and_content(cls, v: str, info) -> str:
-        """Validate qr_type and ensure appropriate content is provided."""
-        # Get url and data from the model data
-        data = info.data
-        url = data.get('url')
-        data_field = data.get('data')
-
-        # Ensure either url or data is provided
-        if not url and not data_field:
-            raise ValueError("Either 'url' or 'data' must be provided")
-        if url and data_field:
-            raise ValueError("Provide either 'url' or 'data', not both")
-
-        # Validate URL format when qr_type is 'url'
-        if v == QRCodeType.URL:
-            content = url or data_field
-            url_validator = URLValidator()
-            try:
-                url_validator(content)
-            except DjangoValidationError:
-                raise ValueError('Please provide a valid URL when type is URL')
-
-        return v
-
 
 class QRCodeUpdateSchema(ModelSchema):
     """Schema for updating QR codes (name only)."""
