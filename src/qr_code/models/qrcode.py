@@ -2,6 +2,7 @@ import random
 import string
 import uuid
 
+from asgiref.sync import sync_to_async
 from django.db import models
 
 from .user import User
@@ -136,6 +137,10 @@ class QRCode(models.Model):
         self.last_scanned_at = timezone.now()
         self.save(update_fields=['scan_count', 'last_scanned_at'])
 
+    async def aincrement_scan_count(self):
+        """Async version: Increment the scan count and update last scanned timestamp."""
+        await sync_to_async(self.increment_scan_count)()
+
     def soft_delete(self):
         """Mark this QR code as deleted without removing it from the database."""
         from django.utils import timezone
@@ -143,3 +148,7 @@ class QRCode(models.Model):
         if not self.deleted_at:
             self.deleted_at = timezone.now()
             self.save(update_fields=['deleted_at'])
+
+    async def asoft_delete(self):
+        """Async version: Mark this QR code as deleted without removing it from the database."""
+        await sync_to_async(self.soft_delete)()

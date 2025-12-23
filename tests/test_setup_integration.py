@@ -16,7 +16,8 @@ User = get_user_model()
 class TestSetupIntegration:
     """Test end-to-end setup and functionality."""
 
-    def test_complete_qr_generation_workflow(self):
+    @pytest.mark.asyncio
+    async def test_complete_qr_generation_workflow(self):
         """Test the complete workflow of QR code generation."""
         # Create user
         user = User.objects.create_user(
@@ -43,14 +44,15 @@ class TestSetupIntegration:
         assert qr.created_by == user
 
         # Generate QR code image
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
         qr.image_file = image_path
         qr.save()
 
         assert qr.image_file is not None
         assert '.png' in qr.image_file
 
-    def test_url_shortening_workflow(self):
+    @pytest.mark.asyncio
+    async def test_url_shortening_workflow(self):
         """Test URL shortening end-to-end."""
         # Create user
         user = User.objects.create_user(
@@ -79,7 +81,7 @@ class TestSetupIntegration:
 
         # Update content to shortened URL
         qr.content = redirect_url
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
         qr.image_file = image_path
         qr.save()
 

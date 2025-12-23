@@ -20,6 +20,8 @@ python_files = ['tests.py', 'test_*.py', '*_tests.py']
 python_classes = ['Test*']
 python_functions = ['test_*']
 testpaths = ['tests']
+asyncio_mode = 'auto'
+asyncio_default_fixture_loop_scope = 'function'
 addopts = [
   '--strict-markers',
   '--reuse-db',
@@ -30,6 +32,7 @@ markers = [
   'unit: Unit tests',
   'integration: Integration tests',
   'slow: Slow running tests',
+  'asyncio: Async tests',
 ]
 
 [tool.coverage.run]
@@ -49,11 +52,20 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 check_untyped_defs = true
-plugins = ['mypy_django_plugin.main', 'mypy_drf_plugin.main']
+plugins = ['mypy_django_plugin.main']
 exclude = [
     'migrations',
     '.venv.*',
     'venv.*',
+    # Exclude old DRF files during Django Ninja migration
+    'src/qr_code/auth_serializers.py',
+    'src/qr_code/serializers.py',
+    'src/qr_code/api/auth.py',
+    'src/qr_code/api/qrcode.py',
+    'tests/test_api.py',
+    'tests/test_auth.py',
+    'tests/test_email_confirmation.py',
+    'tests/conftest.py',
 ]
 
 [tool.django-stubs]
@@ -63,12 +75,29 @@ django_settings_module = 'config.settings'
 module = [
     'segno',
     'segno.*',
+    'ninja',
+    'ninja.*',
+    'ninja_extra',
+    'ninja_extra.*',
+    'ninja_jwt',
+    'ninja_jwt.*',
+    'yaml',
 ]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = 'src.serializers'
+module = 'src.qr_code.schemas'
 disable_error_code = ['assignment']
+
+# Ignore old DRF files during migration
+[[tool.mypy.overrides]]
+module = [
+    'src.qr_code.auth_serializers',
+    'src.qr_code.serializers',
+    'src.qr_code.api.auth',
+    'src.qr_code.api.qrcode',
+]
+ignore_errors = true
 
 [tool.flake8]
 max-line-length = 100

@@ -1,18 +1,5 @@
-from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-from .api import (
-    QRCodeViewSet,
-    account_view,
-    confirm_email,
-    forgot_password,
-    login_view,
-    qrcode_preview,
-    redirect_view,
-    resend_confirmation,
-    reset_password,
-    signup,
-)
 from .views import (
     account_created_page,
     account_page,
@@ -30,19 +17,9 @@ from .views import (
     reset_password_page,
 )
 
-router = DefaultRouter()
-router.register(r'qrcodes', QRCodeViewSet, basename='qrcode')
-
+# All API endpoints are now handled by Django Ninja in config/urls.py
+# These are only page/template views
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('api/signup', signup, name='signup'),
-    path('api/login', login_view, name='login'),
-    path('api/forgot-password', forgot_password, name='forgot-password'),
-    path('api/reset-password', reset_password, name='reset-password'),
-    path('api/resend-confirmation', resend_confirmation, name='resend-confirmation'),
-    path('api/confirm-email', confirm_email, name='confirm-email'),
-    path('api/account', account_view, name='account'),
-    path('api/qrcodes/preview', qrcode_preview, name='qrcode-preview'),
     path('', home_page, name='home'),
     path('login/', login_page, name='login-page'),
     path('account/', account_page, name='account-page'),
@@ -58,5 +35,4 @@ urlpatterns = [
     path('qrcodes/create/', qrcode_editor, name='qrcode-create'),
     path('qrcodes/edit/<uuid:qr_id>/', qrcode_editor, name='qrcode-edit'),
     path('qrcodes/duplicate/<uuid:qr_id>/', qrcode_duplicate, name='qrcode-duplicate'),
-    path('go/<str:short_code>/', redirect_view, name='qrcode-redirect'),
 ]

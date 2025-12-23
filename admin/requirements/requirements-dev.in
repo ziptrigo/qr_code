@@ -3,7 +3,6 @@
 black
 boto3-stubs[s3,ses]
 django-stubs
-djangorestframework-stubs
 factory-boy
 faker
 flake8
@@ -12,6 +11,9 @@ isort
 mypy
 pip-tools
 pytest
+pytest-asyncio
 pytest-cov
 pytest-django
+requests         # For admin scripts.   TODO: change for `httpx`
+types-requests   # For admin scripts.   TODO: change for `httpx`
 typer-invoke

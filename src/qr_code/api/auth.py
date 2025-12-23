@@ -141,17 +141,16 @@ def reset_password(request):
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     service = _get_password_reset_service()
-    token_obj = service.validate_token(token)
-    if token_obj is None:
+    user = service.validate_token(token)
+    if user is None:
         return Response(
             {'detail': 'Invalid or expired token.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    user = token_obj.user
     user.set_password(password)
     user.save(update_fields=['password'])
-    service.mark_used(token_obj)
+    service.mark_used(user)
 
     return Response({'detail': 'Password has been reset.'}, status=status.HTTP_200_OK)
 
@@ -205,14 +204,14 @@ def confirm_email(request):
         )
 
     service = get_email_confirmation_service()
-    token_obj = service.validate_token(token)
-    if token_obj is None:
+    user = service.validate_token(token)
+    if user is None:
         return Response(
             {'detail': 'Invalid or expired token.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    service.confirm_email(token_obj)
+    service.confirm_email(user)
 
     return Response({'detail': 'Email has been confirmed.'}, status=status.HTTP_200_OK)
 

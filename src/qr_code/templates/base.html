@@ -63,6 +63,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- JWT Auth utility -->
+    <script src="{% static 'js/auth.js' %}"></script>
+
     <!-- CSRF helper for htmx requests -->
     <script>
       function getCookie(name) {
@@ -103,17 +106,16 @@
                   <img id="theme-icon" alt="Theme icon" class="h-6 w-6" src="{% static 'images/theme-system_128x128.png' %}">
                 </button>
 
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'account-page' %}" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Account Settings" aria-label="Account Settings">
-                        <i class="fas fa-user text-lg"></i>
-                    </a>
-                    <form method="post" action="{% url 'logout-page' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="text-lg hover:text-brand-primary">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login-page' %}" class="text-lg hover:text-brand-primary">Login/Register</a>
-                {% endif %}
+                <div id="auth-nav">
+                    {% if request.user.is_authenticated %}
+                        <a href="{% url 'account-page' %}" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Account Settings" aria-label="Account Settings">
+                            <i class="fas fa-user text-lg"></i>
+                        </a>
+                        <button type="button" id="logout-btn" class="text-lg hover:text-brand-primary">Logout</button>
+                    {% else %}
+                        <a href="{% url 'login-page' %}" class="text-lg hover:text-brand-primary">Login/Register</a>
+                    {% endif %}
+                </div>
             </div>
         </nav>
     </header>
@@ -133,6 +135,22 @@
             </div>
         </div>
     </footer>
+
+    <!-- Logout button handler -->
+    <script>
+      (function() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function() {
+            if (window.Auth) {
+              Auth.logout();
+            } else {
+              window.location.href = '/login/';
+            }
+          });
+        }
+      })();
+    </script>
 
     <!-- Theme control script: cycles system -> light -> dark and persists to localStorage -->
     <script>

@@ -15,7 +15,8 @@ from src.qr_code.services import QRCodeGenerator
 class TestQRCodeGenerator:
     """Test cases for the QRCodeGenerator service."""
 
-    def test_generate_png_qrcode(self, user, tmp_path):
+    @pytest.mark.asyncio
+    async def test_generate_png_qrcode(self, user, tmp_path):
         """Test generating a PNG QR code."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -24,7 +25,7 @@ class TestQRCodeGenerator:
             image_file='temp.png',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         assert image_path.endswith('.png')
@@ -34,7 +35,8 @@ class TestQRCodeGenerator:
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_svg_qrcode(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_svg_qrcode(self, user):
         """Test generating an SVG QR code."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -43,7 +45,7 @@ class TestQRCodeGenerator:
             image_file='temp.svg',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         assert image_path.endswith('.svg')
@@ -52,7 +54,8 @@ class TestQRCodeGenerator:
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_pdf_qrcode(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_pdf_qrcode(self, user):
         """Test generating a PDF QR code."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -61,7 +64,7 @@ class TestQRCodeGenerator:
             image_file='temp.pdf',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         assert image_path.endswith('.pdf')
@@ -70,7 +73,8 @@ class TestQRCodeGenerator:
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_with_custom_colors(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_with_custom_colors(self, user):
         """Test generating QR code with custom colors."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -81,13 +85,14 @@ class TestQRCodeGenerator:
             image_file='temp.png',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_with_transparent_background(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_with_transparent_background(self, user):
         """Test generating QR code with transparent background."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -98,13 +103,14 @@ class TestQRCodeGenerator:
             image_file='temp.png',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_with_custom_size(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_with_custom_size(self, user):
         """Test generating QR code with custom size."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -114,13 +120,14 @@ class TestQRCodeGenerator:
             image_file='temp.png',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_with_custom_border(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_with_custom_border(self, user):
         """Test generating QR code with custom border."""
         qr = QRCode.objects.create(
             content='https://example.com',
@@ -130,13 +137,14 @@ class TestQRCodeGenerator:
             image_file='temp.png',
         )
 
-        image_path = QRCodeGenerator.generate_qr_code(qr)
+        image_path = await QRCodeGenerator.generate_qr_code(qr)
 
         assert image_path is not None
         full_path = Path(settings.MEDIA_ROOT) / image_path
         assert full_path.exists()
 
-    def test_generate_with_all_error_correction_levels(self, user):
+    @pytest.mark.asyncio
+    async def test_generate_with_all_error_correction_levels(self, user):
         """Test generating QR codes with different error correction levels."""
         levels = [
             QRCodeErrorCorrection.LOW,
@@ -154,7 +162,7 @@ class TestQRCodeGenerator:
                 image_file=f'temp_{level.value}.png',
             )
 
-            image_path = QRCodeGenerator.generate_qr_code(qr)
+            image_path = await QRCodeGenerator.generate_qr_code(qr)
 
             assert image_path is not None
             full_path = Path(settings.MEDIA_ROOT) / image_path

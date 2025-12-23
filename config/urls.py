@@ -18,14 +18,13 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from src.qr_code.admin import custom_admin_site
+from src.qr_code.api.router import api
 
 urlpatterns = [
     path('admin/', custom_admin_site.urls),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/', api.urls),  # Django Ninja API with built-in docs at /api/docs
     path('', include('src.qr_code.urls')),
 ]
 

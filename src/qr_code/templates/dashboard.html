@@ -380,7 +380,7 @@
 
     async function deleteQrCode(qrId) {
       try {
-        const response = await fetch(`/api/qrcodes/${qrId}/`, {
+        const response = await Auth.authenticatedFetch(`/api/qrcodes/${qrId}/`, {
           method: 'DELETE',
           headers: {
             'X-CSRFToken': getCookie('csrftoken'),
