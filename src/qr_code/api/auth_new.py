@@ -32,14 +32,16 @@ async def signup(request, payload: SignupSchema):
         return 400, {'detail': 'User with that email already exists.'}
 
     # Create user
-    await sync_to_async(User.objects.create_user)(
+    user = await sync_to_async(User.objects.create_user)(
         username=payload.email,
         email=payload.email,
         password=payload.password,
         name=payload.name,
     )
 
-    # TODO: Send confirmation email using JWT token
+    # Send confirmation email using JWT token
+    service = get_email_confirmation_service()
+    await service.send_confirmation_email(user)
 
     return 201, {'message': 'Account created! Please check your email to confirm your address.'}
 
@@ -81,12 +83,12 @@ async def get_current_user(request):
 async def confirm_email(request, payload: EmailConfirmSchema):
     """Confirm email using a valid token."""
     service = get_email_confirmation_service()
-    user = await sync_to_async(service.validate_token)(payload.token)
+    user = await service.validate_token(payload.token)
 
     if user is None:
         return 400, {'detail': 'Invalid or expired token.'}
 
-    await sync_to_async(service.confirm_email)(user)
+    await service.confirm_email(user)
     return 200, {'message': 'Email has been confirmed.'}
 
 
@@ -100,7 +102,7 @@ async def resend_confirmation(request, email: str):
         user = await sync_to_async(User.objects.get)(email=email)
         if not user.email_confirmed:
             service = get_email_confirmation_service()
-            await sync_to_async(service.send_confirmation_email)(user)
+            await service.send_confirmation_email(user)
     except User.DoesNotExist:
         pass  # Don't reveal whether the email exists
 
@@ -114,7 +116,7 @@ async def resend_confirmation(request, email: str):
 async def forgot_password(request, payload: PasswordResetRequestSchema):
     """Start password reset flow for the given email."""
     service = get_password_reset_service()
-    await sync_to_async(service.request_reset)(email=payload.email)
+    await service.request_reset(email=payload.email)
 
     return 200, {
         'message': 'If the account exists, an email will be sent with a password reset link.'
@@ -128,14 +130,13 @@ async def reset_password(request, payload: PasswordResetSchema):
         return 400, {'detail': 'Passwords do not match.'}
 
     service = get_password_reset_service()
-    user = await sync_to_async(service.validate_token)(payload.token)
+    user = await service.validate_token(payload.token)
 
     if user is None:
         return 400, {'detail': 'Invalid or expired token.'}
 
     user.set_password(payload.password)
     await sync_to_async(user.save)(update_fields=['password'])
-    await sync_to_async(service.mark_used)(user)
 
     return 200, {'message': 'Password has been reset.'}
 
@@ -158,9 +159,13 @@ async def update_account(request, payload: AccountUpdateSchema):
 
         user.email = payload.email
         user.email_confirmed = False  # Need to reconfirm new email
-        # TODO: Send confirmation email to new address
 
-    await sync_to_async(user.save)()
+        # Send confirmation email to new address
+        service = get_email_confirmation_service()
+        await sync_to_async(user.save)()
+        await service.send_confirmation_email(user)
+    else:
+        await sync_to_async(user.save)()
     return await sync_to_async(lambda: user)()
 
 

@@ -2,14 +2,16 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from ninja_jwt.exceptions import TokenError
+from ninja_jwt.settings import api_settings
 
-# TODO: Rewrite to use JWT tokens instead of TimeLimitedToken
-# from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
-from .email_service import EmailBackendClass, get_email_backend, send_email
+from ..tokens import EmailConfirmationToken
+from .email_service import EmailBackendClass, asend_email, get_email_backend
 
 
 @dataclass(slots=True)
@@ -18,20 +20,15 @@ class EmailConfirmationService:
 
     email_backend_classes: list[EmailBackendClass]
 
-    def send_confirmation_email(self, user: User):
+    async def send_confirmation_email(self, user: User):
         """Create a confirmation token for the user and send confirmation email."""
-
-        # TODO: Generate JWT token for email confirmation
-        # token = TimeLimitedToken.create_for_user(
-        #     user, TimeLimitedToken.TOKEN_TYPE_EMAIL_CONFIRMATION
-        # )
-        # confirmation_url = self._build_confirmation_url(token.token)
-        confirmation_url = self._build_confirmation_url('TODO')
+        token = EmailConfirmationToken.for_user(user)
+        confirmation_url = self._build_confirmation_url(str(token))
         subject, text_body, html_body = render_email_confirmation_email(
             user=user,
             confirmation_url=confirmation_url,
         )
-        send_email(
+        await asend_email(
             to=user.email,
             subject=subject,
             text_body=text_body,
@@ -45,17 +42,23 @@ class EmailConfirmationService:
         return f'{base}{path}'
 
     @staticmethod
-    def validate_token(token: str) -> User | None:  # type: ignore[return]
+    async def validate_token(token: str) -> User | None:
         """Validate a confirmation token and return user if valid."""
-        # TODO: Validate JWT token and return user
-        return None
+        try:
+            token_obj = EmailConfirmationToken(token)
+            user_id = token_obj.get(api_settings.USER_ID_CLAIM)
+            if user_id is None:
+                return None
+            return await sync_to_async(User.objects.get)(pk=user_id)
+        except (TokenError, User.DoesNotExist):
+            return None
 
     @staticmethod
-    def confirm_email(user: User):  # type: ignore[override]
+    async def confirm_email(user: User):
         """Mark the user's email as confirmed."""
         user.email_confirmed = True
         user.email_confirmed_at = datetime.now(UTC)
-        user.save(update_fields=['email_confirmed', 'email_confirmed_at'])
+        await sync_to_async(user.save)(update_fields=['email_confirmed', 'email_confirmed_at'])
 
 
 def get_email_confirmation_service() -> EmailConfirmationService:

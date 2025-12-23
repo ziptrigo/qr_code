@@ -24,14 +24,13 @@ async def list_qrcodes(request):
     user = request.auth
 
     # Get QR codes excluding soft-deleted
-    qrcodes = await sync_to_async(list)(
-        QRCode.objects.filter(created_by=user, deleted_at__isnull=True)
-    )
+    queryset = QRCode.objects.filter(created_by=user, deleted_at__isnull=True)
+    qrcodes: list[QRCode] = await sync_to_async(lambda: list(queryset))()
 
-    # Add computed fields
+    # Add computed fields (dynamic attributes for serialization)
     for qr in qrcodes:
-        qr.image_url = await sync_to_async(QRCodeGenerator.get_file_url)(qr.image_file)
-        qr.redirect_url = qr.get_redirect_url()
+        qr.image_url = QRCodeGenerator.get_file_url(qr.image_file)  # type: ignore[attr-defined]
+        qr.redirect_url = qr.get_redirect_url()  # type: ignore[attr-defined]
 
     return qrcodes
 
@@ -71,13 +70,13 @@ async def create_qrcode(request, payload: QRCodeCreateSchema):
             await sync_to_async(qrcode.save)(update_fields=['content'])
 
     # Generate QR code image
-    image_path = await sync_to_async(QRCodeGenerator.generate_qr_code)(qrcode)
+    image_path = await QRCodeGenerator.generate_qr_code(qrcode)
     qrcode.image_file = image_path
     await sync_to_async(qrcode.save)(update_fields=['image_file'])
 
-    # Add computed fields
-    qrcode.image_url = await sync_to_async(QRCodeGenerator.get_file_url)(image_path)
-    qrcode.redirect_url = qrcode.get_redirect_url()
+    # Add computed fields (dynamic attributes for serialization)
+    qrcode.image_url = QRCodeGenerator.get_file_url(image_path)  # type: ignore[attr-defined]
+    qrcode.redirect_url = qrcode.get_redirect_url()  # type: ignore[attr-defined]
 
     return 201, qrcode
 
@@ -94,9 +93,9 @@ async def retrieve_qrcode(request, qr_id: uuid.UUID):
     except QRCode.DoesNotExist:
         return 404, {'detail': 'QR code not found.'}
 
-    # Add computed fields
-    qrcode.image_url = await sync_to_async(QRCodeGenerator.get_file_url)(qrcode.image_file)
-    qrcode.redirect_url = qrcode.get_redirect_url()
+    # Add computed fields (dynamic attributes for serialization)
+    qrcode.image_url = QRCodeGenerator.get_file_url(qrcode.image_file)  # type: ignore[attr-defined]
+    qrcode.redirect_url = qrcode.get_redirect_url()  # type: ignore[attr-defined]
 
     return qrcode
 
@@ -113,12 +112,15 @@ async def update_qrcode(request, qr_id: uuid.UUID, payload: QRCodeUpdateSchema):
     except QRCode.DoesNotExist:
         return 404, {'detail': 'QR code not found.'}
 
-    qrcode.name = payload.name
-    await sync_to_async(qrcode.save)(update_fields=['name'])
+    # Extract name from payload dict
+    payload_dict = payload.dict()
+    if 'name' in payload_dict and payload_dict['name'] is not None:
+        qrcode.name = payload_dict['name']
+        await sync_to_async(qrcode.save)(update_fields=['name'])
 
-    # Add computed fields
-    qrcode.image_url = await sync_to_async(QRCodeGenerator.get_file_url)(qrcode.image_file)
-    qrcode.redirect_url = qrcode.get_redirect_url()
+    # Add computed fields (dynamic attributes for serialization)
+    qrcode.image_url = QRCodeGenerator.get_file_url(qrcode.image_file)  # type: ignore[attr-defined]
+    qrcode.redirect_url = qrcode.get_redirect_url()  # type: ignore[attr-defined]
 
     return qrcode
 
@@ -168,23 +170,25 @@ async def preview_qrcode(request, payload: QRCodeCreateSchema):
             content = f'{base_url}go/{short_code}/'
 
     # Create temporary QR instance for preview
+    # Use model_dump() to extract pydantic fields
+    payload_data = payload.model_dump(exclude={'url', 'data'})
     qr_instance = QRCode(
         id=uuid.uuid4(),
         created_by=user,
         content=content,
-        name=payload.name,
-        qr_type=payload.qr_type,
-        qr_format=payload.qr_format,
-        size=payload.size,
-        error_correction=payload.error_correction,
-        border=payload.border,
-        background_color=payload.background_color,
-        foreground_color=payload.foreground_color,
+        name=payload_data.get('name', 'Preview'),
+        qr_type=payload_data.get('qr_type', 'url'),
+        qr_format=payload_data.get('qr_format', 'png'),
+        size=payload_data.get('size', 10),
+        error_correction=payload_data.get('error_correction', 'M'),
+        border=payload_data.get('border', 4),
+        background_color=payload_data.get('background_color', '#FFFFFF'),
+        foreground_color=payload_data.get('foreground_color', '#000000'),
         use_url_shortening=use_url_shortening,
         image_file='preview.png',
     )
 
-    image_path = await sync_to_async(QRCodeGenerator.generate_qr_code)(qr_instance)
-    image_url = await sync_to_async(QRCodeGenerator.get_file_url)(image_path)
+    image_path = await QRCodeGenerator.generate_qr_code(qr_instance)
+    image_url = QRCodeGenerator.get_file_url(image_path)
 
     return {'image_url': image_url}

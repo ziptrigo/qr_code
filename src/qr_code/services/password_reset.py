@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from ninja_jwt.exceptions import TokenError
+from ninja_jwt.settings import api_settings
 
-# TODO: Rewrite to use JWT tokens instead of TimeLimitedToken
-# from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
-from .email_service import EmailBackendClass, get_email_backend, send_email
+from ..tokens import PasswordResetToken
+from .email_service import EmailBackendClass, asend_email, get_email_backend
 
 
 @dataclass(slots=True)
@@ -16,27 +18,24 @@ class PasswordResetService:
 
     email_backend_classes: list[EmailBackendClass]
 
-    def request_reset(self, email: str):
+    async def request_reset(self, email: str):
         """Create a reset token for the user with the given email and send email.
 
         If the user does not exist, this method does nothing. This keeps behavior
         indistinguishable from the caller's perspective.
         """
-
         try:
-            user = User.objects.get(email=email)
+            user = await sync_to_async(User.objects.get)(email=email)
         except User.DoesNotExist:
             return
 
-        # TODO: Generate JWT token for password reset
-        # prt = TimeLimitedToken.create_for_user(user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET)
-        # reset_url = self._build_reset_url(prt.token)
-        reset_url = self._build_reset_url('TODO')
+        token = PasswordResetToken.for_user(user)
+        reset_url = self._build_reset_url(str(token))
         subject, text_body, html_body = render_password_reset_email(
             user=user,
             reset_url=reset_url,
         )
-        send_email(
+        await asend_email(
             to=user.email,
             subject=subject,
             text_body=text_body,
@@ -50,14 +49,16 @@ class PasswordResetService:
         return f'{base}{path}'
 
     @staticmethod
-    def validate_token(token: str) -> User | None:  # type: ignore[return]
-        # TODO: Validate JWT token and return user
-        return None
-
-    @staticmethod
-    def mark_used(user: User):  # type: ignore[override]
-        # TODO: JWT tokens don't need to be marked as used
-        pass
+    async def validate_token(token: str) -> User | None:
+        """Validate a password reset token and return user if valid."""
+        try:
+            token_obj = PasswordResetToken(token)
+            user_id = token_obj.get(api_settings.USER_ID_CLAIM)
+            if user_id is None:
+                return None
+            return await sync_to_async(User.objects.get)(pk=user_id)
+        except (TokenError, User.DoesNotExist):
+            return None
 
 
 def get_password_reset_service() -> PasswordResetService:
