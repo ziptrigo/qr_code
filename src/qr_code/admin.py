@@ -10,7 +10,6 @@ from django.urls import path
 from django.utils import timezone
 
 from .models import CreditTransaction, InsufficientCreditsError, QRCode, User
-from .models.time_limited_token import TimeLimitedToken
 from .services.email_service import send_email
 
 
@@ -82,49 +81,6 @@ class CreditTransactionAdmin(admin.ModelAdmin):
     list_filter = ['type', 'created_at']
     search_fields = ['user__email', 'user__username', 'description']
     readonly_fields = ['id', 'created_at']
-
-
-@admin.register(TimeLimitedToken)
-class TimeLimitedTokenAdmin(admin.ModelAdmin):
-    """Admin interface for TimeLimitedToken."""
-
-    list_display = ['id', 'user', 'token_type', 'created_at', 'used_at', 'is_expired', 'is_used']
-    list_filter = ['token_type', 'created_at', 'used_at']
-    search_fields = ['user__email', 'user__username', 'token']
-    readonly_fields = ['id', 'token', 'created_at', 'used_at', 'is_expired', 'is_used']
-
-    fieldsets = (
-        (
-            None,
-            {
-                'fields': (
-                    'id',
-                    'user',
-                    'token',
-                    'token_type',
-                )
-            },
-        ),
-        (
-            'Status',
-            {
-                'fields': (
-                    'created_at',
-                    'used_at',
-                    'is_expired',
-                    'is_used',
-                )
-            },
-        ),
-    )
-
-    @admin.display(description='Expired', boolean=True)
-    def is_expired(self, obj: TimeLimitedToken) -> bool:
-        return obj.is_expired
-
-    @admin.display(description='Used', boolean=True)
-    def is_used(self, obj: TimeLimitedToken) -> bool:
-        return obj.is_used
 
 
 class TestEmailForm(forms.Form):
@@ -330,4 +286,3 @@ custom_admin_site = CustomAdminSite(name='custom_admin')
 custom_admin_site.register(User, UserAdmin)
 custom_admin_site.register(QRCode, QRCodeAdmin)
 custom_admin_site.register(CreditTransaction, CreditTransactionAdmin)
-custom_admin_site.register(TimeLimitedToken, TimeLimitedTokenAdmin)

@@ -59,7 +59,7 @@ async def login_view(request, payload: LoginSchema):
     refresh = RefreshToken.for_user(user)
 
     return {
-        'access': str(refresh.access_token),
+        'access': str(refresh.access_token),  # type: ignore[attr-defined]
         'refresh': str(refresh),
     }
 

@@ -6,7 +6,8 @@ from django.conf import settings
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from ..models.time_limited_token import TimeLimitedToken
+# TODO: Rewrite to use JWT tokens instead of TimeLimitedToken
+# from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
 from .email_service import EmailBackendClass, get_email_backend, send_email
 
@@ -20,10 +21,12 @@ class EmailConfirmationService:
     def send_confirmation_email(self, user: User):
         """Create a confirmation token for the user and send confirmation email."""
 
-        token = TimeLimitedToken.create_for_user(
-            user, TimeLimitedToken.TOKEN_TYPE_EMAIL_CONFIRMATION
-        )
-        confirmation_url = self._build_confirmation_url(token.token)
+        # TODO: Generate JWT token for email confirmation
+        # token = TimeLimitedToken.create_for_user(
+        #     user, TimeLimitedToken.TOKEN_TYPE_EMAIL_CONFIRMATION
+        # )
+        # confirmation_url = self._build_confirmation_url(token.token)
+        confirmation_url = self._build_confirmation_url('TODO')
         subject, text_body, html_body = render_email_confirmation_email(
             user=user,
             confirmation_url=confirmation_url,
@@ -42,31 +45,17 @@ class EmailConfirmationService:
         return f'{base}{path}'
 
     @staticmethod
-    def validate_token(token: str) -> TimeLimitedToken | None:
-        """Validate a confirmation token and return it if valid."""
-
-        try:
-            tlt: TimeLimitedToken = TimeLimitedToken.objects.get(
-                token=token, token_type=TimeLimitedToken.TOKEN_TYPE_EMAIL_CONFIRMATION
-            )  # type: ignore
-        except TimeLimitedToken.DoesNotExist:
-            return None
-
-        if tlt.is_used or tlt.is_expired:
-            return None
-        return tlt
+    def validate_token(token: str) -> User | None:  # type: ignore[return]
+        """Validate a confirmation token and return user if valid."""
+        # TODO: Validate JWT token and return user
+        return None
 
     @staticmethod
-    def confirm_email(token: TimeLimitedToken):
-        """Mark the user's email as confirmed and the token as used."""
-
-        user = token.user
+    def confirm_email(user: User):  # type: ignore[override]
+        """Mark the user's email as confirmed."""
         user.email_confirmed = True
         user.email_confirmed_at = datetime.now(UTC)
         user.save(update_fields=['email_confirmed', 'email_confirmed_at'])
-
-        token.used_at = datetime.now(UTC)
-        token.save(update_fields=['used_at'])
 
 
 def get_email_confirmation_service() -> EmailConfirmationService:

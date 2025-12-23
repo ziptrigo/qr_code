@@ -4,7 +4,8 @@ from django.conf import settings
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from ..models.time_limited_token import TimeLimitedToken
+# TODO: Rewrite to use JWT tokens instead of TimeLimitedToken
+# from ..models.time_limited_token import TimeLimitedToken
 from ..models.user import User
 from .email_service import EmailBackendClass, get_email_backend, send_email
 
@@ -27,8 +28,10 @@ class PasswordResetService:
         except User.DoesNotExist:
             return
 
-        prt = TimeLimitedToken.create_for_user(user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET)
-        reset_url = self._build_reset_url(prt.token)
+        # TODO: Generate JWT token for password reset
+        # prt = TimeLimitedToken.create_for_user(user, TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET)
+        # reset_url = self._build_reset_url(prt.token)
+        reset_url = self._build_reset_url('TODO')
         subject, text_body, html_body = render_password_reset_email(
             user=user,
             reset_url=reset_url,
@@ -47,24 +50,14 @@ class PasswordResetService:
         return f'{base}{path}'
 
     @staticmethod
-    def validate_token(token: str) -> TimeLimitedToken | None:
-        try:
-            prt: TimeLimitedToken = TimeLimitedToken.objects.get(
-                token=token, token_type=TimeLimitedToken.TOKEN_TYPE_PASSWORD_RESET
-            )  # type: ignore
-        except TimeLimitedToken.DoesNotExist:
-            return None
-
-        if prt.is_used or prt.is_expired:
-            return None
-        return prt
+    def validate_token(token: str) -> User | None:  # type: ignore[return]
+        # TODO: Validate JWT token and return user
+        return None
 
     @staticmethod
-    def mark_used(prt: TimeLimitedToken):
-        from datetime import UTC, datetime
-
-        prt.used_at = datetime.now(UTC)
-        prt.save(update_fields=['used_at'])
+    def mark_used(user: User):  # type: ignore[override]
+        # TODO: JWT tokens don't need to be marked as used
+        pass
 
 
 def get_password_reset_service() -> PasswordResetService:
