@@ -13,11 +13,7 @@
 
     <div id="login-msg" class="mb-4 text-sm"></div>
 
-    <form id="login-form"
-          hx-post="/api/login"
-          hx-trigger="submit"
-          hx-swap="none"
-          x-data>
+    <form id="login-form" x-data="{ loading: false }">
       {% csrf_token %}
 
       <label class="block mb-3">
@@ -45,8 +41,12 @@
       </label>
 
       <button type="submit"
-              class="w-full inline-flex justify-center items-center rounded bg-brand-primary text-gray-900 font-medium py-2 hover:opacity-90">
-        Sign in
+              :disabled="loading"
+              class="w-full inline-flex justify-center items-center rounded bg-brand-primary text-gray-900 font-medium py-2 hover:opacity-90 disabled:opacity-50">
+        <span x-show="!loading">Sign in</span>
+        <span x-show="loading" class="flex items-center">
+          <i class="fas fa-spinner fa-spin mr-2"></i>Signing in...
+        </span>
       </button>
     </form>
 
@@ -68,6 +68,8 @@
     const passwordInput = document.getElementById('password-input');
     const toggleBtn = document.getElementById('toggle-password');
     const eyeIcon = document.getElementById('eye-icon');
+    const emailInput = form.querySelector('input[name="email"]');
+    const passwordField = form.querySelector('input[name="password"]');
 
     // Password visibility toggle
     toggleBtn.addEventListener('click', function() {
@@ -82,40 +84,51 @@
       }
     });
 
-    form.addEventListener('submit', function(ev){
+    form.addEventListener('submit', async function(ev){
+      ev.preventDefault();
+
       if (!form.checkValidity()) {
-        // Let browser show built-in messages; we also show a simple message
         msg.textContent = 'Please fill in email and password (valid email required).';
         msg.className = 'mb-4 text-sm text-red-600';
-        return; // browser will block submission
+        return;
       }
-      // Clear previous message before htmx sends
+
+      // Clear previous message
       msg.textContent = '';
       msg.className = 'mb-4 text-sm';
-    });
 
-    document.body.addEventListener('htmx:afterRequest', function(e){
-      if (e.target !== form) return;
-      const status = e.detail.xhr.status;
+      // Set loading state
+      form.dispatchEvent(new CustomEvent('alpine:set-loading', { detail: true }));
+
+      const email = emailInput.value;
+      const password = passwordField.value;
+
       try {
-        const data = JSON.parse(e.detail.xhr.responseText || '{}');
-        if (status >= 200 && status < 300) {
-          window.location = '/dashboard/';
+        const result = await Auth.login(email, password);
+
+        if (result.success) {
+          window.location.href = '/dashboard/';
         } else {
-          const userMsg = data.detail || data.message || 'Could not sign in. Check your credentials.';
+          const userMsg = result.error.detail || result.error.message || 'Could not sign in. Check your credentials.';
           msg.textContent = userMsg;
           msg.className = 'mb-4 text-sm text-red-600';
-          msg.style.whiteSpace = 'pre-line'; // Preserve line breaks
-          console.error('Login error (developer details):', data);
+          msg.style.whiteSpace = 'pre-line';
+          console.error('Login error:', result.error);
         }
-      } catch (err) {
-        if (status >= 200 && status < 300) {
-          window.location = '/dashboard/';
-        } else {
-          msg.textContent = 'An unexpected error occurred.';
-          msg.className = 'mb-4 text-sm text-red-600';
-          console.error('Login error (non-JSON):', e.detail.xhr.responseText);
-        }
+      } catch (error) {
+        msg.textContent = 'An unexpected error occurred.';
+        msg.className = 'mb-4 text-sm text-red-600';
+        console.error('Login exception:', error);
+      } finally {
+        form.dispatchEvent(new CustomEvent('alpine:set-loading', { detail: false }));
+      }
+    });
+
+    // Alpine loading state handler
+    form.addEventListener('alpine:set-loading', function(e) {
+      const alpineData = Alpine.$data(form);
+      if (alpineData) {
+        alpineData.loading = e.detail;
       }
     });
   })();
