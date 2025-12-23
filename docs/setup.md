@@ -65,7 +65,7 @@ black .
 python manage.py runserver
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8010`
 
 ## API Endpoints
 
@@ -241,7 +241,7 @@ qr_code/
 
 ## Admin Interface
 
-Access the Django admin at `http://localhost:8000/admin/` to:
+Access the Django admin at `http://localhost:8010/admin/` to:
 - View all QR codes
 - Monitor scan statistics
 - Manage users
@@ -278,9 +278,9 @@ To test the API with curl:
 
 ```powershell
 # Get token
-$response = Invoke-RestMethod -Uri "http://localhost:8000/api/token/" -Method Post -Body (@{username="admin"; password="your_password"} | ConvertTo-Json) -ContentType "application/json"
+$response = Invoke-RestMethod -Uri "http://localhost:8010/api/token/" -Method Post -Body (@{username="admin"; password="your_password"} | ConvertTo-Json) -ContentType "application/json"
 $token = $response.access
 
 # Create QR code
-Invoke-RestMethod -Uri "http://localhost:8000/api/qrcodes/" -Method Post -Headers @{Authorization="Bearer $token"} -Body (@{url="https://example.com"; use_url_shortening=$true} | ConvertTo-Json) -ContentType "application/json"
+Invoke-RestMethod -Uri "http://localhost:8010/api/qrcodes/" -Method Post -Headers @{Authorization="Bearer $token"} -Body (@{url="https://example.com"; use_url_shortening=$true} | ConvertTo-Json) -ContentType "application/json"
 ```

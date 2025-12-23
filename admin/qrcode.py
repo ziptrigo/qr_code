@@ -25,7 +25,7 @@ app = typer.Typer(
 
 
 # Configuration
-API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
+API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8010')
 TOKEN_FILE = Path.home() / '.qrcode_token'
 
 

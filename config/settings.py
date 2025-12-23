@@ -183,13 +183,8 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# Migrations: store app migrations at project root under migrations/
-MIGRATION_MODULES = {
-    'qr_code': 'migrations',
-}
-
 # QR Code settings
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8010')
 QR_CODE_REDIRECT_PATH = '/go/'
 
 # Password reset settings
