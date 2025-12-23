@@ -20,6 +20,8 @@ python_files = ['tests.py', 'test_*.py', '*_tests.py']
 python_classes = ['Test*']
 python_functions = ['test_*']
 testpaths = ['tests']
+asyncio_mode = 'auto'
+asyncio_default_fixture_loop_scope = 'function'
 addopts = [
   '--strict-markers',
   '--reuse-db',
@@ -30,6 +32,7 @@ markers = [
   'unit: Unit tests',
   'integration: Integration tests',
   'slow: Slow running tests',
+  'asyncio: Async tests',
 ]
 
 [tool.coverage.run]
@@ -49,7 +52,7 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 check_untyped_defs = true
-plugins = ['mypy_django_plugin.main', 'mypy_drf_plugin.main']
+plugins = ['mypy_django_plugin.main']
 exclude = [
     'migrations',
     '.venv.*',
@@ -63,11 +66,17 @@ django_settings_module = 'config.settings'
 module = [
     'segno',
     'segno.*',
+    'ninja',
+    'ninja.*',
+    'ninja_extra',
+    'ninja_extra.*',
+    'ninja_jwt',
+    'ninja_jwt.*',
 ]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = 'src.serializers'
+module = 'src.qr_code.schemas'
 disable_error_code = ['assignment']
 
 [tool.flake8]
