@@ -66,14 +66,12 @@ def generate_openapi(
     """
     setup_django()
 
-    from drf_spectacular.generators import SchemaGenerator
+    from src.qr_code.api.router import api
 
     try:
         logger.info(f'Generating OpenAPI schema in {format.value} format...')
 
-        # Generate the schema
-        generator = SchemaGenerator()
-        schema = generator.get_schema()
+        schema = api.get_openapi_schema()
 
         # Convert to the desired format
         if format == Format.JSON:
