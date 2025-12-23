@@ -10,7 +10,6 @@ jinja2                  # Templating
 pillow
 pydantic>=2.0           # Data validation (required by Django Ninja)
 python-dotenv
-requests
 segno                   # QR Code generation
 typer                   # CLI app
 whitenoise              # Static file serving

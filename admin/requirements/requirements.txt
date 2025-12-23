@@ -10,12 +10,8 @@ botocore==1.42.15
     # via
     #   boto3
     #   s3transfer
-certifi==2025.11.12
-    # via requests
 cffi==2.0.0
     # via cryptography
-charset-normalizer==3.4.4
-    # via requests
 click==8.3.1
     # via typer
 colorama==0.4.6
@@ -43,8 +39,6 @@ django-ninja-extra==0.30.8
     #   django-ninja-jwt
 django-ninja-jwt==5.4.2
     # via -r requirements.in
-idna==3.11
-    # via requests
 injector==0.23.0
     # via django-ninja-extra
 jinja2==3.1.6
@@ -82,8 +76,6 @@ python-dotenv==1.2.1
     # via
     #   -r requirements.in
     #   pydantic-settings
-requests==2.32.5
-    # via -r requirements.in
 rich==14.2.0
     # via typer
 s3transfer==0.16.0
@@ -111,8 +103,6 @@ typing-inspection==0.4.2
 tzdata==2025.3
     # via django
 urllib3==2.6.2
-    # via
-    #   botocore
-    #   requests
+    # via botocore
 whitenoise==6.11.0
     # via -r requirements.in
